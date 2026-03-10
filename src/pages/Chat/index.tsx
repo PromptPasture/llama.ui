@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChatScroll } from '../../hooks/useChatScroll';
+import { CallbackGeneratedChunk } from '../../hooks/useInference';
 import { useAppContext } from '../../store/app';
-import { CallbackGeneratedChunk, useChatContext } from '../../store/chat';
+import { useChatContext } from '../../store/chat';
 import { CanvasType, Conversation, Message, MessageExtra } from '../../types';
 import { classNames } from '../../utils/css-helpers';
 import { getListMessageDisplay } from '../../utils/message-hierarchy';
