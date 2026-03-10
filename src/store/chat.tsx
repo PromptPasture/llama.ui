@@ -9,7 +9,8 @@ import {
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { matchPath, useLocation, useNavigate } from 'react-router';
-import { configToCustomOptions, normalizeMsgsForAPI } from '../api/utils';
+import { configToCustomOptions } from '../api/config-mapper';
+import { normalizeMsgsForAPI } from '../api/message-normalization';
 import { isDev } from '../config';
 import IndexedDB from '../database/indexedDB';
 import {

@@ -8,7 +8,8 @@ import {
   SSEChatCompletionMessage,
 } from '../../types';
 import { normalizeUrl } from '../../utils/url-helpers';
-import { noResponse, processSSEStream } from '../utils';
+import { noResponse } from '../response-utils';
+import { processSSEStream } from '../sse-parser';
 
 /**
  * Base implementation for OpenAI-compatible API providers.
