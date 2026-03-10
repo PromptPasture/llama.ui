@@ -37,12 +37,10 @@ import {
   MessageExtra,
   PendingMessage,
 } from '../../../types';
-import {
-  classNames,
-  copyStr,
-  splitMessageContent,
-  timeFormatter,
-} from '../../../utils';
+import { classNames } from '../../../utils/css-helpers';
+import { copyStr } from '../../../utils/dom-helpers';
+import { splitMessageContent } from '../../../utils/message-parser';
+import { timeFormatter } from '../../../utils/formatting';
 import ChatInputExtraContextItem from './ChatInputExtraContextItem';
 import { DropzoneArea } from './DropzoneArea';
 import MarkdownDisplay from './MarkdownDisplay';

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Dropdown, Input, Label, TextArea } from '../../../components';
 import { CONFIG_DEFAULT } from '../../../config';
 import { DropdownOption, SettingFieldInput } from '../../../types/settings';
-import { normalizeUrl } from '../../../utils';
+import { normalizeUrl } from '../../../utils/url-helpers';
 
 interface BaseInputProps {
   field: SettingFieldInput;

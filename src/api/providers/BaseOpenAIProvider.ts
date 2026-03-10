@@ -7,7 +7,7 @@ import {
   ModelProvider,
   SSEChatCompletionMessage,
 } from '../../types';
-import { normalizeUrl } from '../../utils';
+import { normalizeUrl } from '../../utils/url-helpers';
 import { noResponse, processSSEStream } from '../utils';
 
 /**

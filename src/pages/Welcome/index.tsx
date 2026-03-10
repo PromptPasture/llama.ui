@@ -6,7 +6,7 @@ import IndexedDB from '../../database/indexedDB';
 import { useAppContext } from '../../store/app';
 import { CallbackGeneratedChunk, useChatContext } from '../../store/chat';
 import { MessageExtra } from '../../types';
-import { getUniqueRandomElements } from '../../utils';
+import { getUniqueRandomElements } from '../../utils/array-helpers';
 import { ChatInput } from '../Chat/components/ChatInput';
 
 const SAMPLE_PROMPTS_COUNT = 4;

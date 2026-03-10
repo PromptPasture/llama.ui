@@ -10,7 +10,7 @@ import {
   MessageDisplay,
   MessageExtra,
 } from '../../types';
-import { classNames } from '../../utils';
+import { classNames } from '../../utils/css-helpers';
 import CanvasPyInterpreter from './components/CanvasPyInterpreter';
 import { ChatInput } from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';

@@ -11,7 +11,7 @@ import { Button, Icon } from '../../../components';
 import { CONFIG_DEFAULT } from '../../../config';
 import { useModals } from '../../../store/modal';
 import { Configuration, ConfigurationPreset } from '../../../types';
-import { dateFormatter } from '../../../utils';
+import { dateFormatter } from '../../../utils/formatting';
 
 export function PresetManager({
   config,

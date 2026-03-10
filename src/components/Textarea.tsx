@@ -10,7 +10,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { cn, throttle } from '../utils';
+import { cn } from '../utils/css-helpers';
+import { throttle } from '../utils/async-helpers';
 
 const variants = cva('textarea min-h-auto resize-none', {
   variants: {

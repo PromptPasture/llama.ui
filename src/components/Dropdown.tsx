@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LuChevronDown } from 'react-icons/lu';
 import { isDev } from '../config';
-import { classNames } from '../utils';
+import { classNames } from '../utils/css-helpers';
 import { Button } from './Button';
 import { Icon } from './Icon';
 import { Input } from './Input';

@@ -4,7 +4,7 @@ import { TbDatabaseExport, TbDatabaseImport } from 'react-icons/tb';
 import { DelimeterComponent, SettingsSectionLabel } from '.';
 import { Button, Icon, Input, Label } from '../../../components';
 import { useAppContext } from '../../../store/app';
-import { normalizeUrl } from '../../../utils';
+import { normalizeUrl } from '../../../utils/url-helpers';
 import { downloadAsFile } from '../../../utils/downloadAsFile';
 
 export function ImportExportComponent({ onClose }: { onClose: () => void }) {

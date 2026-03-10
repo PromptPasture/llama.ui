@@ -13,7 +13,7 @@ import { Button, Icon } from '../../../components';
 import { useAppContext } from '../../../store/app';
 import { useChatContext } from '../../../store/chat';
 import { CanvasType } from '../../../types';
-import { copyStr } from '../../../utils';
+import { copyStr } from '../../../utils/dom-helpers';
 import MermaidChart from './MermaidChart';
 
 export default memo(function MarkdownDisplay({ content }: { content: string }) {

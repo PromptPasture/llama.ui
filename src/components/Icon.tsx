@@ -1,7 +1,7 @@
 import { cva, VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 import { IconBaseProps } from 'react-icons';
-import { cn } from '../utils';
+import { cn } from '../utils/css-helpers';
 
 const iconVariants = cva('', {
   variants: {

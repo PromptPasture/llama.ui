@@ -3,7 +3,7 @@ import Dropzone from 'react-dropzone';
 import { Input } from '../../../components';
 import { FileUploadApi } from '../../../hooks/useFileUpload';
 import { useAppContext } from '../../../store/app';
-import { classNames } from '../../../utils';
+import { classNames } from '../../../utils/css-helpers';
 import ChatInputExtraContextItem from './ChatInputExtraContextItem';
 
 export function DropzoneArea({

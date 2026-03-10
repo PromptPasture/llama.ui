@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LuFileText, LuVolume2, LuX } from 'react-icons/lu';
 import { Button, Icon } from '../../../components';
 import { MessageExtra } from '../../../types';
-import { classNames } from '../../../utils';
+import { classNames } from '../../../utils/css-helpers';
 
 export default function ChatInputExtraContextItem({
   items,

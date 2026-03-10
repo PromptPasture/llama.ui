@@ -59,7 +59,8 @@ import {
   SettingSection,
   SettingTab,
 } from '../../types/settings';
-import { classNames, isBoolean, isNumeric, isString } from '../../utils';
+import { classNames } from '../../utils/css-helpers';
+import { isBoolean, isNumeric, isString } from '../../utils/type-guards';
 import {
   DelimeterComponent,
   ImportExportComponent,

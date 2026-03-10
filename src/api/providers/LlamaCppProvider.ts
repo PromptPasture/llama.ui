@@ -1,6 +1,6 @@
 import { isDev } from '../../config';
 import { InferenceApiModel, Modality } from '../../types';
-import { normalizeUrl } from '../../utils';
+import { normalizeUrl } from '../../utils/url-helpers';
 import { noResponse } from '../utils';
 import { SelfHostedOpenAIProvider } from './BaseOpenAIProvider';
 

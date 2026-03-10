@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { getInferenceProvider } from '../api/providers';
 import { CONFIG_DEFAULT, INFERENCE_PROVIDERS } from '../config';
 import { Configuration, InferenceApiModel, InferenceProvider } from '../types';
-import { deepEqual } from '../utils';
+import { deepEqual } from '../utils/object-helpers';
 import { useAppContext } from './app';
 
 // --- Action Types ---

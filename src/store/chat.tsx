@@ -20,7 +20,7 @@ import {
   PendingMessage,
   ViewingChat,
 } from '../types';
-import { filterThoughtFromMsgs } from '../utils';
+import { filterThoughtFromMsgs } from '../utils/message-parser';
 import { useAppContext } from './app';
 import { useInferenceContext } from './inference';
 

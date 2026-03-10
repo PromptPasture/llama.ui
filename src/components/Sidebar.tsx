@@ -16,7 +16,7 @@ import useFilter from '../hooks/useFilter';
 import { useChatContext } from '../store/chat';
 import { useModals } from '../store/modal';
 import { Conversation } from '../types';
-import { classNames } from '../utils';
+import { classNames } from '../utils/css-helpers';
 import { downloadAsFile } from '../utils/downloadAsFile';
 import { Button } from './Button';
 import { Icon } from './Icon';
