@@ -1,5 +1,5 @@
 import { InferenceApiModel } from '../../types';
-import { CloudOpenAIProvider } from './BaseOpenAIProvider';
+import { CloudOpenAIProvider } from './CloudOpenAIProvider';
 
 /**
  * Represents a Grok model as returned by the API.

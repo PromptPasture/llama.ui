@@ -1,5 +1,5 @@
 import { InferenceApiModel, Modality } from '../../types';
-import { CloudOpenAIProvider } from './BaseOpenAIProvider';
+import { CloudOpenAIProvider } from './CloudOpenAIProvider';
 
 /**
  * Represents a model available via the OpenRouter API.
