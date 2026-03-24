@@ -1,42 +1,9 @@
-import React, {
-  ReactElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import {
-  LuAudioLines,
-  LuBookmark,
-  LuBrain,
-  LuCog,
-  LuCpu,
-  LuDatabase,
-  LuFilter,
-  LuFlaskConical,
-  LuGrid2X2Plus,
-  LuHand,
-  LuMessageCircleMore,
-  LuMessagesSquare,
-  LuMonitor,
-  LuRefreshCw,
-  LuRocket,
-  LuSettings,
-  LuSpeech,
-  LuVolume2,
-  LuVolumeX,
-} from 'react-icons/lu';
 import { useNavigate } from 'react-router';
 import { Button, Dropdown, Icon } from '../../components';
 import { CONFIG_DEFAULT, INFERENCE_PROVIDERS } from '../../config';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
-import TextToSpeech, {
-  getSpeechSynthesisVoiceByName,
-  getSpeechSynthesisVoices,
-  IS_SPEECH_SYNTHESIS_SUPPORTED,
-} from '../../hooks/useTextToSpeech';
-import { SUPPORTED_LANGUAGES } from '../../i18n';
 import { useAppContext } from '../../store/app';
 import { useChatContext } from '../../store/chat';
 import { useInferenceContext } from '../../store/inference';
@@ -46,466 +13,16 @@ import {
   ConfigurationKey,
   InferenceApiModel,
   InferenceProvidersKey,
-  ProviderOption,
 } from '../../types';
-import {
-  DropdownOption,
-  SettingField,
-  SettingFieldCustom,
-  SettingFieldDropdown,
-  SettingFieldInput,
-  SettingFieldInputType,
-  SettingInputType,
-  SettingSection,
-  SettingTab,
-} from '../../types/settings';
 import { classNames } from '../../utils/css-helpers';
 import { isBoolean, isNumeric, isString } from '../../utils/type-guards';
-import {
-  DelimeterComponent,
-  ImportExportComponent,
-  PresetManager,
-  SettingsModalCheckbox,
-  SettingsModalDropdown,
-  SettingsModalLongInput,
-  SettingsModalRangeInput,
-  SettingsModalShortInput,
-  SettingsSectionLabel,
-  ThemeController,
-} from './components';
+import { SettingsTabViewProps } from './types';
+import { SETTINGS_TAB_DESCRIPTORS } from './tabs';
 
-// --- Constants ---
-const DELIMITER: SettingFieldCustom = {
-  type: SettingInputType.CUSTOM,
-  key: 'custom',
-  component: 'delimeter',
-};
-
-// --- Helper Functions ---
-function toSection(
-  label: string | ReactElement,
-  icon?: string | ReactElement
-): SettingSection {
-  return {
-    type: SettingInputType.SECTION,
-    label: (
-      <>
-        {icon}
-        {label}
-      </>
-    ),
-  };
-}
-
-function toInput(
-  type: SettingFieldInputType,
-  key: ConfigurationKey,
-  disabled: boolean = false,
-  additional?: Record<string, unknown>
-): SettingFieldInput {
-  return {
-    type,
-    disabled,
-    key,
-    ...additional,
-  };
-}
-
-function toDropdown(
-  key: ConfigurationKey,
-  options: DropdownOption[],
-  filterable: boolean = false,
-  disabled: boolean = false
-): SettingFieldDropdown {
-  return {
-    type: SettingInputType.DROPDOWN,
-    key,
-    disabled,
-    options,
-    filterable,
-  };
-}
-
-// --- Setting Tabs Configuration ---
-function getSettingTabsConfiguration(
-  config: Configuration,
-  models: InferenceApiModel[],
-  t: ReturnType<typeof useTranslation>['t']
-): SettingTab[] {
-  return [
-    /* General */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuSettings />
-          </Icon>
-          {t('settings.tabs.general')}
-        </>
-      ),
-      fields: [
-        toSection(t('settings.sections.inferenceProvider')),
-        toDropdown(
-          'provider',
-          Object.entries(INFERENCE_PROVIDERS).map(
-            ([key, val]: [string, ProviderOption]) => ({
-              value: key,
-              label: val.name,
-              icon: val.icon,
-            })
-          )
-        ),
-        toInput(
-          SettingInputType.SHORT_INPUT,
-          'baseUrl',
-          !INFERENCE_PROVIDERS[config.provider]?.allowCustomBaseUrl
-        ),
-        toInput(SettingInputType.SHORT_INPUT, 'apiKey'),
-        toDropdown(
-          'model',
-          models.map((m) => ({
-            value: m.id,
-            label: m.name,
-          })),
-          true
-        ),
-        {
-          type: SettingInputType.CUSTOM,
-          key: 'fetch-models',
-          component: () => null,
-        },
-
-        DELIMITER,
-        DELIMITER,
-        toInput(SettingInputType.LONG_INPUT, 'systemMessage'),
-      ],
-    },
-
-    /* UI */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuMonitor />
-          </Icon>
-          {t('settings.tabs.ui')}
-        </>
-      ),
-      fields: [
-        toSection(
-          t('settings.sections.userInterface'),
-          <Icon size="sm" variant="leftside">
-            <LuMonitor />
-          </Icon>
-        ),
-        toInput(SettingInputType.SHORT_INPUT, 'initials'),
-        {
-          type: SettingInputType.CUSTOM,
-          key: 'language',
-          component: () => null,
-        },
-        {
-          type: SettingInputType.CUSTOM,
-          key: 'theme-manager',
-          component: () => null,
-        },
-        toInput(SettingInputType.CHECKBOX, 'showRawUserMessage'),
-        toInput(SettingInputType.CHECKBOX, 'showRawAssistantMessage'),
-      ],
-    },
-
-    /* Voice */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuAudioLines />
-          </Icon>
-          {t('settings.tabs.voice')}
-        </>
-      ),
-      fields: [
-        /* Text to Speech */
-        toSection(
-          t('settings.sections.textToSpeech'),
-          <Icon size="sm" variant="leftside">
-            <LuSpeech />
-          </Icon>
-        ),
-        toDropdown(
-          'ttsVoice',
-          !IS_SPEECH_SYNTHESIS_SUPPORTED
-            ? []
-            : getSpeechSynthesisVoices().map((voice) => ({
-                value: `${voice.name} (${voice.lang})`,
-                label: `${voice.name} (${voice.lang})`,
-              })),
-          true
-        ),
-        toInput(
-          SettingInputType.RANGE_INPUT,
-          'ttsPitch',
-          !IS_SPEECH_SYNTHESIS_SUPPORTED,
-          {
-            min: 0,
-            max: 2,
-            step: 0.5,
-          }
-        ),
-        toInput(
-          SettingInputType.RANGE_INPUT,
-          'ttsRate',
-          !IS_SPEECH_SYNTHESIS_SUPPORTED,
-          {
-            min: 0.5,
-            max: 2,
-            step: 0.5,
-          }
-        ),
-        toInput(
-          SettingInputType.RANGE_INPUT,
-          'ttsVolume',
-          !IS_SPEECH_SYNTHESIS_SUPPORTED,
-          {
-            min: 0,
-            max: 1,
-            step: 0.25,
-          }
-        ),
-        {
-          type: SettingInputType.CUSTOM,
-          key: 'custom', // dummy key, won't be used
-          component: () => (
-            <TextToSpeech
-              text={t('settings.textToSpeech.check.text')}
-              voice={getSpeechSynthesisVoiceByName(config.ttsVoice)}
-              pitch={config.ttsPitch}
-              rate={config.ttsRate}
-              volume={config.ttsVolume}
-            >
-              {({ isPlaying, play, stop }) => (
-                <Button
-                  onClick={() => (!isPlaying ? play() : stop())}
-                  disabled={!IS_SPEECH_SYNTHESIS_SUPPORTED}
-                  title="Play test message"
-                  aria-label="Play test message"
-                >
-                  {!isPlaying && (
-                    <Icon size="sm" variant="leftside">
-                      <LuVolume2 />
-                    </Icon>
-                  )}
-                  {isPlaying && (
-                    <Icon size="sm" variant="leftside">
-                      <LuVolumeX />
-                    </Icon>
-                  )}
-                  {t('settings.textToSpeech.check.label')}
-                </Button>
-              )}
-            </TextToSpeech>
-          ),
-        },
-      ],
-    },
-
-    /* Conversations */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuMessagesSquare />
-          </Icon>
-          {t('settings.tabs.conversations')}
-        </>
-      ),
-      fields: [
-        toSection(
-          t('settings.sections.chat'),
-          <Icon size="sm" variant="leftside">
-            <LuMessageCircleMore />
-          </Icon>
-        ),
-        toInput(SettingInputType.SHORT_INPUT, 'pasteLongTextToFileLen'),
-        toInput(SettingInputType.CHECKBOX, 'pdfAsImage'),
-
-        /* Performance */
-        DELIMITER,
-        toSection(
-          t('settings.sections.performance'),
-          <Icon size="sm" variant="leftside">
-            <LuRocket />
-          </Icon>
-        ),
-        toInput(SettingInputType.CHECKBOX, 'showTokensPerSecond'),
-
-        /* Reasoning */
-        DELIMITER,
-        toSection(
-          t('settings.sections.reasoning'),
-          <Icon size="sm" variant="leftside">
-            <LuBrain />
-          </Icon>
-        ),
-        toInput(SettingInputType.CHECKBOX, 'showThoughtInProgress'),
-        toInput(SettingInputType.CHECKBOX, 'excludeThoughtOnReq'),
-      ],
-    },
-
-    /* Presets */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuBookmark />
-          </Icon>
-          {t('settings.tabs.presets')}
-        </>
-      ),
-      fields: [
-        {
-          type: SettingInputType.CUSTOM,
-          key: 'preset-manager',
-          component: () => null,
-        },
-      ],
-    },
-
-    /* Import/Export */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuDatabase />
-          </Icon>
-          {t('settings.tabs.importExport')}
-        </>
-      ),
-      fields: [
-        {
-          type: SettingInputType.CUSTOM,
-          key: 'import-export',
-          component: () => null,
-        },
-      ],
-    },
-
-    /* Advanced */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuGrid2X2Plus />
-          </Icon>
-          {t('settings.tabs.advanced')}
-        </>
-      ),
-      fields: [
-        /* Generation */
-        toSection(
-          t('settings.sections.generation'),
-          <Icon size="sm" variant="leftside">
-            <LuCog />
-          </Icon>
-        ),
-        toInput(SettingInputType.CHECKBOX, 'overrideGenerationOptions'),
-        ...['temperature', 'top_k', 'top_p', 'min_p', 'max_tokens'].map((key) =>
-          toInput(
-            SettingInputType.SHORT_INPUT,
-            key as ConfigurationKey,
-            !config['overrideGenerationOptions']
-          )
-        ),
-
-        /* Samplers */
-        DELIMITER,
-        toSection(
-          t('settings.sections.samplers'),
-          <Icon size="sm" variant="leftside">
-            <LuFilter />
-          </Icon>
-        ),
-        toInput(SettingInputType.CHECKBOX, 'overrideSamplersOptions'),
-        ...[
-          'samplers',
-          'dynatemp_range',
-          'dynatemp_exponent',
-          'typical_p',
-          'xtc_probability',
-          'xtc_threshold',
-        ].map((key) =>
-          toInput(
-            SettingInputType.SHORT_INPUT,
-            key as ConfigurationKey,
-            !config['overrideSamplersOptions']
-          )
-        ),
-
-        /* Penalties */
-        DELIMITER,
-        toSection(
-          t('settings.sections.penalties'),
-          <Icon size="sm" variant="leftside">
-            <LuHand />
-          </Icon>
-        ),
-        toInput(SettingInputType.CHECKBOX, 'overridePenaltyOptions'),
-        ...[
-          'repeat_last_n',
-          'repeat_penalty',
-          'presence_penalty',
-          'frequency_penalty',
-          'dry_multiplier',
-          'dry_base',
-          'dry_allowed_length',
-          'dry_penalty_last_n',
-        ].map((key) =>
-          toInput(
-            SettingInputType.SHORT_INPUT,
-            key as ConfigurationKey,
-            !config['overridePenaltyOptions']
-          )
-        ),
-
-        /* Custom */
-        DELIMITER,
-        toSection(
-          t('settings.sections.custom'),
-          <Icon size="sm" variant="leftside">
-            <LuCpu />
-          </Icon>
-        ),
-        toInput(SettingInputType.LONG_INPUT, 'custom'),
-      ],
-    },
-
-    /* Experimental */
-    {
-      title: (
-        <>
-          <Icon size="sm" variant="leftside">
-            <LuFlaskConical />
-          </Icon>
-          <Trans i18nKey="settings.sections.experimental" />
-        </>
-      ),
-      fields: [
-        {
-          type: SettingInputType.CUSTOM,
-          key: 'custom', // dummy key, won't be used
-          component: () => (
-            <div
-              className="flex flex-col gap-2 mb-8"
-              dangerouslySetInnerHTML={{
-                __html: t('settings.parameters.experimental.note'),
-              }}
-            />
-          ),
-        },
-        toInput(SettingInputType.CHECKBOX, 'pyIntepreterEnabled'),
-      ],
-    },
-  ];
+interface SettingsTabOption {
+  id: string;
+  title: ReactNode;
+  View: React.ComponentType<SettingsTabViewProps>;
 }
 
 export default function Settings() {
@@ -523,17 +40,40 @@ export default function Settings() {
   const { viewingChat } = useChatContext();
   const [tabIdx, setTabIdx] = useState(0);
 
-  // clone the config object to prevent direct mutation
+  // Clone to avoid direct mutation while editing.
   const [localConfig, setLocalConfig] = useState<Configuration>(
     Object.assign({}, config)
   );
   const [localModels, setLocalModels] = useState<InferenceApiModel[]>(
     Object.assign([], models)
   );
-  const settingTabs = useMemo<SettingTab[]>(
-    () => getSettingTabsConfiguration(localConfig, localModels, t),
-    [t, localConfig, localModels]
+
+  const settingTabs = useMemo<SettingsTabOption[]>(
+    () =>
+      SETTINGS_TAB_DESCRIPTORS.map((tab) => {
+        const TabIcon = tab.icon;
+        return {
+          id: tab.id,
+          View: tab.View,
+          title: (
+            <>
+              <Icon size="sm" variant="leftside">
+                <TabIcon />
+              </Icon>
+              {t(tab.titleKey)}
+            </>
+          ),
+        };
+      }),
+    [t]
   );
+  const currentTab = settingTabs[tabIdx] ??
+    settingTabs[0] ?? {
+      id: 'fallback',
+      title: '',
+      View: () => null,
+    };
+  const CurrentTabView = currentTab.View;
   const currConv = useMemo(() => viewingChat?.conv ?? null, [viewingChat]);
 
   useEffect(() => {
@@ -551,234 +91,120 @@ export default function Settings() {
     else navigate('/');
   }, [currConv, navigate]);
 
-  const resetConfig = async () => {
+  const resetConfig = useCallback(async () => {
     if (await showConfirm('Are you sure you want to reset all settings?')) {
       setLocalConfig({ ...CONFIG_DEFAULT } as Configuration);
     }
-  };
+  }, [showConfirm]);
 
-  const handleSave = async (config: Configuration) => {
-    // copy the local config to prevent direct mutation
-    const newConfig: Configuration = JSON.parse(JSON.stringify(config));
-    // validate the config
-    for (const key in newConfig) {
-      if (!(key in CONFIG_DEFAULT)) continue;
+  const handleSave = useCallback(
+    async (configToSave: Configuration) => {
+      // Copy local config to prevent direct mutation.
+      const newConfig: Configuration = JSON.parse(JSON.stringify(configToSave));
 
-      const typedKey = key as ConfigurationKey;
-      const value = newConfig[typedKey];
-      const defaultValue = CONFIG_DEFAULT[typedKey];
-      if (isString(defaultValue)) {
-        if (!isString(value)) {
-          await showAlert(`Value for ${key} must be a string`);
-          return;
+      for (const key in newConfig) {
+        if (!(key in CONFIG_DEFAULT)) continue;
+
+        const typedKey = key as ConfigurationKey;
+        const value = newConfig[typedKey];
+        const defaultValue = CONFIG_DEFAULT[typedKey];
+        if (isString(defaultValue)) {
+          if (!isString(value)) {
+            await showAlert(`Value for ${key} must be a string`);
+            return;
+          }
+        } else if (isNumeric(defaultValue)) {
+          const trimmedValue = String(value).trim();
+          const numVal = Number(trimmedValue);
+          if (isNaN(numVal) || !isNumeric(numVal) || trimmedValue === '') {
+            await showAlert(`Value for ${key} must be numeric`);
+            return;
+          }
+          // @ts-expect-error this is safe
+          newConfig[typedKey] = numVal as Configuration[ConfigurationKey];
+        } else if (isBoolean(defaultValue)) {
+          if (!isBoolean(value)) {
+            await showAlert(`Value for ${key} must be boolean`);
+            return;
+          }
+        } else {
+          console.error(`Unknown default type for key ${key}`);
         }
-      } else if (isNumeric(defaultValue)) {
-        const trimmedValue = String(value).trim();
-        const numVal = Number(trimmedValue);
-        if (isNaN(numVal) || !isNumeric(numVal) || trimmedValue === '') {
-          await showAlert(`Value for ${key} must be numeric`);
-          return;
-        }
-        // force conversion to number
-        // @ts-expect-error this is safe
-        newConfig[typedKey] = numVal as Configuration[ConfigurationKey];
-      } else if (isBoolean(defaultValue)) {
-        if (!isBoolean(value)) {
-          await showAlert(`Value for ${key} must be boolean`);
-          return;
-        }
-      } else {
-        console.error(`Unknown default type for key ${key}`);
       }
-    }
-    saveConfig(newConfig);
-    onClose();
-  };
+      saveConfig(newConfig);
+      onClose();
+    },
+    [onClose, saveConfig, showAlert]
+  );
 
   const debouncedFetchModels = useDebouncedCallback(
     (newConfig: Configuration) =>
-      fetchModels(newConfig, { silent: true }).then((models) =>
-        setLocalModels(models)
+      fetchModels(newConfig, { silent: true }).then((nextModels) =>
+        setLocalModels(nextModels)
       ),
     1000
   );
 
-  const onChange =
+  const onConfigChange = useCallback(
     (key: ConfigurationKey) => (value: string | number | boolean) => {
-      // note: we do not perform validation here, because we may get incomplete value as user is still typing it
+      // Validation intentionally happens on save to allow partial user input.
       setLocalConfig((prevConfig) => {
-        let newConfig = {
+        let nextConfig = {
           ...prevConfig,
           [key]: value,
         };
 
         if (key === 'provider') {
-          const typedKey = value as InferenceProvidersKey;
-          const providerInfo = INFERENCE_PROVIDERS[typedKey];
+          const providerKey = value as InferenceProvidersKey;
+          const providerInfo = INFERENCE_PROVIDERS[providerKey];
           if (providerInfo?.baseUrl) {
-            newConfig = {
-              ...newConfig,
+            nextConfig = {
+              ...nextConfig,
               baseUrl: providerInfo.baseUrl,
             };
           }
         }
 
         if (['provider', 'baseUrl', 'apiKey'].includes(key)) {
-          debouncedFetchModels(newConfig);
+          debouncedFetchModels(nextConfig);
         }
 
-        return newConfig;
+        return nextConfig;
       });
-    };
+    },
+    [debouncedFetchModels]
+  );
 
-  const mapFieldToElement = (field: SettingField, idx: number) => {
-    const key = `${tabIdx}-${idx}`;
+  const onFetchModels = useCallback(async () => {
+    const nextModels = await fetchModels(localConfig);
+    setLocalModels(nextModels);
+  }, [fetchModels, localConfig]);
 
-    switch (field.type) {
-      case SettingInputType.SHORT_INPUT:
-        return (
-          <SettingsModalShortInput
-            key={key}
-            field={field}
-            value={localConfig[field.key] as string | number}
-            onChange={onChange(field.key)}
-          />
-        );
-      case SettingInputType.RANGE_INPUT:
-        return (
-          <SettingsModalRangeInput
-            key={key}
-            field={field}
-            min={field.min as number}
-            max={field.max as number}
-            step={field.step as number}
-            value={localConfig[field.key] as number}
-            onChange={onChange(field.key)}
-          />
-        );
-      case SettingInputType.LONG_INPUT:
-        return (
-          <SettingsModalLongInput
-            key={key}
-            field={field}
-            value={String(localConfig[field.key])}
-            onChange={onChange(field.key)}
-          />
-        );
-      case SettingInputType.CHECKBOX:
-        return (
-          <SettingsModalCheckbox
-            key={key}
-            field={field}
-            value={!!localConfig[field.key]}
-            onChange={onChange(field.key)}
-          />
-        );
-      case SettingInputType.DROPDOWN:
-        return (
-          <SettingsModalDropdown
-            key={key}
-            field={field as SettingFieldInput}
-            options={(field as SettingFieldDropdown).options}
-            filterable={(field as SettingFieldDropdown).filterable}
-            value={String(localConfig[field.key])}
-            onChange={onChange(field.key)}
-          />
-        );
-      case SettingInputType.CUSTOM:
-        switch (field.key) {
-          case 'language':
-            return (
-              <SettingsModalDropdown
-                key="language"
-                field={{
-                  type: SettingInputType.DROPDOWN,
-                  key: 'custom',
-                  translateKey: 'language',
-                }}
-                options={SUPPORTED_LANGUAGES.map((lang) => ({
-                  value: lang.key,
-                  label: lang.label,
-                }))}
-                value={i18n.language}
-                onChange={(lang) => {
-                  i18n.changeLanguage(lang as string);
-                  document.documentElement.setAttribute('lang', lang as string);
-                }}
-              />
-            );
-          case 'import-export':
-            return <ImportExportComponent key={key} onClose={onClose} />;
-          case 'preset-manager':
-            return (
-              <PresetManager
-                key={key}
-                config={localConfig}
-                onLoadConfig={handleSave}
-                presets={presets}
-                onSavePreset={savePreset}
-                onRemovePreset={removePreset}
-              />
-            );
-          case 'theme-manager':
-            return <ThemeController key={key} />;
-          case 'fetch-models':
-            return (
-              <Button
-                key={key}
-                onClick={() =>
-                  fetchModels(localConfig).then((models) =>
-                    setLocalModels(models)
-                  )
-                }
-              >
-                <Icon size="sm" variant="leftside">
-                  <LuRefreshCw />
-                </Icon>
-                <Trans i18nKey="settings.actionButtons.fetchModels" />
-              </Button>
-            );
-          default:
-            if (field.component === 'delimeter') {
-              return <DelimeterComponent key={key} />;
-            }
+  const onLanguageChange = useCallback(
+    (language: string) => {
+      void i18n.changeLanguage(language);
+      document.documentElement.setAttribute('lang', language);
+    },
+    [i18n]
+  );
 
-            switch (typeof field.component) {
-              case 'string':
-              case 'number':
-              case 'bigint':
-              case 'boolean':
-              case 'symbol':
-                return (
-                  <div key={key} className="mb-2">
-                    {field.component}
-                  </div>
-                );
-              default:
-                return (
-                  <div key={key} className="mb-2">
-                    {React.createElement(field.component, {
-                      value: localConfig[field.key],
-                      onChange: (value: string | boolean) =>
-                        onChange(field.key as ConfigurationKey)(value),
-                    })}
-                  </div>
-                );
-            }
-        }
-      case SettingInputType.SECTION:
-        return (
-          <SettingsSectionLabel key={key}>{field.label}</SettingsSectionLabel>
-        );
-      default:
-        return null;
-    }
+  const tabViewProps: SettingsTabViewProps = {
+    config: localConfig,
+    models: localModels,
+    presets,
+    language: i18n.language,
+    onConfigChange,
+    onFetchModels,
+    onLanguageChange,
+    onClose,
+    onSaveConfig: handleSave,
+    onSavePreset: savePreset,
+    onRemovePreset: removePreset,
   };
 
   return (
     <div className="flex flex-col h-full py-4">
       <div className="grow flex flex-col md:flex-row">
-        {/* Left panel, showing sections - Desktop version */}
         <div
           className="hidden md:flex flex-col items-stretch px-4 border-r-2 border-base-200"
           role="complementary"
@@ -787,7 +213,7 @@ export default function Settings() {
         >
           {settingTabs.map((tab, idx) => (
             <Button
-              key={idx}
+              key={tab.id}
               variant="ghost"
               className={classNames({
                 'justify-start font-normal w-44 mb-1': true,
@@ -801,8 +227,6 @@ export default function Settings() {
           ))}
         </div>
 
-        {/* Left panel, showing sections - Mobile version */}
-        {/* This menu is skipped on a11y, otherwise it's repeated the desktop version */}
         <div
           className="md:hidden flex flex-row gap-2 mb-4 px-4"
           aria-disabled={true}
@@ -814,16 +238,15 @@ export default function Settings() {
               label: tab.title,
               value: idx,
             }))}
-            currentValue={settingTabs[tabIdx].title}
+            currentValue={currentTab.title}
             renderOption={(option) => <span>{option.label}</span>}
             isSelected={(option) => tabIdx === option.value}
             onSelect={(option) => setTabIdx(option.value as number)}
           />
         </div>
 
-        {/* Right panel, showing setting fields */}
         <div className="grow max-h-[calc(100vh-13rem)] md:max-h-[calc(100vh-10rem)] overflow-y-auto px-6 sm:px-4">
-          {settingTabs[tabIdx].fields.map(mapFieldToElement)}
+          <CurrentTabView {...tabViewProps} />
 
           <p className="opacity-40 text-sm mt-8">
             <Trans

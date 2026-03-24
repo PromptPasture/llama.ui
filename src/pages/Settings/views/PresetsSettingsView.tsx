@@ -6,26 +6,21 @@ import {
   LuSave,
   LuTrash,
 } from 'react-icons/lu';
-import { SettingsSectionLabel } from '.';
+import { SettingsSectionLabel } from '../components';
 import { Button, Icon } from '../../../components';
 import { CONFIG_DEFAULT } from '../../../config';
 import { useModals } from '../../../store/modal';
-import { Configuration, ConfigurationPreset } from '../../../types';
+import { ConfigurationPreset } from '../../../types';
 import { dateFormatter } from '../../../utils/formatting';
+import { SettingsTabViewProps } from '../types';
 
-export function PresetManager({
+export function PresetsSettingsView({
   config,
-  onLoadConfig,
+  onSaveConfig,
   presets,
   onSavePreset,
   onRemovePreset,
-}: {
-  config: Configuration;
-  onLoadConfig: (config: Configuration) => Promise<void>;
-  presets: ConfigurationPreset[];
-  onSavePreset: (name: string, config: Configuration) => Promise<void>;
-  onRemovePreset: (name: string) => Promise<void>;
-}) {
+}: SettingsTabViewProps) {
   const { t } = useTranslation();
   const { showConfirm, showPrompt } = useModals();
 
@@ -71,7 +66,7 @@ export function PresetManager({
         })
       )
     ) {
-      await onLoadConfig(
+      await onSaveConfig(
         Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config)
       );
     }

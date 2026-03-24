@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { LuEye, LuMessageCircleMore } from 'react-icons/lu';
 import { TbDatabaseExport, TbDatabaseImport } from 'react-icons/tb';
-import { DelimeterComponent, SettingsSectionLabel } from '.';
+import { DelimeterComponent, SettingsSectionLabel } from '../components';
 import { Button, Icon, Input, Label } from '../../../components';
 import { useAppContext } from '../../../store/app';
 import { normalizeUrl } from '../../../utils/url-helpers';
 import { downloadAsFile } from '../../../utils/downloadAsFile';
 
-export function ImportExportComponent({ onClose }: { onClose: () => void }) {
+export function ImportExportSettingsView({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const { importDB, exportDB } = useAppContext();
 
