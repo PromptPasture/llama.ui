@@ -1,6 +1,6 @@
 # 🦙 llama.ui - Minimal Interface for Local AI Companion ✨
 
-**Tired of complex AI setups?** 😩 `llama.ui` is an open-source desktop application that provides a beautiful ✨, user-friendly interface for interacting with large language models (LLMs) powered by `llama.cpp`. Designed for simplicity and privacy 🔒, this project lets you chat with powerful quantized models on your local machine - no cloud required! 🚫☁️
+**Tired of complex AI setups?** 😩 `llama.ui` is an open-source web application that provides a beautiful ✨, user-friendly interface for interacting with large language models (LLMs). Designed for simplicity and privacy 🔒, it runs entirely in your browser — no cloud required! 🚫☁️
 
 ## ⚡ TL;DR
 
@@ -14,7 +14,7 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
 
 ## 🌟 Key Features
 
-1. **Multi-Provider Support**: Works with llama.cpp, LM Studio, Ollama, vLLM, OpenAI,.. and many more!
+1. **Multi-Provider Support**: Works with llama.cpp, LM Studio, Ollama, vLLM, OpenAI, and many more!
 
 2. **Conversation Management**:
    - IndexedDB storage for conversations
@@ -22,10 +22,8 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
    - Import/export functionality
 
 3. **Rich UI Components**:
-   - Markdown rendering with syntax highlighting
-   - LaTeX math support
-   - File attachments (text, images, PDFs)
-   - Theme customization with DaisyUI themes
+   - Markdown rendering with KaTeX math support
+   - Theme customization (light/dark)
    - Responsive design for mobile and desktop
 
 4. **Advanced Features**:
@@ -138,16 +136,16 @@ llama-server ^
 **Build the future:**
 
 ```bash
-npm ci       # 📦 Grab dependencies
+npm ci         # 📦 Grab dependencies
 npm run build  # 🔨 Craft the magic
-npm start    # 🎬 Launch dev server (http://localhost:5173) for live-coding bliss! 🔥
+npm start      # 🎬 Launch dev server (http://localhost:5173) for live-coding bliss! 🔥
 ```
 
 ### 🧰 Preconfiguring Defaults
 
 Planning to redistribute the app with opinionated settings out of the box? Any JSON under
-[`src/config`](src/config) is baked into immutable defaults at build time (see
-[`src/config/index.ts`](src/config/index.ts)).
+[`src/lib/config`](src/lib/config) is baked into immutable defaults at build time (see
+[`src/lib/config/index.ts`](src/lib/config/index.ts)).
 
 If those baked defaults include a non-empty `baseUrl`, the inference server will auto-sync on first load
 so model metadata is fetched without requiring manual input.
@@ -156,20 +154,27 @@ so model metadata is fetched without requiring manual input.
 
 #### Core Technologies
 
-- **Frontend**: [React](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/docs/) + [DaisyUI](https://daisyui.com/)
-- **State Management**: React Context API
-- **Routing**: [React Router](https://reactrouter.com/)
+- **Frontend**: [SvelteKit 5](https://svelte.dev/) with [TypeScript](https://www.typescriptlang.org/)
+- **State Management**: Svelte 5 Runes (`$state`, `$derived`, `$effect`) in `.svelte.ts` modules
+- **UI Primitives**: [Bits UI](https://bits-ui.com/) (headless, accessible)
+- **Styling**: [TailwindCSS v4](https://tailwindcss.com/) + CSS custom properties for theming
 - **Storage**: IndexedDB via [Dexie.js](https://dexie.org/)
-- **Build Tool**: [Vite](https://vite.dev/)
+- **Markdown**: [marked](https://marked.js.org/) + [marked-katex-extension](https://github.com/UziTech/marked-katex-extension)
+- **i18n**: [svelte-i18n](https://github.com/kaisermann/svelte-i18n)
+- **Build Tool**: [Vite](https://vite.dev/) + [`@sveltejs/adapter-static`](https://kit.svelte.dev/docs/adapter-static)
 
-#### Key Components
+#### Key Modules
 
-1. **App Context**: Manages global configuration and settings
-2. **Inference Context**: Handles API communication with inference providers
-3. **Message Context**: Manages conversation state and message generation
-4. **Storage Utils**: IndexedDB operations and localStorage management
-5. **Inference API**: HTTP client for communicating with inference servers
+| Path | Responsibility |
+|---|---|
+| `src/lib/state/app.svelte.ts` | Config, presets, theme |
+| `src/lib/state/chat.svelte.ts` | Conversation, streaming, branching |
+| `src/lib/state/inference.svelte.ts` | Provider, model list |
+| `src/lib/state/modal.svelte.ts` | Confirm / prompt / alert dialogs |
+| `src/lib/api/` | 11 AI provider implementations |
+| `src/lib/database/` | IndexedDB (Dexie) + localStorage |
+| `src/lib/components/` | Shared UI component library |
+| `src/routes/` | SvelteKit pages and layouts |
 
 ## 📜 License - Freedom First!
 
