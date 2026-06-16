@@ -1,11 +1,13 @@
-import { sveltekit } from '@sveltejs/kit/vite';
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import loadVersion from 'vite-plugin-package-version';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const vendors = ['highlight', 'katex', 'pdfjs', 'radix-ui', 'react-icons'];
+
 export default defineConfig({
   plugins: [
-    sveltekit(),
+    react(),
     loadVersion(),
     VitePWA({
       registerType: 'prompt',
@@ -87,7 +89,7 @@ export default defineConfig({
               cacheName: 'static-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
             },
           },
@@ -98,7 +100,7 @@ export default defineConfig({
               cacheName: 'images-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
             },
           },
@@ -109,7 +111,7 @@ export default defineConfig({
               cacheName: 'font-cache',
               expiration: {
                 maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 90,
+                maxAgeSeconds: 60 * 60 * 24 * 90, // 90 days
               },
             },
           },
@@ -117,6 +119,36 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'js/[name]-[hash].js',
+        chunkFileNames: 'js/[name]-[hash].js',
+        assetFileNames: function (file) {
+          if (file.names.some((name) => name.includes('css'))) {
+            return 'css/[name]-[hash].[ext]';
+          }
+          if (
+            file.names.some(
+              (name) =>
+                name.includes('woff') ||
+                name.includes('woff2') ||
+                name.includes('ttf')
+            )
+          ) {
+            return 'fonts/[name].[ext]';
+          }
+          return 'assets/[name].[ext]';
+        },
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            const name = id.split('node_modules/')[1].split('/')[0];
+            return vendors.find((vendor) => name.includes(vendor)) || 'vendor';
+          }
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/v1': 'http://localhost:8080',
