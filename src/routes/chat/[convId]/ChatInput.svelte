@@ -47,8 +47,8 @@
   });
 </script>
 
-<div class="chat-input-wrap" aria-label={$_('chatInput.ariaLabels.chatInput', { default: 'Chat input' })}>
-  <div class="chat-input">
+<div class="chat-input" aria-label={$_('chatInput.ariaLabels.chatInput', { default: 'Chat input' })}>
+  <div class="chat-input__box">
     <textarea
       bind:this={textareaEl}
       bind:value
@@ -63,12 +63,12 @@
 
     <div class="chat-input__actions">
       {#if isPending}
-        <button type="button" class="chat-input__send chat-input__send--stop" onclick={stop}
+        <button type="button" class="chat-input__btn chat-input__btn--stop" onclick={stop}
           aria-label="Stop generation">
           <SquareIcon size={16} />
         </button>
       {:else}
-        <button type="button" class="chat-input__send" onclick={send}
+        <button type="button" class="chat-input__btn chat-input__btn--send" onclick={send}
           aria-label={$_('chatInput.ariaLabels.send', { default: 'Send' })}>
           <ArrowUpIcon size={18} />
         </button>
@@ -78,57 +78,50 @@
 </div>
 
 <style>
-  .chat-input-wrap {
-    flex-shrink: 0;
-    padding: 0.5rem 0.75rem 1rem;
-    width: 100%;
+  @reference "tailwindcss";
+  .chat-input {
+    @apply shrink-0 px-3 pb-4 pt-2 w-full mx-auto;
     max-width: 56rem;
-    margin: 0 auto;
   }
 
-  .chat-input {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
+  .chat-input__box {
+    @apply flex items-end gap-2 pl-3 pr-2 py-2;
     background: var(--color-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
     box-shadow: var(--shadow-sm);
   }
 
   .chat-input__textarea {
-    flex: 1;
-    background: none;
+    @apply flex-1 resize-none text-base leading-6 overflow-y-auto p-0;
+    background: transparent;
     border: none;
     outline: none;
-    resize: none;
     color: var(--color-text);
-    font-family: inherit;
-    font-size: 1rem;
-    line-height: 1.5;
+    font: inherit;
     min-height: 1.5rem;
     max-height: 12rem;
-    overflow-y: auto;
-    padding: 0;
   }
 
-  .chat-input__actions { flex-shrink: 0; }
+  .chat-input__actions {
+    @apply shrink-0;
+  }
 
-  .chat-input__send {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
+  .chat-input__btn {
+    @apply flex items-center justify-center w-8 h-8 cursor-pointer transition-[background] duration-150;
     border-radius: var(--radius-full);
+    border: none;
+  }
+
+  .chat-input__btn--stop {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+
+  .chat-input__btn--send {
     background: var(--color-accent);
     color: var(--color-accent-fg);
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s;
   }
-
-  .chat-input__send:hover { background: var(--color-accent-hover); }
-  .chat-input__send--stop { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+  .chat-input__btn--send:hover { background: var(--color-accent-hover); }
 </style>

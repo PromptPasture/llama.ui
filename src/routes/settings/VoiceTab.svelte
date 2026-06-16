@@ -15,9 +15,9 @@
 </script>
 
 <section>
-  <h4>{$_('settings.sections.textToSpeech')}</h4>
+  <h4 class="section-heading">{$_('settings.sections.textToSpeech')}</h4>
   {#if !supported}
-    <p class="note">{$_('settings.textToSpeech.notSupported', { default: 'Text-to-speech is not supported in this browser.' })}</p>
+    <p class="voice__unsupported">{$_('settings.textToSpeech.notSupported', { default: 'Text-to-speech is not supported in this browser.' })}</p>
   {:else}
     <SettingsField type="range" configKey="ttsPitch" value={config.ttsPitch} range={{ min: 0, max: 2, step: 0.5 }} onchange={onchange('ttsPitch')} />
     <SettingsField type="range" configKey="ttsRate" value={config.ttsRate} range={{ min: 0.5, max: 2, step: 0.5 }} onchange={onchange('ttsRate')} />
@@ -26,6 +26,14 @@
 </section>
 
 <style>
-  h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.75rem; }
-  .note { font-size: 0.875rem; color: var(--color-text-muted); }
+  @reference "tailwindcss";
+  .section-heading {
+    @apply font-semibold m-0 mb-3;
+    font-size: 0.9375rem;
+  }
+
+  .voice__unsupported {
+    @apply text-sm;
+    color: var(--color-text-muted);
+  }
 </style>

@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import loadVersion from 'vite-plugin-package-version';
@@ -5,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     sveltekit(),
     loadVersion(),
     VitePWA({

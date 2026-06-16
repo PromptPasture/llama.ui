@@ -60,22 +60,22 @@
 
 {#if open}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="sidebar-backdrop" onclick={onclose} onkeydown={() => {}} aria-hidden="true"></div>
+  <div class="sidebar__backdrop" onclick={onclose} onkeydown={() => {}} aria-hidden="true"></div>
 {/if}
 
 <nav
   class="sidebar"
-  class:sidebar--open={open}
+  class:open
   aria-label={$_('sidebar.ariaLabel', { default: 'Conversations' })}
 >
   <!-- Header row -->
   <div class="sidebar__header">
-    <Button variant="ghost" size="icon-xl" class="sidebar__close xl-hidden" onclick={onclose}
+    <Button variant="ghost" size="icon-xl" class="xl:hidden" onclick={onclose}
       aria-label={$_('sidebar.buttons.closeSideBar')}>
       <XIcon size={20} />
     </Button>
 
-    <span class="sidebar__brand">{import.meta.env.VITE_APP_NAME ?? 'llama.ui'}</span>
+    <span class="sidebar__app-name">{import.meta.env.VITE_APP_NAME ?? 'llama.ui'}</span>
 
     <Button variant="ghost" size="icon-xl" onclick={handleNewChat}
       title={$_('header.buttons.newConv')} aria-label={$_('header.ariaLabels.newConv')}>
@@ -102,13 +102,13 @@
   </div>
 
   <!-- Conversation list -->
-  <div class="sidebar__list scroll-y">
+  <div class="sidebar__list">
     {#if !isFiltered}
       {#each groupedConv as group, idx (group.title)}
         <ConversationGroup {group} {currentConvId} class={idx > 0 ? 'mt-6' : 'mt-3'} onitemselect={handleItemSelect} />
       {/each}
     {:else}
-      <ul role="menu" style="list-style:none;margin:0;padding:0">
+      <ul role="menu" class="sidebar__filtered-list">
         {#each filteredConversations as conv (conv.id)}
           <ConversationItem {conv} {currentConvId} onselect={handleItemSelect} />
         {/each}
@@ -123,89 +123,70 @@
 </nav>
 
 <style>
-  .sidebar-backdrop {
-    position: fixed;
-    inset: 0;
+  @reference "tailwindcss";
+  .sidebar__backdrop {
+    @apply fixed inset-0 xl:hidden;
     background: rgb(0 0 0 / 0.4);
     z-index: 49;
   }
 
   .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    @apply fixed top-0 left-0 bottom-0 flex flex-col p-2;
+    @apply xl:sticky xl:top-0 xl:h-screen;
     width: var(--sidebar-width);
     background: var(--color-bg-alt);
     border-right: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem;
     z-index: 50;
     transform: translateX(-100%);
-    transition: transform 0.25s ease;
+    transition: transform 250ms ease;
   }
+
+  .sidebar.open { transform: translateX(0); }
 
   @media (min-width: 1280px) {
-    .sidebar {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      transform: none;
-      border-right: 1px solid var(--color-border);
-    }
-    .sidebar-backdrop { display: none; }
-    :global(.sidebar__close) { display: none !important; }
+    .sidebar { transform: none; }
   }
-
-  .sidebar--open { transform: translateX(0); }
 
   .sidebar__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.25rem 0.25rem 0.5rem;
+    @apply flex items-center justify-between px-1 pt-1 pb-2;
   }
 
-  .sidebar__brand {
-    font-weight: 700;
-    font-size: 1rem;
+  .sidebar__app-name {
+    @apply font-bold text-base flex-1 text-center;
     letter-spacing: 0.05em;
-    flex: 1;
-    text-align: center;
   }
 
   .sidebar__search {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    @apply flex items-center gap-2 px-2 py-1 mb-2;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: 0.25rem 0.5rem;
-    margin-bottom: 0.5rem;
+  }
+
+  .sidebar__search-icon {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
   }
 
   .sidebar__search-input {
-    flex: 1;
-    background: none;
+    @apply flex-1 text-sm;
+    background: transparent;
     border: none;
     outline: none;
     color: var(--color-text);
-    font-size: 0.875rem;
   }
 
-  .sidebar__list { flex: 1; min-height: 0; padding: 0 0.25rem; }
+  .sidebar__list {
+    @apply flex-1 min-h-0 overflow-y-auto px-1;
+  }
+
+  .sidebar__filtered-list {
+    @apply list-none m-0 p-0;
+  }
 
   .sidebar__footer {
-    font-size: 0.75rem;
-    text-align: center;
+    @apply text-xs text-center pt-3 mt-2;
     color: var(--color-text-muted);
-    padding-top: 0.75rem;
     border-top: 1px solid var(--color-border);
-    margin-top: 0.5rem;
   }
-
-  .mt-3 { margin-top: 0.75rem; }
-  .mt-6 { margin-top: 1.5rem; }
 </style>

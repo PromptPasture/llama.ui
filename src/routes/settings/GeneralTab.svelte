@@ -25,7 +25,7 @@
 </script>
 
 <section>
-  <h4>{$_('settings.sections.inferenceProvider')}</h4>
+  <h4 class="section-heading section-heading--first">{$_('settings.sections.inferenceProvider')}</h4>
 
   <SettingsDropdownField
     configKey="provider"
@@ -73,6 +73,11 @@
 </section>
 
 <style>
-  h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.75rem; }
+  @reference "tailwindcss";
+  .section-heading {
+    @apply font-semibold m-0 mb-3;
+    font-size: 0.9375rem;
+  }
+  .section-heading--first { margin-top: 0; }
   .spacer { height: 1rem; }
 </style>

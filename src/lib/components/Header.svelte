@@ -32,15 +32,15 @@
   );
 </script>
 
-<header class="site-header">
+<header class="header">
   <!-- Mobile row: sidebar toggle + title + new chat -->
-  <div class="site-header__mobile">
+  <div class="header__mobile-row">
     <Button variant="ghost" size="icon-xl" onclick={onsidebartoggle}
       aria-label="Open sidebar">
       <MenuIcon size={20} />
     </Button>
 
-    <button type="button" class="site-header__title" onclick={() => {
+    <button type="button" class="header__title-btn" onclick={() => {
       if (showSettings) return;
       if (currConv) goto(`/chat/${currConv.id}`); else goto('/');
     }} aria-label={title}>
@@ -55,7 +55,7 @@
 
   <!-- Desktop row (hidden on mobile): model selector + settings -->
   {#if !showSettings}
-    <div class="site-header__desktop">
+    <div class="header__desktop-row">
       <Dropdown
         entity="Model"
         options={models.map((m) => ({ value: m.id, label: m.name }))}
@@ -66,7 +66,7 @@
         onSelect={(o) => app.saveConfig({ ...config, model: o.value })}
       >
         {#snippet currentValue()}
-          <span class="site-header__model-name">{selectedModelName}</span>
+          <span class="header__model-name">{selectedModelName}</span>
         {/snippet}
         {#snippet renderOption(option)}
           <span class="truncate">{option.label}</span>
@@ -81,68 +81,42 @@
       </Button>
     </div>
   {:else}
-    <div class="site-header__desktop site-header__desktop--settings">
+    <div class="header__desktop-row header__desktop-row--settings">
       <span>{title}</span>
     </div>
   {/if}
 </header>
 
 <style>
-  .site-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+  @reference "tailwindcss";
+  .header {
+    @apply flex flex-col gap-2 py-2 sticky top-0 z-10;
     background: var(--color-bg);
     border-bottom: 1px solid var(--color-border);
   }
 
-  .site-header__mobile {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+  .header__mobile-row {
+    @apply flex items-center gap-1 xl:hidden;
   }
 
-  @media (min-width: 1280px) {
-    .site-header__mobile { display: none; }
-  }
-
-  .site-header__title {
-    flex: 1;
-    text-align: center;
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .header__title-btn {
+    @apply flex-1 text-center font-medium overflow-hidden text-ellipsis whitespace-nowrap px-2;
     background: none;
     border: none;
     cursor: pointer;
     color: inherit;
     font: inherit;
-    padding: 0 0.5rem;
   }
 
-  .site-header__desktop {
-    display: none;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0 0.5rem;
+  .header__desktop-row {
+    @apply hidden xl:flex items-center gap-2 px-2;
   }
 
-  @media (min-width: 1280px) {
-    .site-header__desktop { display: flex; }
+  .header__desktop-row--settings {
+    @apply justify-center font-medium;
   }
 
-  .site-header__desktop--settings { justify-content: center; font-weight: 500; }
-
-  .site-header__model-name {
-    max-width: 20rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 600;
+  .header__model-name {
+    @apply max-w-80 overflow-hidden text-ellipsis whitespace-nowrap font-semibold;
   }
 </style>

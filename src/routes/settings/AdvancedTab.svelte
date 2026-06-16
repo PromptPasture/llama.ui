@@ -16,29 +16,33 @@
 </script>
 
 <section>
-  <h4>{$_('settings.sections.generation')}</h4>
+  <h4 class="section-heading section-heading--first">{$_('settings.sections.generation')}</h4>
   <SettingsField type="checkbox" configKey="overrideGenerationOptions" value={!!config.overrideGenerationOptions} onchange={onchange('overrideGenerationOptions')} />
   {#each generationKeys as key (key)}
     <SettingsField type="short" configKey={key} value={config[key] as string | number} disabled={!config.overrideGenerationOptions} onchange={onchange(key)} />
   {/each}
 
-  <h4>{$_('settings.sections.samplers')}</h4>
+  <h4 class="section-heading">{$_('settings.sections.samplers')}</h4>
   <SettingsField type="checkbox" configKey="overrideSamplersOptions" value={!!config.overrideSamplersOptions} onchange={onchange('overrideSamplersOptions')} />
   {#each samplerKeys as key (key)}
     <SettingsField type="short" configKey={key} value={config[key] as string | number} disabled={!config.overrideSamplersOptions} onchange={onchange(key)} />
   {/each}
 
-  <h4>{$_('settings.sections.penalties')}</h4>
+  <h4 class="section-heading">{$_('settings.sections.penalties')}</h4>
   <SettingsField type="checkbox" configKey="overridePenaltyOptions" value={!!config.overridePenaltyOptions} onchange={onchange('overridePenaltyOptions')} />
   {#each penaltyKeys as key (key)}
     <SettingsField type="short" configKey={key} value={config[key] as string | number} disabled={!config.overridePenaltyOptions} onchange={onchange(key)} />
   {/each}
 
-  <h4>{$_('settings.sections.custom')}</h4>
+  <h4 class="section-heading">{$_('settings.sections.custom')}</h4>
   <SettingsField type="long" configKey="custom" value={String(config.custom)} onchange={onchange('custom')} />
 </section>
 
 <style>
-  h4 { font-size: 0.9375rem; font-weight: 600; margin: 1rem 0 0.75rem; }
-  h4:first-child { margin-top: 0; }
+  @reference "tailwindcss";
+  .section-heading {
+    @apply font-semibold mt-4 mb-3;
+    font-size: 0.9375rem;
+  }
+  .section-heading--first { margin-top: 0; }
 </style>

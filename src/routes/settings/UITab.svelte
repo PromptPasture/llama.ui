@@ -36,7 +36,7 @@
 </script>
 
 <section>
-  <h4>{$_('settings.sections.userInterface')}</h4>
+  <h4 class="section-heading">{$_('settings.sections.userInterface')}</h4>
 
   <SettingsField type="short" configKey="initials" value={String(config.initials)} onchange={onchange('initials')} />
 
@@ -59,5 +59,9 @@
 </section>
 
 <style>
-  h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.75rem; }
+  @reference "tailwindcss";
+  .section-heading {
+    @apply font-semibold m-0 mb-3;
+    font-size: 0.9375rem;
+  }
 </style>

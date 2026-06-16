@@ -112,15 +112,15 @@
   <title>Settings — llama.ui</title>
 </svelte:head>
 
-<div class="settings-page">
+<div class="settings">
   <!-- Tab sidebar (desktop) / tab bar (mobile) -->
-  <nav class="settings-tabs" role="tablist" aria-label="Settings sections">
+  <nav class="settings__tabs" role="tablist" aria-label="Settings sections">
     {#each tabs as tab (tab.id)}
       <button
         type="button"
         role="tab"
-        class="settings-tabs__btn"
-        class:settings-tabs__btn--active={tabId === tab.id}
+        class="settings__tab"
+        class:active={tabId === tab.id}
         aria-selected={tabId === tab.id}
         onclick={() => (tabId = tab.id)}
       >
@@ -130,7 +130,7 @@
   </nav>
 
   <!-- Tab content -->
-  <div class="settings-content">
+  <div class="settings__content">
     {#if tabId === 'general'}
       <GeneralTab config={localConfig} models={localModels} {onchange} onfetchmodels={fetchModels} />
     {:else if tabId === 'ui'}
@@ -149,13 +149,13 @@
       <ExperimentalTab config={localConfig} {onchange} />
     {/if}
 
-    <footer class="settings-footer">
+    <footer class="settings__footer">
       <p>v{import.meta.env.PACKAGE_VERSION ?? ''} · {$_('settings.footer.storageNote', { default: 'All data stored locally.' })}</p>
     </footer>
   </div>
 
   <!-- Action bar -->
-  <div class="settings-actions">
+  <div class="settings__actions">
     <Button variant="neutral" onclick={handleSave}>{$_('settings.actionButtons.saveBtnLabel')}</Button>
     <Button onclick={handleClose}>{$_('settings.actionButtons.cancelBtnLabel')}</Button>
     <Button variant="ghost" onclick={handleReset}>{$_('settings.actionButtons.resetBtnLabel')}</Button>
@@ -163,83 +163,68 @@
 </div>
 
 <style>
-  .settings-page {
-    display: grid;
+  @reference "tailwindcss";
+  .settings {
+    @apply grid h-full overflow-hidden;
     grid-template-rows: 1fr auto;
     grid-template-columns: 1fr;
-    height: 100%;
-    overflow: hidden;
   }
 
   @media (min-width: 768px) {
-    .settings-page {
+    .settings {
       grid-template-columns: 11rem 1fr;
       grid-template-rows: 1fr auto;
     }
   }
 
-  .settings-tabs {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 0.25rem;
-    padding: 0.5rem;
+  .settings__tabs {
+    @apply flex flex-row overflow-x-auto gap-1 p-2;
     border-bottom: 1px solid var(--color-border);
   }
 
   @media (min-width: 768px) {
-    .settings-tabs {
-      flex-direction: column;
-      overflow-x: hidden;
+    .settings__tabs {
+      @apply flex-col overflow-x-hidden p-4 px-2;
       border-bottom: none;
       border-right: 1px solid var(--color-border);
-      padding: 1rem 0.5rem;
     }
   }
 
-  .settings-tabs__btn {
-    background: none;
+  .settings__tab {
+    @apply px-3 py-1.5 text-sm text-left whitespace-nowrap shrink-0 cursor-pointer transition-[background] duration-150;
+    background: transparent;
     border: none;
-    border-radius: var(--radius-md);
-    padding: 0.375rem 0.75rem;
-    cursor: pointer;
     color: var(--color-text);
-    font-size: 0.875rem;
-    text-align: left;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: background 0.15s;
+    border-radius: var(--radius-md);
+  }
+  .settings__tab:hover { background: var(--color-surface-alt); }
+  .settings__tab.active {
+    background: var(--color-surface-alt);
+    @apply font-semibold;
   }
 
-  .settings-tabs__btn:hover { background: var(--color-surface-alt); }
-  .settings-tabs__btn--active { background: var(--color-surface-alt); font-weight: 600; }
-
-  .settings-content {
-    overflow-y: auto;
-    padding: 1rem 1.5rem;
-    grid-column: 1;
-    grid-row: 1;
+  .settings__content {
+    @apply overflow-y-auto px-6 py-4;
+    grid-column-start: 1;
+    grid-row-start: 1;
   }
 
   @media (min-width: 768px) {
-    .settings-content { grid-column: 2; }
+    .settings__content {
+      grid-column-start: 2;
+    }
   }
 
-  .settings-footer {
-    font-size: 0.75rem;
+  .settings__footer {
+    @apply text-xs mt-8 pt-3;
     color: var(--color-text-muted);
-    margin-top: 2rem;
-    padding-top: 0.75rem;
     border-top: 1px solid var(--color-border);
   }
 
-  .settings-actions {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
+  .settings__actions {
+    @apply flex gap-2 px-4 py-3 justify-center;
+    grid-column: 1 / -1;
     border-top: 1px solid var(--color-border);
     background: var(--color-bg);
-    justify-content: center;
-    grid-column: 1 / -1;
   }
 </style>

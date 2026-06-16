@@ -32,9 +32,9 @@
   onkeydown={onkeydown}
   onclose={onclose}
 >
-  <div class="dialog__box">
+  <div class="dialog__body">
     <h3 id="dialog-title" class="dialog__title">{title}</h3>
-    <div class="dialog__body">
+    <div class="dialog__content">
       {@render children()}
     </div>
     {#if actions}
@@ -46,19 +46,25 @@
 </dialog>
 
 <style>
+  @reference "tailwindcss";
   .dialog {
+    @apply p-0;
+    max-width: 28rem;
+    width: calc(100vw - 2rem);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
     color: var(--color-text);
-    padding: 0;
-    max-width: 28rem;
-    width: calc(100vw - 2rem);
     box-shadow: var(--shadow-lg);
   }
+
   .dialog::backdrop { background: rgb(0 0 0 / 0.5); }
-  .dialog__box { padding: 1.5rem; }
-  .dialog__title { margin: 0 0 1rem; font-size: 1.125rem; font-weight: 600; }
-  .dialog__body { margin-bottom: 1rem; }
-  .dialog__actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+  .dialog__body { @apply p-6; }
+
+  .dialog__title { @apply m-0 mb-4 text-lg font-semibold; }
+
+  .dialog__content { @apply mb-4; }
+
+  .dialog__actions { @apply flex justify-end gap-2; }
 </style>

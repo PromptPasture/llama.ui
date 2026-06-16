@@ -87,28 +87,26 @@
   }
 </script>
 
-<div class="msg-wrap" class:msg-wrap--user={isUser} class:msg-wrap--assistant={isAssistant}
+<div class="msg mb-4" class:msg--user={isUser}
   role="group" aria-description={isUser ? $_('chatScreen.ariaLabels.messageUserRole') : $_('chatScreen.ariaLabels.messageAssistantRole')}>
 
-  <!-- Extra attachments -->
-
   <!-- Bubble -->
-  <div class="msg-bubble" class:msg-bubble--assistant={isAssistant}>
+  <div class="msg__bubble" class:msg__bubble--user={isUser} class:msg__bubble--assistant={isAssistant}>
     <!-- Metadata -->
-    <div class="msg-meta">
+    <div class="msg__meta">
       {#if isUser}
-        <span class="msg-meta__name">{config.initials || $_('chatScreen.labels.user')}</span>
+        <span class="msg__sender">{config.initials || $_('chatScreen.labels.user')}</span>
       {/if}
       {#if isAssistant && msg.model}
-        <span class="msg-meta__name">{msg.model}</span>
+        <span class="msg__sender">{msg.model}</span>
       {/if}
-      <span class="msg-meta__time">{timeFormatter.format(msg.timestamp)}</span>
+      <span class="msg__timestamp">{timeFormatter.format(msg.timestamp)}</span>
     </div>
 
     <!-- Edit mode -->
     {#if isEditing}
       <Textarea value={editContent} oninput={(e) => (editContent = (e.target as HTMLTextAreaElement).value)} autoresize />
-      <div class="msg-edit-actions">
+      <div class="msg__edit-actions">
         <Button variant="ghost" onclick={cancelEdit}>{$_('chatScreen.labels.cancel')}</Button>
         {#if isUser}
           <Button onclick={submitUserEdit} disabled={!editContent}>{$_('chatScreen.labels.send')}</Button>
@@ -121,10 +119,10 @@
     {:else if content || reasoning_content}
       <div dir="auto" tabindex="0">
         {#if reasoning_content}
-          <div class="thinking">
-            <button type="button" class="thinking__toggle" onclick={() => (thinkingOpen = !thinkingOpen)}>
+          <div class="msg__reasoning">
+            <button type="button" class="msg__reasoning-toggle" onclick={() => (thinkingOpen = !thinkingOpen)}>
               {#if isThinking}
-                <AtomIcon size={16} class="spin" />
+                <AtomIcon size={16} class="animate-spin" />
                 {$_('chatScreen.labels.thinking')}
               {:else}
                 <BotIcon size={16} />
@@ -133,7 +131,7 @@
               {#if thinkingOpen}<ChevronDownIcon size={14} />{:else}<ChevronRightIcon size={14} />{/if}
             </button>
             {#if thinkingOpen}
-              <div class="thinking__content">
+              <div class="msg__reasoning-body">
                 {#if config.showRawAssistantMessage}
                   <pre>{reasoning_content}</pre>
                 {:else}
@@ -148,7 +146,7 @@
           {#if renderAsMarkdown}
             <MarkdownDisplay {content} streaming={!!isPending} />
           {:else}
-            <div class="whitespace-pre">{content}</div>
+            <div class="msg__raw">{content}</div>
           {/if}
         {/if}
       </div>
@@ -157,11 +155,11 @@
 
   <!-- Actions -->
   {#if msg.content !== null && showActions}
-    <div class="msg-actions" class:msg-actions--user={isUser}>
+    <div class="msg__actions" class:msg__actions--user={isUser}>
 
       <!-- Sibling navigation -->
       {#if siblingLeafNodeIds && siblingLeafNodeIds.length > 1}
-        <div class="msg-siblings" role="navigation">
+        <div class="msg__siblings" role="navigation">
           <Button variant="ghost" size="icon" onclick={() => prevSibling && onchangesibling(prevSibling)}
             disabled={!prevSibling} aria-label={$_('chatScreen.ariaLabels.switchToPrevious')}>
             <ChevronLeftIcon size={14} />
@@ -205,31 +203,81 @@
 </div>
 
 <style>
-  .msg-wrap { margin-bottom: 1rem; }
-  .msg-bubble {
+  @reference "tailwindcss";
+  .msg {
+    @apply mb-4;
+  }
+
+  .msg--user {
+    @apply flex flex-col items-end;
+  }
+
+  .msg__bubble {
+    @apply px-4 py-3;
     border-radius: var(--radius-lg);
-    padding: 0.75rem 1rem;
-    max-width: 85%;
+  }
+
+  .msg__bubble--user {
+    @apply max-w-[85%];
     background: var(--color-surface-alt);
   }
-  .msg-bubble--assistant { background: transparent; max-width: 100%; padding-left: 0; }
-  .msg-wrap--user { display: flex; flex-direction: column; align-items: flex-end; }
-  .msg-meta { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem; font-size: 0.8125rem; }
-  .msg-meta__name { font-weight: 600; }
-  .msg-meta__time { font-size: 0.75rem; opacity: 0.4; }
-  .msg-edit-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end; }
-  .msg-actions { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem; flex-wrap: wrap; }
-  .msg-actions--user { flex-direction: row-reverse; }
-  .msg-siblings { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; opacity: 0.6; }
-  .thinking { margin-bottom: 0.5rem; }
-  .thinking__toggle {
-    display: inline-flex; align-items: center; gap: 0.375rem;
-    background: var(--color-surface-alt); border: 1px solid var(--color-border);
-    border-radius: var(--radius-md); padding: 0.25rem 0.75rem; cursor: pointer;
-    font-size: 0.8125rem; color: var(--color-text); margin-bottom: 0.25rem;
+
+  .msg__bubble--assistant {
+    @apply max-w-full pl-0;
+    background: transparent;
   }
-  .thinking__content { border-left: 2px solid var(--color-border); padding-left: 1rem; margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted); }
-  :global(.spin) { animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .whitespace-pre { white-space: pre-wrap; }
+
+  .msg__meta {
+    @apply flex items-baseline gap-2 mb-1;
+    font-size: 0.8125rem;
+  }
+
+  .msg__sender {
+    @apply font-semibold;
+  }
+
+  .msg__timestamp {
+    @apply text-xs;
+    opacity: 0.4;
+  }
+
+  .msg__edit-actions {
+    @apply flex gap-2 mt-2 justify-end;
+  }
+
+  .msg__reasoning {
+    @apply mb-2;
+  }
+
+  .msg__reasoning-toggle {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 cursor-pointer mb-1;
+    font-size: 0.8125rem;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+  }
+
+  .msg__reasoning-body {
+    @apply pl-4 mb-3 text-sm;
+    border-left: 2px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .msg__raw {
+    @apply whitespace-pre-wrap;
+  }
+
+  .msg__actions {
+    @apply flex items-center gap-1 mt-1 flex-wrap;
+  }
+
+  .msg__actions--user {
+    @apply flex-row-reverse;
+  }
+
+  .msg__siblings {
+    @apply flex items-center gap-1 text-xs;
+    opacity: 0.6;
+  }
 </style>

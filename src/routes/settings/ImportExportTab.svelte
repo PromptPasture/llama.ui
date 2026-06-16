@@ -26,9 +26,9 @@
 </script>
 
 <section>
-  <h4>{$_('settings.importExport.chatsSectionTitle')}</h4>
+  <h4 class="section-heading">{$_('settings.importExport.chatsSectionTitle')}</h4>
 
-  <div class="btn-row">
+  <div class="import-export__actions">
     <Button onclick={handleExport}>{$_('settings.importExport.exportBtnLabel')}</Button>
 
     <label class="import-label" role="button" tabindex="0">
@@ -39,12 +39,21 @@
 </section>
 
 <style>
-  h4 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.75rem; }
-  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  @reference "tailwindcss";
+  .section-heading {
+    @apply font-semibold m-0 mb-3;
+    font-size: 0.9375rem;
+  }
+
+  .import-export__actions {
+    @apply flex gap-2 flex-wrap;
+  }
+
   .import-label {
-    display: inline-flex; align-items: center; padding: 0.375rem 0.75rem;
-    border-radius: var(--radius-md); background: var(--color-accent); color: var(--color-accent-fg);
-    font-size: 0.875rem; font-weight: 500; cursor: pointer;
+    @apply inline-flex items-center px-3 py-1.5 text-sm font-medium cursor-pointer;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: var(--color-accent-fg);
   }
   .import-label:hover { background: var(--color-accent-hover); }
 </style>

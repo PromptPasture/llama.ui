@@ -41,7 +41,7 @@
     </label>
   {:else if type === 'short'}
     <div class="field__row">
-      <span class="field__label">{label}</span>
+      <span class="field__row-label">{label}</span>
       <Input
         variant="bordered"
         value={String(value)}
@@ -52,7 +52,7 @@
     </div>
   {:else if type === 'long'}
     <div class="field__col">
-      <span class="field__label-muted">{label}</span>
+      <span class="field__col-label">{label}</span>
       <Textarea
         value={String(value)}
         placeholder={`Default: ${defaultVal ?? 'none'}`}
@@ -62,7 +62,7 @@
     </div>
   {:else if type === 'range' && range}
     <div class="field__row">
-      <span class="field__label">{label}</span>
+      <span class="field__row-label">{label}</span>
       <Input
         variant="range"
         type="range"
@@ -82,12 +82,40 @@
 </div>
 
 <style>
-  .field { margin-bottom: 0.75rem; }
-  .field__checkbox { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
-  .field__checkbox-label { font-size: 0.875rem; }
-  .field__row { display: flex; align-items: center; gap: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.375rem 0.75rem; }
-  .field__col { display: flex; flex-direction: column; gap: 0.25rem; }
-  .field__label { font-weight: 600; font-size: 0.875rem; white-space: nowrap; flex-shrink: 0; }
-  .field__label-muted { font-size: 0.75rem; color: var(--color-text-muted); }
-  .field__note { font-size: 0.75rem; color: var(--color-text-muted); max-width: 20rem; margin-top: 0.25rem; }
+  @reference "tailwindcss";
+  .field {
+    @apply mb-3;
+  }
+
+  .field__checkbox {
+    @apply flex items-center gap-2 cursor-pointer;
+  }
+
+  .field__checkbox-label {
+    @apply text-sm;
+  }
+
+  .field__row {
+    @apply flex items-center gap-3 px-3 py-1.5;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .field__row-label {
+    @apply font-semibold text-sm whitespace-nowrap shrink-0;
+  }
+
+  .field__col {
+    @apply flex flex-col gap-1;
+  }
+
+  .field__col-label {
+    @apply text-xs;
+    color: var(--color-text-muted);
+  }
+
+  .field__note {
+    @apply text-xs mt-1 max-w-80;
+    color: var(--color-text-muted);
+  }
 </style>

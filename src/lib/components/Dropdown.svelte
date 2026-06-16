@@ -53,9 +53,9 @@
 
 <svelte:window on:keydown={onkeydown} />
 
-<div class="dropdown {className}" class:dropdown--open={open}>
+<div class="dropdown {className}">
   {#if isDisabled}
-    <div class="dropdown__trigger truncate" aria-label={$_('dropdown.chooseEntity', { values: { entity } })}>
+    <div class="dropdown__trigger dropdown__trigger--static" aria-label={$_('dropdown.chooseEntity', { values: { entity } })}>
       {@render currentValue()}
     </div>
   {:else}
@@ -77,11 +77,11 @@
 
     {#if open}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="dropdown__backdrop" onclick={() => (open = false)} onkeydown={() => {}}></div>
-      <div class="dropdown__content dropdown__content--{align}" role="listbox">
+      <div class="dropdown__overlay" onclick={() => (open = false)} onkeydown={() => {}}></div>
+      <div class="dropdown__panel" class:align-start={align === 'start'} role="listbox">
         {#if filterable}
           <input
-            class="dropdown__search"
+            class="dropdown__filter"
             type="text"
             placeholder={$_('dropdown.searchPlaceholder', { values: { entity } })}
             bind:value={filter}
@@ -113,54 +113,80 @@
 </div>
 
 <style>
-  .dropdown { position: relative; display: flex; }
+  @reference "tailwindcss";
+  .dropdown {
+    @apply relative flex;
+  }
+
   .dropdown__trigger {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    cursor: pointer;
+    @apply flex items-center gap-1 cursor-pointer p-0 min-w-0 flex-1;
     background: none;
     border: none;
     color: inherit;
     font: inherit;
-    padding: 0;
-    min-width: 0;
-    flex: 1;
   }
-  .dropdown__chevron { width: 1rem; height: 1rem; flex-shrink: 0; }
-  .dropdown__backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
+
+  .dropdown__trigger--static {
+    @apply truncate;
   }
-  .dropdown__content {
-    position: absolute;
+
+  .dropdown__chevron {
+    @apply w-4 h-4 shrink-0;
+  }
+
+  .dropdown__overlay {
+    @apply fixed inset-0 z-40;
+  }
+
+  .dropdown__panel {
+    @apply absolute z-50 p-2;
     top: calc(100% + 4px);
-    z-index: 50;
+    right: 0;
+    min-width: 12rem;
+    max-width: 15rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
-    padding: 0.5rem;
-    min-width: 12rem;
-    max-width: 15rem;
   }
-  .dropdown__content--end { right: 0; }
-  .dropdown__content--start { left: 0; }
-  .dropdown__search {
-    width: 100%;
-    padding: 0.25rem 0.5rem;
+
+  .dropdown__panel.align-start {
+    right: auto;
+    left: 0;
+  }
+
+  .dropdown__filter {
+    @apply w-full px-2 py-1 text-sm mb-2;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-bg);
     color: var(--color-text);
-    font-size: 0.875rem;
-    margin-bottom: 0.5rem;
   }
-  .dropdown__search:focus { outline: 2px solid var(--color-accent); }
-  .dropdown__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; max-height: 20rem; }
-  .dropdown__list--filterable { max-height: 18rem; }
-  .dropdown__empty { padding: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted); }
-  :global(.dropdown__option) { width: 100% !important; justify-content: flex-start !important; font-weight: 400 !important; }
-  :global(.dropdown__option--selected) { background: var(--color-surface-alt) !important; }
+  .dropdown__filter:focus {
+    outline: 2px solid var(--color-accent);
+  }
+
+  .dropdown__empty {
+    @apply p-2 text-sm;
+    color: var(--color-text-muted);
+  }
+
+  .dropdown__list {
+    @apply list-none m-0 p-0 flex flex-col overflow-y-auto;
+    gap: 2px;
+    max-height: 20rem;
+  }
+  .dropdown__list--filterable {
+    max-height: 18rem;
+  }
+
+  .dropdown__option {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    font-weight: normal !important;
+  }
+
+  :global(.dropdown__option--selected) {
+    background: var(--color-surface-alt) !important;
+  }
 </style>

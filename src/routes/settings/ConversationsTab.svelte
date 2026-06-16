@@ -12,18 +12,22 @@
 </script>
 
 <section>
-  <h4>{$_('settings.sections.chat')}</h4>
+  <h4 class="section-heading section-heading--first">{$_('settings.sections.chat')}</h4>
   <SettingsField type="short" configKey="pasteLongTextToFileLen" value={config.pasteLongTextToFileLen} onchange={onchange('pasteLongTextToFileLen')} />
 
-  <h4>{$_('settings.sections.performance')}</h4>
+  <h4 class="section-heading">{$_('settings.sections.performance')}</h4>
   <SettingsField type="checkbox" configKey="showTokensPerSecond" value={!!config.showTokensPerSecond} onchange={onchange('showTokensPerSecond')} />
 
-  <h4>{$_('settings.sections.reasoning')}</h4>
+  <h4 class="section-heading">{$_('settings.sections.reasoning')}</h4>
   <SettingsField type="checkbox" configKey="showThoughtInProgress" value={!!config.showThoughtInProgress} onchange={onchange('showThoughtInProgress')} />
   <SettingsField type="checkbox" configKey="excludeThoughtOnReq" value={!!config.excludeThoughtOnReq} onchange={onchange('excludeThoughtOnReq')} />
 </section>
 
 <style>
-  h4 { font-size: 0.9375rem; font-weight: 600; margin: 1rem 0 0.75rem; }
-  h4:first-child { margin-top: 0; }
+  @reference "tailwindcss";
+  .section-heading {
+    @apply font-semibold mt-4 mb-3;
+    font-size: 0.9375rem;
+  }
+  .section-heading--first { margin-top: 0; }
 </style>

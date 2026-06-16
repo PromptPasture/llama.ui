@@ -2,36 +2,36 @@
   import { toastStore } from './toast.js';
 </script>
 
-<div class="toast-container" role="status" aria-live="polite" aria-atomic="false">
+<div class="toast-host" role="status" aria-live="polite" aria-atomic="false">
   {#each $toastStore as item (item.id)}
-    <div class="toast toast--{item.level}">
+    <div class="toast" class:toast--success={item.level === 'success'} class:toast--error={item.level === 'error'}>
       {item.message}
     </div>
   {/each}
 </div>
 
 <style>
-  .toast-container {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  @reference "tailwindcss";
+  .toast-host {
+    @apply fixed bottom-6 right-6 flex flex-col gap-2 pointer-events-none;
     z-index: 9999;
-    pointer-events: none;
   }
+
   .toast {
-    padding: 0.75rem 1rem;
+    @apply px-4 py-3 text-sm pointer-events-auto max-w-80;
     border-radius: var(--radius-md);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     color: var(--color-text);
-    font-size: 0.875rem;
     box-shadow: var(--shadow-md);
-    pointer-events: auto;
-    max-width: 320px;
   }
-  .toast--success { border-color: var(--color-success); }
-  .toast--error { border-color: var(--color-danger); color: var(--color-danger); }
+
+  .toast--success {
+    border-color: var(--color-success);
+  }
+
+  .toast--error {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
 </style>

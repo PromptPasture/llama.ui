@@ -49,18 +49,18 @@
 </script>
 
 <section>
-  <h4>{$_('settings.presetManager.newPreset')}</h4>
+  <h4 class="section-heading section-heading--first">{$_('settings.presetManager.newPreset')}</h4>
   <Button variant="neutral" onclick={handleSave}>
     <SaveIcon size={16} />
     {$_('settings.presetManager.buttons.save')}
   </Button>
 
-  <h4>{$_('settings.presetManager.savedPresets')}</h4>
+  <h4 class="section-heading">{$_('settings.presetManager.savedPresets')}</h4>
 
   {#if presets.length === 0}
-    <p class="empty-note">{$_('settings.presetManager.noPresetFound')}</p>
+    <p class="presets__empty">{$_('settings.presetManager.noPresetFound')}</p>
   {:else}
-    <div class="preset-list">
+    <div class="presets__list">
       {#each [...presets].sort((a, b) => b.createdAt - a.createdAt) as preset (preset.id)}
         <div class="preset-card">
           <div class="preset-card__info">
@@ -85,12 +85,39 @@
 </section>
 
 <style>
-  h4 { font-size: 0.9375rem; font-weight: 600; margin: 1rem 0 0.75rem; }
-  h4:first-child { margin-top: 0; }
-  .empty-note { font-size: 0.75rem; color: var(--color-text-muted); }
-  .preset-list { display: flex; flex-direction: column; gap: 0.5rem; }
-  .preset-card { background: var(--color-surface-alt); border-radius: var(--radius-md); padding: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
-  .preset-card__info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.125rem; }
-  .preset-card__date { font-size: 0.75rem; color: var(--color-text-muted); }
-  .preset-card__actions { display: flex; align-items: center; gap: 0.25rem; }
+  @reference "tailwindcss";
+  .section-heading {
+    @apply font-semibold mt-4 mb-3;
+    font-size: 0.9375rem;
+  }
+  .section-heading--first { margin-top: 0; }
+
+  .presets__empty {
+    @apply text-xs;
+    color: var(--color-text-muted);
+  }
+
+  .presets__list {
+    @apply flex flex-col gap-2;
+  }
+
+  .preset-card {
+    @apply flex items-center gap-2 p-3;
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-md);
+  }
+
+  .preset-card__info {
+    @apply flex-1 min-w-0 flex flex-col;
+    gap: 0.125rem;
+  }
+
+  .preset-card__date {
+    @apply text-xs;
+    color: var(--color-text-muted);
+  }
+
+  .preset-card__actions {
+    @apply flex items-center gap-1;
+  }
 </style>

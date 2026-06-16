@@ -16,12 +16,6 @@
     ...rest
   }: Props = $props();
 
-  const variantClass: Record<Variant, string> = {
-    bordered: 'textarea',
-    code: 'textarea textarea--code',
-    transparent: 'textarea textarea--transparent',
-  };
-
   let el: HTMLTextAreaElement;
 
   function resize() {
@@ -38,33 +32,43 @@
 <textarea
   bind:this={el}
   bind:value
-  class="{variantClass[variant]} {className}"
+  class="textarea textarea--{variant} {className}"
   oninput={resize}
   dir="auto"
   {...rest}
 ></textarea>
 
 <style>
+  @reference "tailwindcss";
   .textarea {
-    display: block;
-    width: 100%;
-    padding: 0.5rem 0.75rem;
+    @apply block w-full px-3 py-2 text-sm leading-6;
+    color: var(--color-text);
+  }
+
+  .textarea--bordered,
+  .textarea--code {
+    @apply resize-y min-h-12;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
-    color: var(--color-text);
-    font-size: 0.875rem;
-    line-height: 1.5;
-    resize: vertical;
-    min-height: 3rem;
   }
-  .textarea:focus { outline: 2px solid var(--color-accent); outline-offset: -1px; }
-  .textarea--code { font-family: monospace; }
+  .textarea--bordered:focus,
+  .textarea--code:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -1px;
+  }
+
+  .textarea--code {
+    @apply font-mono;
+  }
+
   .textarea--transparent {
+    @apply resize-none outline-none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
     background: transparent;
-    border-color: transparent;
-    resize: none;
+  }
+  .textarea--transparent:focus {
     outline: none;
   }
-  .textarea--transparent:focus { outline: none; }
 </style>

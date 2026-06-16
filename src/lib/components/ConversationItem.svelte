@@ -55,7 +55,7 @@
 
 <li
   class="conv-item"
-  class:conv-item--active={isCurrent}
+  class:active={isCurrent}
   role="menuitem"
   aria-label={conv.name}
 >
@@ -64,7 +64,7 @@
     {conv.name}
   </button>
 
-  <div class="conv-item__menu">
+  <div class="conv-item__menu-wrap">
     <Button variant="ghost" size="icon" onclick={() => (menuOpen = !menuOpen)}
       aria-label={$_('sidebar.ariaLabels.more')} aria-expanded={menuOpen}>
       <EllipsisVerticalIcon size={16} />
@@ -72,57 +72,55 @@
 
     {#if menuOpen}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="conv-item__backdrop" onclick={() => (menuOpen = false)} onkeydown={() => {}}></div>
+      <div class="conv-item__overlay" onclick={() => (menuOpen = false)} onkeydown={() => {}}></div>
       <ul class="conv-item__dropdown" role="menu" aria-label={$_('sidebar.ariaLabels.dropdown')}>
         <li role="menuitem"><Button variant="menu-item" size="small" onclick={handleRename}><PencilIcon size={14} />{$_('sidebar.buttons.rename')}</Button></li>
         <li role="menuitem"><Button variant="menu-item" size="small" onclick={handleDownload}><DownloadIcon size={14} />{$_('sidebar.buttons.download')}</Button></li>
-        <li role="menuitem"><Button variant="menu-item" size="small" class="text-danger" onclick={handleDelete}><TrashIcon size={14} />{$_('sidebar.buttons.delete')}</Button></li>
+        <li role="menuitem"><Button variant="menu-item" size="small" class="conv-item__delete-btn" onclick={handleDelete}><TrashIcon size={14} />{$_('sidebar.buttons.delete')}</Button></li>
       </ul>
     {/if}
   </div>
 </li>
 
 <style>
+  @reference "tailwindcss";
   .conv-item {
-    display: flex;
-    align-items: center;
+    @apply flex items-center relative;
     border-radius: var(--radius-md);
     padding: 0 0.5rem;
     min-height: 2.25rem;
-    position: relative;
   }
   .conv-item:hover { background: var(--color-surface-alt); }
-  .conv-item--active { background: var(--color-surface-alt); }
+  .conv-item.active { background: var(--color-surface-alt); }
+
   .conv-item__btn {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-align: left;
+    @apply flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm p-0;
     background: none;
     border: none;
     cursor: pointer;
     color: inherit;
     font: inherit;
-    font-size: 0.875rem;
-    padding: 0;
   }
-  .conv-item__menu { position: relative; flex-shrink: 0; }
-  .conv-item__backdrop { position: fixed; inset: 0; z-index: 40; }
+
+  .conv-item__menu-wrap {
+    @apply relative shrink-0;
+  }
+
+  .conv-item__overlay {
+    @apply fixed inset-0 z-40;
+  }
+
   .conv-item__dropdown {
-    position: absolute;
-    right: 0;
+    @apply absolute right-0 z-50 p-1 list-none m-0;
     top: calc(100% + 4px);
-    z-index: 50;
+    min-width: 10rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
-    padding: 0.25rem;
-    min-width: 10rem;
-    list-style: none;
-    margin: 0;
   }
-  :global(.text-danger) { color: var(--color-danger) !important; }
+
+  .conv-item__delete-btn {
+    color: var(--color-danger);
+  }
 </style>

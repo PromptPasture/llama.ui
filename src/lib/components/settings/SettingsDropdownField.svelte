@@ -19,14 +19,14 @@
   const selectedLabel = $derived(options.find((o) => o.value === value)?.label ?? String(value));
 </script>
 
-<div class="dropdown-field">
-  <div class="dropdown-field__row">
-    <span class="dropdown-field__label">{label}</span>
+<div class="settings-dropdown">
+  <div class="settings-dropdown__row">
+    <span class="settings-dropdown__label">{label}</span>
     <Dropdown
       entity={configKey}
       {options}
       {filterable}
-      class="dropdown-field__control"
+      class="settings-dropdown__control"
       isSelected={(o) => o.value === value}
       onSelect={(o) => onchange(o.value)}
     >
@@ -43,21 +43,32 @@
     </Dropdown>
   </div>
   {#if note}
-    <div class="dropdown-field__note">{@html note}</div>
+    <div class="settings-dropdown__note">{@html note}</div>
   {/if}
 </div>
 
 <style>
-  .dropdown-field { margin-bottom: 0.75rem; }
-  .dropdown-field__row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  @reference "tailwindcss";
+  .settings-dropdown {
+    @apply mb-3;
+  }
+
+  .settings-dropdown__row {
+    @apply flex items-center gap-3 px-3 py-1.5;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: 0.375rem 0.75rem;
   }
-  .dropdown-field__label { font-weight: 600; font-size: 0.875rem; white-space: nowrap; flex-shrink: 0; }
-  :global(.dropdown-field__control) { flex: 1; min-width: 0; }
-  .dropdown-field__note { font-size: 0.75rem; color: var(--color-text-muted); max-width: 20rem; margin-top: 0.25rem; }
+
+  .settings-dropdown__label {
+    @apply font-semibold text-sm whitespace-nowrap shrink-0;
+  }
+
+  :global(.settings-dropdown__control) {
+    @apply flex-1 min-w-0;
+  }
+
+  .settings-dropdown__note {
+    @apply text-xs mt-1 max-w-80;
+    color: var(--color-text-muted);
+  }
 </style>

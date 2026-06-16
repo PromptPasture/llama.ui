@@ -14,35 +14,32 @@
     variant === 'toggle' ? 'checkbox' :
     variant === 'range' ? 'range' : 'text'
   );
-
-  const variantClass: Record<Variant, string> = {
-    text: '',
-    file: '',
-    input: 'input',
-    bordered: 'input input--bordered',
-    toggle: 'toggle',
-    range: 'range',
-  };
 </script>
 
-<input class="{variantClass[variant]} {className}" type={resolvedType} {...rest} />
+<input class="input input--{variant} {className}" type={resolvedType} {...rest} />
 
 <style>
-  .input {
-    display: block;
-    width: 100%;
-    padding: 0.375rem 0.75rem;
+  @reference "tailwindcss";
+  .input--input,
+  .input--bordered {
+    @apply block w-full px-3 py-1.5 text-sm leading-6;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
     color: var(--color-text);
-    font-size: 0.875rem;
-    line-height: 1.5;
   }
-  .input--bordered { border-color: var(--color-border); }
-  .input:focus { outline: 2px solid var(--color-accent); outline-offset: -1px; }
+  .input--input:focus,
+  .input--bordered:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -1px;
+  }
 
-  .toggle {
+  .input--range {
+    @apply w-full;
+    accent-color: var(--color-accent);
+  }
+
+  .input--toggle {
     appearance: none;
     width: 2.5rem;
     height: 1.25rem;
@@ -53,7 +50,7 @@
     transition: background 0.2s;
     flex-shrink: 0;
   }
-  .toggle::after {
+  .input--toggle::after {
     content: '';
     position: absolute;
     top: 2px; left: 2px;
@@ -62,8 +59,6 @@
     background: white;
     transition: transform 0.2s;
   }
-  .toggle:checked { background: var(--color-accent); }
-  .toggle:checked::after { transform: translateX(1.25rem); }
-
-  .range { accent-color: var(--color-accent); width: 100%; }
+  .input--toggle:checked { background: var(--color-accent); }
+  .input--toggle:checked::after { transform: translateX(1.25rem); }
 </style>

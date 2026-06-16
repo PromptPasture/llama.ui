@@ -48,9 +48,9 @@
 <div class="app-shell">
   <Sidebar bind:open={sidebarOpen} onclose={() => (sidebarOpen = false)} />
 
-  <div class="app-main">
+  <div class="app-shell__content">
     <Header onsidebartoggle={() => (sidebarOpen = !sidebarOpen)} />
-    <main class="app-content">
+    <main class="app-shell__main">
       {#if ready}
         {@render children()}
       {/if}
@@ -62,25 +62,18 @@
 <Toast />
 
 <style>
+  @reference "tailwindcss";
   :global(html), :global(body) { height: 100%; margin: 0; }
 
   .app-shell {
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
+    @apply flex h-screen overflow-hidden;
   }
 
-  .app-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  .app-shell__content {
+    @apply flex-1 min-w-0 flex flex-col overflow-hidden;
   }
 
-  .app-content {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
+  .app-shell__main {
+    @apply flex-1 overflow-y-auto overflow-x-hidden;
   }
 </style>

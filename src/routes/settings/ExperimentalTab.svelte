@@ -12,10 +12,16 @@
 </script>
 
 <section>
-  <div class="warning">{@html $_('settings.parameters.experimental.note', { default: '⚠ Experimental features may be unstable.' })}</div>
+  <div class="experimental-notice">{@html $_('settings.parameters.experimental.note', { default: '⚠ Experimental features may be unstable.' })}</div>
   <SettingsField type="checkbox" configKey="pyIntepreterEnabled" value={!!config.pyIntepreterEnabled} onchange={onchange('pyIntepreterEnabled')} />
 </section>
 
 <style>
-  .warning { background: var(--color-surface-alt); border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; color: var(--color-warning); }
+  @reference "tailwindcss";
+  .experimental-notice {
+    @apply p-3 text-sm mb-4;
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-md);
+    color: var(--color-warning);
+  }
 </style>

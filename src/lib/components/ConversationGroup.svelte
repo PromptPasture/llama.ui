@@ -14,10 +14,10 @@
 </script>
 
 <div role="group" class={className}>
-  <div class="group-title" role="note">
+  <div class="conv-group__label" role="note">
     {$_(`sidebar.groups.${group.title}`, { default: group.title })}
   </div>
-  <ul class="group-list" role="menu">
+  <ul class="conv-group__list" role="menu">
     {#each group.conversations as conv (conv.id)}
       <ConversationItem {conv} {currentConvId} onselect={onitemselect} />
     {/each}
@@ -25,14 +25,14 @@
 </div>
 
 <style>
-  .group-title {
-    font-size: 0.75rem;
-    font-weight: 600;
+  @reference "tailwindcss";
+  .conv-group__label {
+    @apply text-xs font-semibold uppercase px-2 mb-1;
     color: var(--color-text-muted);
-    padding: 0 0.5rem;
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
   }
-  .group-list { list-style: none; margin: 0; padding: 0; }
+
+  .conv-group__list {
+    @apply list-none m-0 p-0;
+  }
 </style>

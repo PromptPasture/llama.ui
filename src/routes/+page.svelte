@@ -77,49 +77,38 @@
 </div>
 
 <style>
+  @reference "tailwindcss";
   .welcome {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    @apply flex flex-col h-full w-full mx-auto;
     max-width: 56rem;
-    margin: 0 auto;
-    width: 100%;
   }
 
   .welcome__hero {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
+    @apply flex-1 flex flex-col items-center justify-center p-4;
   }
 
-  .welcome__title { font-size: 2.25rem; font-weight: 500; margin: 0; }
-  .welcome__subtitle { margin: 0.5rem 0 0; color: var(--color-text-muted); font-size: 0.875rem; }
+  .welcome__title {
+    @apply font-medium m-0;
+    font-size: 2.25rem;
+  }
+
+  .welcome__subtitle {
+    @apply mt-2 mb-0 text-sm;
+    color: var(--color-text-muted);
+  }
 
   .welcome__prompts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-top: 2rem;
+    @apply grid grid-cols-2 sm:grid-cols-4 gap-2 mt-8;
     max-width: 36rem;
   }
 
-  @media (min-width: 640px) { .welcome__prompts { grid-template-columns: repeat(4, 1fr); } }
-
   .welcome__prompt-btn {
+    @apply p-2 cursor-pointer font-medium text-center leading-snug transition-[background] duration-150;
+    font-size: 0.8125rem;
     background: var(--color-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: 0.5rem;
-    cursor: pointer;
     color: var(--color-text);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    text-align: center;
-    line-height: 1.4;
-    transition: background 0.15s;
   }
   .welcome__prompt-btn:hover { background: var(--color-border); }
 </style>

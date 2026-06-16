@@ -96,8 +96,8 @@
 </svelte:head>
 
 <div class="chat-page">
-  <div bind:this={msgListEl} class="chat-page__messages">
-    <div class="chat-page__list">
+  <div bind:this={msgListEl} class="chat-page__scroll">
+    <div class="chat-page__messages">
       {#each displayMessages as message (message.msg.id)}
         <ChatMessage
           {message}
@@ -116,7 +116,7 @@
           oneditassistantfn={() => {}}
           onchangesibling={() => {}}
         />
-        <span class="chat-page__loading" aria-hidden="true">⋯</span>
+        <span class="chat-page__pending-indicator" aria-hidden="true">⋯</span>
       {/if}
     </div>
   </div>
@@ -125,29 +125,22 @@
 </div>
 
 <style>
+  @reference "tailwindcss";
   .chat-page {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    @apply flex flex-col h-full;
+  }
+
+  .chat-page__scroll {
+    @apply flex-1 overflow-y-auto overflow-x-hidden px-3;
   }
 
   .chat-page__messages {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 0 0.75rem;
-  }
-
-  .chat-page__list {
+    @apply mx-auto py-4;
     max-width: 56rem;
-    margin: 0 auto;
-    padding: 1rem 0;
   }
 
-  .chat-page__loading {
-    display: block;
-    font-size: 1.5rem;
+  .chat-page__pending-indicator {
+    @apply block text-2xl mb-2;
     opacity: 0.5;
-    margin-bottom: 0.5rem;
   }
 </style>
