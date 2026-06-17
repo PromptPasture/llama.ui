@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { locale } from 'svelte-i18n';
+  import { waitLocale } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import { app } from '$lib/state/app.svelte';
   import { inference } from '$lib/state/inference.svelte';
@@ -19,6 +19,7 @@
   initI18n();
 
   onMount(async () => {
+    await waitLocale();
     await app.init();
     ready = true;
   });
@@ -45,21 +46,21 @@
   <title>llama.ui</title>
 </svelte:head>
 
+{#if ready}
 <div class="app-shell">
   <Sidebar bind:open={sidebarOpen} onclose={() => (sidebarOpen = false)} />
 
   <div class="app-shell__content">
     <Header onsidebartoggle={() => (sidebarOpen = !sidebarOpen)} />
     <main class="app-shell__main">
-      {#if ready}
-        {@render children()}
-      {/if}
+      {@render children()}
     </main>
   </div>
 </div>
 
 <ModalHost />
 <Toast />
+{/if}
 
 <style>
   @reference "tailwindcss";
