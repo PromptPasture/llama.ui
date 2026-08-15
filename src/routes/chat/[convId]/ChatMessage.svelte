@@ -48,12 +48,13 @@
 
   const prevSibling = $derived(siblingLeafNodeIds[siblingCurrIdx - 1]);
   const nextSibling = $derived(siblingLeafNodeIds[siblingCurrIdx + 1]);
-  const showActions = $derived(!isEditing && !isPending);
   const isThinking = $derived(!!isPending && !content);
 
   let isEditing = $state(false);
   let editContent = $state('');
   let thinkingOpen = $state(config.showThoughtInProgress ?? true);
+
+  const showActions = $derived(!isEditing && !isPending);
 
   function startEdit() {
     if (!msg.content) return;
