@@ -89,7 +89,7 @@
 </script>
 
 <div class="msg mb-4" class:msg--user={isUser}
-  role="group" aria-description={isUser ? $_('chatScreen.ariaLabels.messageUserRole') : $_('chatScreen.ariaLabels.messageAssistantRole')}>
+  role="group" aria-label={isUser ? $_('chatScreen.ariaLabels.messageUserRole') : $_('chatScreen.ariaLabels.messageAssistantRole')}>
 
   <!-- Bubble -->
   <div class="msg__bubble" class:msg__bubble--user={isUser} class:msg__bubble--assistant={isAssistant}>
