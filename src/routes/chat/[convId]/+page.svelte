@@ -1,17 +1,20 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/state';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
   import { inference } from '$lib/state/inference.svelte';
   import { toast } from '$lib/components/toast.js';
   import { getListMessageDisplay } from '$lib/utils/message-hierarchy';
   import type { Message, MessageExtra } from '$lib/types';
+  import type { PageProps } from './$types';
   import ChatMessage from './ChatMessage.svelte';
   import ChatInput from './ChatInput.svelte';
 
-  const convId = $derived(page.params.convId);
+  // Typed by the route, so convId is a string rather than string | undefined.
+  let { params }: PageProps = $props();
+
+  const convId = $derived(params.convId);
 
   let msgListEl: HTMLDivElement;
   let currNodeId = $state(-1);
