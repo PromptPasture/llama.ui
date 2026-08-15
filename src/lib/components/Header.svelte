@@ -91,8 +91,6 @@
   @reference "tailwindcss";
   .header {
     @apply flex flex-col gap-2 py-2 sticky top-0 z-10;
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
   }
 
   .header__mobile-row {
@@ -100,12 +98,14 @@
   }
 
   .header__title-btn {
-    @apply flex-1 text-center font-medium overflow-hidden text-ellipsis whitespace-nowrap px-2;
+    @apply flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap px-2;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
     background: none;
     border: none;
     cursor: pointer;
     color: inherit;
-    font: inherit;
   }
 
   .header__desktop-row {

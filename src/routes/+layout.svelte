@@ -71,10 +71,15 @@
   }
 
   .app-shell__content {
-    @apply flex-1 min-w-0 flex flex-col overflow-hidden;
+    @apply flex-1 min-w-0 flex flex-col overflow-hidden px-1 pb-1 md:px-2 md:pb-2;
+    background: var(--color-surface-alt);
   }
 
   .app-shell__main {
     @apply flex-1 overflow-y-auto overflow-x-hidden;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-inset);
   }
 </style>

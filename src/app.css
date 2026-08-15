@@ -8,15 +8,22 @@
   --color-surface: #ffffff;
   --color-surface-alt: #e5e6e6;
   --color-border: #e5e6e6;
+  /* base-content/20 — translucent border for the floating main card */
+  --color-border-card: rgb(31 41 55 / 0.2);
   --color-text: #1f2937;
   --color-text-muted: #6b7280;
   --color-accent: #570df8;
   --color-accent-fg: #ffffff;
   --color-accent-hover: #4506cb;
+  /* accent/10 — chip background for inline code */
+  --color-accent-soft: rgb(87 13 248 / 0.1);
   --color-danger: #f87272;
   --color-danger-fg: #ffffff;
   --color-success: #36d399;
   --color-warning: #fbbd23;
+
+  /* Headings and titles. Aliased to the body stack until a display face lands. */
+  --font-display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -27,6 +34,10 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  /* shadow-xl/50 — cast by the sidebar over the content */
+  --shadow-sidebar: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  /* inset-shadow-sm — recessed feel for the main card */
+  --shadow-inset: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
 
   --sidebar-width: 280px;
   --header-height: 56px;
@@ -39,11 +50,15 @@
   --color-surface: #1d232a;
   --color-surface-alt: #15191e;
   --color-border: #15191e;
+  /* base-content/10 — translucent border for the floating main card */
+  --color-border-card: rgb(166 173 187 / 0.1);
   --color-text: #a6adbb;
   --color-text-muted: #6b7280;
   --color-accent: #793ef9;
   --color-accent-fg: #ffffff;
   --color-accent-hover: #6d28d9;
+  /* accent/15 — chip background for inline code */
+  --color-accent-soft: rgb(121 62 249 / 0.15);
   --color-danger: #f87272;
   --color-danger-fg: #ffffff;
   --color-success: #36d399;
@@ -52,6 +67,8 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-sidebar: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --shadow-inset: inset 0 2px 4px 0 rgb(0 0 0 / 0.2);
 }
 
 /* ─── System dark fallback (no explicit theme set) ──────────────── */
@@ -62,11 +79,13 @@
     --color-surface: #1d232a;
     --color-surface-alt: #15191e;
     --color-border: #15191e;
+    --color-border-card: rgb(166 173 187 / 0.1);
     --color-text: #a6adbb;
     --color-text-muted: #6b7280;
     --color-accent: #793ef9;
     --color-accent-fg: #ffffff;
     --color-accent-hover: #6d28d9;
+    --color-accent-soft: rgb(121 62 249 / 0.15);
     --color-danger: #f87272;
     --color-danger-fg: #ffffff;
     --color-success: #36d399;
@@ -75,6 +94,8 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-sidebar: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+    --shadow-inset: inset 0 2px 4px 0 rgb(0 0 0 / 0.2);
   }
 }
 

@@ -134,8 +134,8 @@
     @apply fixed top-0 left-0 bottom-0 flex flex-col p-2;
     @apply xl:sticky xl:top-0 xl:h-screen;
     width: var(--sidebar-width);
-    background: var(--color-bg-alt);
-    border-right: 1px solid var(--color-border);
+    background: var(--color-surface-alt);
+    box-shadow: var(--shadow-sidebar);
     z-index: 50;
     transform: translateX(-100%);
     transition: transform 250ms ease;
@@ -185,8 +185,7 @@
   }
 
   .sidebar__footer {
-    @apply text-xs text-center pt-3 mt-2;
+    @apply text-xs text-center pt-4 mx-4;
     color: var(--color-text-muted);
-    border-top: 1px solid var(--color-border);
   }
 </style>
