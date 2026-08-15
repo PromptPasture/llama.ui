@@ -48,7 +48,7 @@
 
 {#if ready}
 <div class="app-shell">
-  <Sidebar bind:open={sidebarOpen} onclose={() => (sidebarOpen = false)} />
+  <Sidebar open={sidebarOpen} onclose={() => (sidebarOpen = false)} />
 
   <div class="app-shell__content">
     <Header onsidebartoggle={() => (sidebarOpen = !sidebarOpen)} />

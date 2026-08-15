@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { HTMLInputAttributes } from 'svelte/elements';
+  import type { FormEventHandler, HTMLInputAttributes } from 'svelte/elements';
 
   type Variant = 'text' | 'file' | 'input' | 'bordered' | 'toggle' | 'range';
 
@@ -7,16 +7,37 @@
     variant?: Variant;
   }
 
-  let { variant = 'text', class: className = '', type, ...rest }: Props = $props();
+  let {
+    variant = 'text',
+    class: className = '',
+    type,
+    value = $bindable(''),
+    oninput,
+    ...rest
+  }: Props = $props();
 
   const resolvedType = type ?? (
     variant === 'file' ? 'file' :
     variant === 'toggle' ? 'checkbox' :
     variant === 'range' ? 'range' : 'text'
   );
+
+  // `bind:value` requires a static `type`, which this component resolves at
+  // runtime, so the write-back is wired by hand. The caller's own `oninput`
+  // still runs afterwards.
+  const handleInput: FormEventHandler<HTMLInputElement> = (event) => {
+    value = event.currentTarget.value;
+    oninput?.(event);
+  };
 </script>
 
-<input class="input input--{variant} {className}" type={resolvedType} {...rest} />
+<input
+  class="input input--{variant} {className}"
+  type={resolvedType}
+  {value}
+  oninput={handleInput}
+  {...rest}
+/>
 
 <style>
   @reference "tailwindcss";
