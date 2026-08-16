@@ -57,6 +57,24 @@ export const inference = {
     }
   },
 
+  /**
+   * The model to adopt when the configured one cannot be used.
+   *
+   * Nothing ever chose one: a fresh configuration names no model, so pointing
+   * the app at a server loaded its models, left the picker blank, and failed
+   * every send for want of a model to send to. The same happens after moving
+   * to a provider that does not have the one previously chosen.
+   *
+   * @param config The current configuration
+   * @returns The model id to adopt, or null to leave the choice alone
+   */
+  modelToAdopt(config: Configuration): string | null {
+    if (state.models.length === 0) return null;
+    const chosen = config.model;
+    if (chosen && state.models.some((m) => m.id === chosen)) return null;
+    return state.models[0].id;
+  },
+
   async initialize(config: Configuration): Promise<void> {
     const prevConfig = _prevConfig;
 

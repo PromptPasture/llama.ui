@@ -105,3 +105,44 @@ describe('when the provider is no longer usable', () => {
     expect(inference.selectedModel).toBeNull();
   });
 });
+
+describe('choosing a model when the configuration names none', () => {
+  it('suggests the first the server offers', async () => {
+    await inference.initialize(ready({ model: '' }));
+
+    // A fresh configuration names no model, so without this the picker stays
+    // blank and every send is refused for want of a model to send to.
+    expect(inference.modelToAdopt(ready({ model: '' }))).toBe('llama-3');
+  });
+
+  it('leaves a working choice alone', async () => {
+    await inference.initialize(ready({ model: 'mistral' }));
+
+    expect(inference.modelToAdopt(ready({ model: 'mistral' }))).toBeNull();
+  });
+
+  it('replaces one the server no longer offers', async () => {
+    await inference.initialize(ready({ model: 'a-model-that-left' }));
+
+    // Moving to another provider otherwise leaves a name behind that nothing
+    // there answers to.
+    expect(inference.modelToAdopt(ready({ model: 'a-model-that-left' }))).toBe(
+      'llama-3'
+    );
+  });
+
+  it('suggests nothing when the server offers nothing', async () => {
+    mocks.getModels.mockResolvedValue([]);
+    await inference.initialize(ready({ model: '' }));
+
+    // A server that is down or misconfigured should not have its emptiness
+    // written into the configuration.
+    expect(inference.modelToAdopt(ready({ model: '' }))).toBeNull();
+  });
+
+  it('suggests nothing when there is no provider at all', async () => {
+    await inference.initialize(config({ baseUrl: '', model: '' }));
+
+    expect(inference.modelToAdopt(config({ model: '' }))).toBeNull();
+  });
+});

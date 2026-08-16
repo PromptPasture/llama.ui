@@ -34,7 +34,13 @@
 
   // Re-initialize inference when config changes
   $effect(() => {
-    if (ready) inference.initialize(app.config);
+    if (!ready) return;
+    inference.initialize(app.config).then(() => {
+      // Written back rather than only held in memory, so the picker in the
+      // header agrees with what messages are actually being sent to.
+      const adopt = inference.modelToAdopt(app.config);
+      if (adopt) app.saveConfig({ ...app.config, model: adopt });
+    });
   });
 
   // Global keyboard hotkeys
