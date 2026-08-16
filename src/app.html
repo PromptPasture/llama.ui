@@ -18,6 +18,21 @@
       rel="apple-touch-icon"
       href="%sveltekit.assets%/assets/apple-icon-180.png"
     />
+    <script>
+      // Apply the stored theme before the first paint. The app itself only
+      // reaches switchTheme once it has hydrated, awaited the locale and read
+      // IndexedDB, so without this a dark theme arrives as a flash of white.
+      // 'auto' is stored as no value at all, which correctly leaves the
+      // attribute off and lets the stylesheet's prefers-color-scheme rule win.
+      try {
+        var storedTheme = localStorage.getItem('theme');
+        if (storedTheme && storedTheme !== 'auto') {
+          document.documentElement.setAttribute('data-theme', storedTheme);
+        }
+      } catch {
+        // Storage blocked; the system preference still applies.
+      }
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">
