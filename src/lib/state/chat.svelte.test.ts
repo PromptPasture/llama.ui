@@ -314,3 +314,73 @@ describe('a reply that says nothing at all', () => {
     expect(mocks.appendMsg).not.toHaveBeenCalled();
   });
 });
+
+describe('saving an edit to a reply', () => {
+  const edit = (over: Record<string, unknown> = {}) =>
+    chat.replaceMessage(
+      {
+        msg: {
+          id: 7,
+          convId: 'conv-1',
+          type: 'text',
+          timestamp: 7,
+          role: 'assistant',
+          content: 'the old wording',
+          parent: 6,
+          children: [],
+        } as never,
+        newContent: 'the corrected wording',
+        onChunk: () => {},
+      },
+      deps({ provider: {}, ...over }) as never
+    );
+
+  beforeEach(() => {
+    mocks.appendMsg.mockClear().mockResolvedValue(undefined);
+    stream.generateChatStream.mockClear();
+  });
+
+  it('stores the corrected wording', async () => {
+    await edit();
+
+    expect(mocks.appendMsg).toHaveBeenCalledOnce();
+    expect(mocks.appendMsg.mock.calls[0][0]).toMatchObject({
+      content: 'the corrected wording',
+      role: 'assistant',
+    });
+  });
+
+  it('keeps it beside the wording it replaces', async () => {
+    await edit();
+
+    // Appended under the same parent, so the original is still there to
+    // switch back to.
+    expect(mocks.appendMsg.mock.calls[0][1]).toBe(6);
+  });
+
+  it('does not ask for another reply', async () => {
+    await edit();
+
+    // The button says Save. Generating here appended a second reply under the
+    // one just corrected, and charged a whole generation for pressing it.
+    expect(stream.generateChatStream).not.toHaveBeenCalled();
+  });
+
+  it('says so when the edit could not be stored', async () => {
+    mocks.appendMsg.mockRejectedValue(new Error('disk full'));
+    const d = deps({ provider: {} });
+
+    await chat.replaceMessage(
+      {
+        msg: { id: 7, convId: 'conv-1', parent: 6, role: 'assistant' } as never,
+        newContent: 'the corrected wording',
+        onChunk: () => {},
+      },
+      d as never
+    );
+
+    // Unreported, a failed save looks exactly like one that worked: the editor
+    // closes and the old text comes back.
+    expect(d.toast).toHaveBeenCalled();
+  });
+});

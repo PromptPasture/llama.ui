@@ -312,15 +312,21 @@ export const chat = {
   ): Promise<void> {
     if (chat.isGenerating(msg.convId)) return;
     const now = nextId();
-    await IndexedDB.appendMsg(
-      { ...msg, id: now, timestamp: now, content: newContent },
-      msg.parent
-    );
+    try {
+      await IndexedDB.appendMsg(
+        { ...msg, id: now, timestamp: now, content: newContent },
+        msg.parent
+      );
+    } catch {
+      // Unreported, a failed save looked exactly like a successful one: the
+      // editor closed and the old text came back.
+      deps.toast(t('state.chat.errors.cannotSaveMessage'));
+      return;
+    }
     onChunk(now);
-    await chat._generate(
-      { convId: msg.convId, leafNodeId: now, onChunk },
-      deps
-    );
+    // Saving an edit is not a request for another answer. Asking for one here
+    // appended a second reply under the one just corrected, at the cost of a
+    // whole generation, every time the Save button was pressed.
   },
 
   async branchMessage(
