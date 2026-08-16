@@ -214,7 +214,7 @@
   }
 
   .sidebar {
-    @apply fixed top-0 left-0 bottom-0 flex flex-col p-2;
+    @apply fixed top-0 start-0 bottom-0 flex flex-col p-2;
     @apply xl:sticky xl:top-0 xl:h-screen;
     width: var(--sidebar-width);
     background: var(--color-surface-alt);

@@ -122,7 +122,7 @@
   }
 
   .chat-input__box {
-    @apply flex items-end gap-2 pl-3 pr-2 py-2;
+    @apply flex items-end gap-2 ps-3 pe-2 py-2;
     background: var(--color-surface-alt);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);

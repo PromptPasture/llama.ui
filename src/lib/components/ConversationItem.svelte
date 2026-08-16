@@ -269,7 +269,7 @@
   }
 
   .conv-item__dropdown {
-    @apply absolute right-0 z-50 p-1 list-none m-0;
+    @apply absolute end-0 z-50 p-1 list-none m-0;
     top: calc(100% + 4px);
     min-width: 10rem;
     background: var(--color-surface);

@@ -43,7 +43,7 @@
 <style>
   @reference "tailwindcss";
   .toast-host {
-    @apply fixed bottom-6 right-6 flex flex-col gap-2 pointer-events-none;
+    @apply fixed bottom-6 end-6 flex flex-col gap-2 pointer-events-none;
     z-index: 9999;
   }
 

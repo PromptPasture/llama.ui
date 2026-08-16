@@ -373,7 +373,7 @@
   }
 
   .msg__bubble--assistant {
-    @apply max-w-full pl-0;
+    @apply max-w-full ps-0;
     background: transparent;
   }
 
@@ -414,7 +414,7 @@
   }
 
   .msg__reasoning-body {
-    @apply pl-4 mb-3 text-sm;
+    @apply ps-4 mb-3 text-sm;
     border-left: 2px solid var(--color-border);
     color: var(--color-text-muted);
   }

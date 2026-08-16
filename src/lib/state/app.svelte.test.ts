@@ -78,6 +78,22 @@ describe('choosing a language', () => {
 
     expect(document.documentElement.getAttribute('lang')).toBe('ja');
   });
+
+  it('turns the layout round when the language reads that way', () => {
+    app.switchLanguage('ar');
+
+    // Choosing Arabic used to leave the interface laid out left to right,
+    // with the words running the other way inside it.
+    expect(document.documentElement.getAttribute('dir')).toBe('rtl');
+  });
+
+  it('turns it back when the next one does not', () => {
+    app.switchLanguage('ar');
+
+    app.switchLanguage('de');
+
+    expect(document.documentElement.getAttribute('dir')).toBe('ltr');
+  });
 });
 
 describe('the browser chrome', () => {
