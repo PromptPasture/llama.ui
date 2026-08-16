@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { init, register, waitLocale } from 'svelte-i18n';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, describe, expect, it } from 'vitest';
 import SettingsTabs from './SettingsTabs.svelte';
 
@@ -8,6 +8,7 @@ import SettingsTabs from './SettingsTabs.svelte';
 // initial locale from navigator.language and is not deterministic here.
 beforeAll(async () => {
   register('en', () => import('../../lib/i18n/en.json'));
+  register('ru', () => import('$lib/i18n/ru.json'));
   init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
@@ -142,5 +143,21 @@ describe('SettingsTabs keyboard navigation', () => {
 
     expect(tab('Gamma')).toHaveAttribute('aria-selected', 'true');
     expect(tab('Alpha')).toHaveAttribute('aria-selected', 'false');
+  });
+});
+
+describe('the name of the tab strip', () => {
+  it('is in the language being read', async () => {
+    await locale.set('ru');
+    await waitLocale();
+    renderTabs('alpha');
+
+    // Written into the markup, this stayed English for every reader.
+    expect(
+      screen.getByRole('tablist', { name: 'Разделы настроек' })
+    ).toBeInTheDocument();
+
+    await locale.set('en');
+    await waitLocale();
   });
 });

@@ -96,7 +96,7 @@
           type="button"
           class="chat-input__btn chat-input__btn--stop"
           onclick={stop}
-          aria-label="Stop generation"
+          aria-label={$_('chatInput.ariaLabels.stop')}
         >
           <SquareIcon size={16} />
         </button>

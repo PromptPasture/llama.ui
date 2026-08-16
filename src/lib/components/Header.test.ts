@@ -1,6 +1,6 @@
 import { render, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { init, register, waitLocale } from 'svelte-i18n';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ goto: vi.fn() }));
@@ -12,6 +12,7 @@ const { default: Header } = await import('./Header.svelte');
 
 beforeAll(async () => {
   register('en', () => import('../i18n/en.json'));
+  register('ru', () => import('../i18n/ru.json'));
   init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
@@ -73,5 +74,21 @@ describe('the sidebar toggle', () => {
 
     expect(onsidebartoggle).toHaveBeenCalledOnce();
     expect(mocks.goto).not.toHaveBeenCalled();
+  });
+});
+
+describe('the wording of the header controls', () => {
+  it('names the sidebar toggle in the language being read', async () => {
+    await locale.set('ru');
+    await waitLocale();
+    const { container } = render(Header);
+
+    // Written into the markup, this stayed English for every reader.
+    expect(
+      narrowWindowRow(container).getByLabelText('Открыть боковую панель')
+    ).toBeInTheDocument();
+
+    await locale.set('en');
+    await waitLocale();
   });
 });

@@ -92,22 +92,30 @@
       const k = key as ConfigurationKey;
       const val = cfg[k];
       const def = CONFIG_DEFAULT[k];
+      // Named as the field is named on the screen, rather than by its key.
+      const field = $_(`settings.parameters.${key}.label`, { default: key });
       if (isString(def)) {
         if (!isString(val)) {
-          await modal.showAlert(`Value for ${key} must be a string`);
+          await modal.showAlert(
+            $_('settings.validation.mustBeText', { values: { field } })
+          );
           return;
         }
       } else if (isNumeric(def)) {
         const n = Number(String(val).trim());
         if (isNaN(n)) {
-          await modal.showAlert(`Value for ${key} must be numeric`);
+          await modal.showAlert(
+            $_('settings.validation.mustBeNumber', { values: { field } })
+          );
           return;
         }
         // @ts-expect-error safe cast
         cfg[k] = n;
       } else if (isBoolean(def)) {
         if (!isBoolean(val)) {
-          await modal.showAlert(`Value for ${key} must be boolean`);
+          await modal.showAlert(
+            $_('settings.validation.mustBeTrueOrFalse', { values: { field } })
+          );
           return;
         }
       }
@@ -120,7 +128,9 @@
         JSON.parse(cfg.custom);
       } catch (error) {
         await modal.showAlert(
-          `Custom JSON config is not valid JSON: ${(error as Error).message}`
+          $_('settings.validation.invalidCustomJson', {
+            values: { message: (error as Error).message },
+          })
         );
         return;
       }

@@ -42,7 +42,7 @@
       variant="ghost"
       size="icon-xl"
       onclick={onsidebartoggle}
-      aria-label="Open sidebar"
+      aria-label={$_('header.ariaLabels.openSidebar')}
     >
       <MenuIcon size={20} />
     </Button>

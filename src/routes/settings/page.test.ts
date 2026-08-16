@@ -383,3 +383,33 @@ describe('the wording of the settings questions', () => {
     expect(mocks.showConfirm).toHaveBeenCalledWith('Отменить изменения?');
   });
 });
+
+describe('what a rejected setting says', () => {
+  afterEach(async () => {
+    await locale.set('en');
+    await waitLocale();
+  });
+
+  it('names the field as the screen names it, and says so in the language being read', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    await userEvent.click(screen.getByRole('tab', { name: 'Advanced' }));
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Override Generation Options' })
+    );
+    const temperature = screen.getByRole('textbox', { name: 'temperature' });
+    await userEvent.clear(temperature);
+    await userEvent.type(temperature, 'not a number');
+    const save = screen.getByRole('button', { name: 'Save' });
+    await locale.set('ru');
+    await waitLocale();
+
+    await userEvent.click(save);
+
+    // Built by hand in English, this was the one message a reader sees when
+    // they have mistyped something, and it was never translated.
+    expect(mocks.showAlert).toHaveBeenCalledWith(
+      expect.stringContaining('должно быть числом')
+    );
+  });
+});

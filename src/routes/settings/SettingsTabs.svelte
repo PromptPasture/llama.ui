@@ -44,7 +44,11 @@
   }
 </script>
 
-<div class="settings__tabs" role="tablist" aria-label="Settings sections">
+<div
+  class="settings__tabs"
+  role="tablist"
+  aria-label={$_('settings.ariaLabels.tabs')}
+>
   {#each tabs as tab, i (tab.id)}
     <button
       bind:this={tabRefs[i]}

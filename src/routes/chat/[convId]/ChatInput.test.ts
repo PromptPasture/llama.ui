@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { init, register, waitLocale } from 'svelte-i18n';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
 import {
   afterEach,
   beforeAll,
@@ -24,6 +24,7 @@ const { default: ChatInput } = await import('./ChatInput.svelte');
 // initial locale from navigator.language and is not deterministic here.
 beforeAll(async () => {
   register('en', () => import('../../../lib/i18n/en.json'));
+  register('ru', () => import('../../../lib/i18n/ru.json'));
   init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
@@ -250,5 +251,22 @@ describe('ChatInput taking the cursor when a conversation opens', () => {
     // Focusing here raises the on-screen keyboard over the conversation
     // before the reader has decided to write anything.
     expect(textarea).not.toHaveFocus();
+  });
+});
+
+describe('the wording of the stop button', () => {
+  it('is in the language being read', async () => {
+    await locale.set('ru');
+    await waitLocale();
+    mocks.isGenerating.mockReturnValue(true);
+    renderInput();
+
+    // Written into the markup, this stayed English for every reader.
+    expect(
+      screen.getByRole('button', { name: 'Остановить генерацию' })
+    ).toBeInTheDocument();
+
+    await locale.set('en');
+    await waitLocale();
   });
 });
