@@ -64,6 +64,7 @@
   "chatScreen.titles.performance": "パフォーマンス",
   "chatScreen.ariaLabels.messageUserRole": "ユーザーからのメッセージ",
   "chatScreen.ariaLabels.messageAssistantRole": "アシスタントからのメッセージ",
+  "chatScreen.ariaLabels.jumpToLatest": "最新のメッセージへ移動",
   "chatScreen.ariaLabels.codeBlock": "コードブロック",
   "chatScreen.ariaLabels.codeLanguage": "コード言語",
   "chatScreen.ariaLabels.siblingLeafs": "メッセージバージョン {total}のうち{current}",

@@ -64,6 +64,7 @@
   "chatScreen.titles.performance": "Производительность",
   "chatScreen.ariaLabels.messageUserRole": "Сообщение от пользователя",
   "chatScreen.ariaLabels.messageAssistantRole": "Сообщение от ассистента",
+  "chatScreen.ariaLabels.jumpToLatest": "Перейти к последнему сообщению",
   "chatScreen.ariaLabels.codeBlock": "Блок кода",
   "chatScreen.ariaLabels.codeLanguage": "Язык кода",
   "chatScreen.ariaLabels.siblingLeafs": "Версия сообщения {current} из {total}",

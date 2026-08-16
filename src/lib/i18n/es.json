@@ -64,6 +64,7 @@
   "chatScreen.titles.performance": "Rendimiento",
   "chatScreen.ariaLabels.messageUserRole": "Mensaje del usuario",
   "chatScreen.ariaLabels.messageAssistantRole": "Mensaje del asistente",
+  "chatScreen.ariaLabels.jumpToLatest": "Ir al último mensaje",
   "chatScreen.ariaLabels.codeBlock": "Bloque de código",
   "chatScreen.ariaLabels.codeLanguage": "Lenguaje de código",
   "chatScreen.ariaLabels.siblingLeafs": "Versión del mensaje {current} de {total}",

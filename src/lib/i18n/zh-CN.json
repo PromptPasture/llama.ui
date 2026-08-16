@@ -64,6 +64,7 @@
   "chatScreen.titles.performance": "性能",
   "chatScreen.ariaLabels.messageUserRole": "来自用户的消息",
   "chatScreen.ariaLabels.messageAssistantRole": "来自助手的消息",
+  "chatScreen.ariaLabels.jumpToLatest": "跳到最新消息",
   "chatScreen.ariaLabels.codeBlock": "代码块",
   "chatScreen.ariaLabels.codeLanguage": "代码语言",
   "chatScreen.ariaLabels.siblingLeafs": "消息版本 {current} / {total}",

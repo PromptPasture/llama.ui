@@ -64,6 +64,7 @@
   "chatScreen.titles.performance": "성능",
   "chatScreen.ariaLabels.messageUserRole": "사용자의 메시지",
   "chatScreen.ariaLabels.messageAssistantRole": "도우미의 메시지",
+  "chatScreen.ariaLabels.jumpToLatest": "최신 메시지로 이동",
   "chatScreen.ariaLabels.codeBlock": "코드 블록",
   "chatScreen.ariaLabels.codeLanguage": "코드 언어",
   "chatScreen.ariaLabels.siblingLeafs": "{total}개 중 {current}번째 메시지 버전",

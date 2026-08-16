@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { _ } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { app } from '$lib/state/app.svelte';
@@ -14,6 +15,8 @@
   import type { PageProps } from './$types';
   import ChatMessage from './ChatMessage.svelte';
   import ChatInput from './ChatInput.svelte';
+  import ChevronDownIcon from 'lucide-svelte/icons/chevron-down';
+  import Button from '$lib/components/Button.svelte';
 
   // Typed by the route, so convId is a string rather than string | undefined.
   let { params }: PageProps = $props();
@@ -30,6 +33,11 @@
    * someone who was at the bottom a moment ago now measures as being above it.
    */
   let following = $state(true);
+
+  function jumpToLatest() {
+    following = true;
+    msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
+  }
 
   function onListScroll() {
     if (msgListEl) following = isAtBottom(msgListEl);
@@ -205,6 +213,21 @@
     </div>
   </div>
 
+  {#if !following}
+    <!-- Scrolling up stops the reply pulling the view down, which leaves no
+         way back to it but scrolling all the way there. -->
+    <div class="chat-page__jump">
+      <Button
+        variant="neutral"
+        size="icon-md"
+        onclick={jumpToLatest}
+        aria-label={$_('chatScreen.ariaLabels.jumpToLatest')}
+      >
+        <ChevronDownIcon size={18} />
+      </Button>
+    </div>
+  {/if}
+
   <ChatInput {convId} onsend={handleSend} />
 </div>
 
@@ -212,6 +235,16 @@
   @reference "tailwindcss";
   .chat-page {
     @apply flex flex-col h-full;
+  }
+
+  .chat-page__jump {
+    @apply sticky bottom-0 flex justify-center pointer-events-none;
+    height: 0;
+  }
+
+  .chat-page__jump :global(button) {
+    @apply pointer-events-auto rounded-full shadow-md;
+    transform: translateY(-0.5rem);
   }
 
   .chat-page__scroll {

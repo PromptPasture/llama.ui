@@ -64,6 +64,7 @@
   "chatScreen.titles.performance": "الأداء",
   "chatScreen.ariaLabels.messageUserRole": "رسالة من المستخدم",
   "chatScreen.ariaLabels.messageAssistantRole": "رسالة من المساعد",
+  "chatScreen.ariaLabels.jumpToLatest": "الانتقال إلى أحدث رسالة",
   "chatScreen.ariaLabels.codeBlock": "كتلة تعليمات برمجية",
   "chatScreen.ariaLabels.codeLanguage": "لغة التعليمات البرمجية",
   "chatScreen.ariaLabels.siblingLeafs": "إصدار الرسالة {current} من {total}",

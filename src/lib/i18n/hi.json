@@ -64,6 +64,7 @@
   "chatScreen.titles.performance": "प्रदर्शन",
   "chatScreen.ariaLabels.messageUserRole": "उपयोगकर्ता से संदेश",
   "chatScreen.ariaLabels.messageAssistantRole": "सहायक से संदेश",
+  "chatScreen.ariaLabels.jumpToLatest": "नवीनतम संदेश पर जाएं",
   "chatScreen.ariaLabels.codeBlock": "कोड ब्लॉक",
   "chatScreen.ariaLabels.codeLanguage": "कोड भाषा",
   "chatScreen.ariaLabels.siblingLeafs": "संदेश संस्करण {current} / {total}",
