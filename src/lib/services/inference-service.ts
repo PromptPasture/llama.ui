@@ -54,6 +54,13 @@ export const generateChatStream = async ({
     }
 
     const choice = chunk.choices[0];
+    if (!choice?.delta) {
+      // The type says delta is always present, but this is whatever the
+      // configured server sent. Some emit a terminal chunk carrying only
+      // finish_reason; throwing here would discard the reply streamed so far.
+      continue;
+    }
+
     const addedContent = choice.delta.content;
     const addedReasoning =
       choice.delta.reasoning_content || choice.delta.reasoning;
