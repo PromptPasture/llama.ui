@@ -35,7 +35,7 @@
     // anyway leaves a new visitor looking at an empty conversation they did
     // not ask for, named after a message that was never answered.
     if (!inference.provider) {
-      await offerToConfigure();
+      await offerToConfigure(app.config.baseUrl);
       return false;
     }
     const conv = await IndexedDB.createConversation(content.substring(0, 256));

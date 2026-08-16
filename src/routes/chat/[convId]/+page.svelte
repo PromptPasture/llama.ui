@@ -110,7 +110,7 @@
     // The same offer the welcome screen makes: there is nowhere to send this,
     // and the settings are where that is fixed.
     if (!inference.provider) {
-      await offerToConfigure();
+      await offerToConfigure(app.config.baseUrl);
       return false;
     }
     // Sending is a request to be shown the answer, so it re-engages following

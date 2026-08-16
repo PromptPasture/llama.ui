@@ -8,6 +8,12 @@
   import { initI18n } from '$lib/i18n/index.js';
   import { modal } from '$lib/state/modal.svelte';
   import { startServiceWorker } from '$lib/service-worker';
+  import {
+    offerToConfigure,
+    SETUP_GRACE_MS,
+    shouldOfferSetup,
+  } from '$lib/first-run';
+  import { page } from '$app/state';
   import { t } from '$lib/i18n/translate';
   import Header from '$lib/components/Header.svelte';
   import Sidebar from '$lib/components/Sidebar.svelte';
@@ -19,6 +25,8 @@
 
   let sidebarOpen = $state(false);
   let ready = $state(false);
+  /** Asked once a visit: declining should not be re-asked on every change. */
+  let setupOffered = false;
 
   initI18n();
 
@@ -30,6 +38,23 @@
     startServiceWorker(() =>
       modal.showConfirm(t('toast.newVersion.description'))
     );
+
+    // Nothing can be answered until a provider is configured, and a first
+    // visitor has no reason to know that. Offered after a pause, so a provider
+    // that is simply slow to list its models is not mistaken for none.
+    setTimeout(() => {
+      if (
+        !shouldOfferSetup({
+          modelCount: inference.models.length,
+          onSettingsScreen: page.url.pathname === resolve('/settings'),
+          alreadyOffered: setupOffered,
+        })
+      ) {
+        return;
+      }
+      setupOffered = true;
+      void offerToConfigure(app.config.baseUrl);
+    }, SETUP_GRACE_MS);
   });
 
   // Re-initialize inference when config changes
