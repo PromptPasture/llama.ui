@@ -417,3 +417,46 @@ describe('Sidebar being asked to search', () => {
     expect(box.selectionEnd).toBe('holiday'.length);
   });
 });
+
+describe('Sidebar Escape while searching', () => {
+  const search = () => screen.getByPlaceholderText('Search');
+
+  /** What the layout listens on to close the sidebar. */
+  function watchWindow() {
+    const heard: KeyboardEvent[] = [];
+    const listener = (e: Event) => heard.push(e as KeyboardEvent);
+    window.addEventListener('keydown', listener);
+    return {
+      heard,
+      stop: () => window.removeEventListener('keydown', listener),
+    };
+  }
+
+  it('clears the search without also closing the sidebar', async () => {
+    const user = userEvent.setup();
+    await renderSidebar();
+    await user.type(search(), 'holiday');
+    const watcher = watchWindow();
+
+    await user.keyboard('{Escape}');
+
+    // One press should not both empty the box and take away the panel it is
+    // in; the layout closes the sidebar on the same key.
+    expect(search()).toHaveValue('');
+    expect(watcher.heard).toHaveLength(0);
+    watcher.stop();
+  });
+
+  it('lets Escape through when there is nothing to clear', async () => {
+    const user = userEvent.setup();
+    await renderSidebar();
+    search().focus();
+    const watcher = watchWindow();
+
+    await user.keyboard('{Escape}');
+
+    // Nothing to clear, so the press means what it means everywhere else.
+    expect(watcher.heard).toHaveLength(1);
+    watcher.stop();
+  });
+});

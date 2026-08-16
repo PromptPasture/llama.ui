@@ -170,7 +170,13 @@
       placeholder={$_('sidebar.searchPlaceHolder')}
       bind:value={searchTerm}
       onkeydown={(e) => {
-        if (e.key === 'Escape') searchTerm = '';
+        if (e.key !== 'Escape' || !searchTerm) return;
+        // The layout closes the sidebar on Escape too. Clearing the search is
+        // the narrower action, and one press should not both empty the box and
+        // take away the panel it is in. An empty box has nothing to clear, so
+        // Escape carries on to close the sidebar as before.
+        e.stopPropagation();
+        searchTerm = '';
       }}
     />
     {#if isFiltered}
