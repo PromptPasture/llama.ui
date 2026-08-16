@@ -130,6 +130,7 @@
   "settings.sections.performance": "パフォーマンス",
   "settings.sections.reasoning": "推論",
   "settings.sections.generation": "生成",
+  "settings.sections.optionsNotSent": "このプロバイダーはこれらのオプションを受け付けないため、送信されません。",
   "settings.sections.samplers": "サンプラー",
   "settings.sections.penalties": "ペナルティ",
   "settings.sections.custom": "カスタム",

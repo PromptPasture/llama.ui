@@ -1,6 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
   import type { Configuration, ConfigurationKey } from '$lib/types';
+  import { inference } from '$lib/state/inference.svelte';
   import SettingsField from '$lib/components/settings/SettingsField.svelte';
 
   interface Props {
@@ -11,6 +12,15 @@
   }
 
   let { config, onchange }: Props = $props();
+
+  // These are llama.cpp's samplers, and a hosted API rejects the ones it does
+  // not know, so they are only sent where they are understood. Offering them
+  // with no word about that let a reader set a temperature that was quietly
+  // dropped on the way out.
+  const ignored = $derived(
+    inference.provider !== null &&
+      !inference.provider.acceptsGenerationOptions()
+  );
 
   const generationKeys: ConfigurationKey[] = [
     'temperature',
@@ -43,6 +53,9 @@
   <h4 class="section-heading section-heading--first">
     {$_('settings.sections.generation')}
   </h4>
+  {#if ignored}
+    <p class="advanced__ignored">{$_('settings.sections.optionsNotSent')}</p>
+  {/if}
   <SettingsField
     type="checkbox"
     configKey="overrideGenerationOptions"
@@ -104,6 +117,13 @@
 
 <style>
   @reference "tailwindcss";
+  .advanced__ignored {
+    @apply text-sm p-3 mb-4;
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-md);
+    color: var(--color-warning);
+  }
+
   .section-heading {
     @apply font-semibold mt-4 mb-3;
     font-size: 0.9375rem;

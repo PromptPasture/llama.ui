@@ -130,6 +130,7 @@
   "settings.sections.performance": "Rendimiento",
   "settings.sections.reasoning": "Razonamiento",
   "settings.sections.generation": "Generación",
+  "settings.sections.optionsNotSent": "Este proveedor no acepta estas opciones, por lo que no se enviarán.",
   "settings.sections.samplers": "Muestreadores",
   "settings.sections.penalties": "Penalizaciones",
   "settings.sections.custom": "Personalizado",

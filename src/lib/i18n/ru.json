@@ -130,6 +130,7 @@
   "settings.sections.performance": "Производительность",
   "settings.sections.reasoning": "Рассуждение",
   "settings.sections.generation": "Генерация",
+  "settings.sections.optionsNotSent": "Этот провайдер не принимает эти параметры, поэтому они не будут отправлены.",
   "settings.sections.samplers": "Сэмплеры",
   "settings.sections.penalties": "Штрафы",
   "settings.sections.custom": "Пользовательский",

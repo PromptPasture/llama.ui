@@ -89,3 +89,35 @@ describe('a Groq model with no stated owner', () => {
     );
   });
 });
+
+describe('whether a provider is sent the generation options', () => {
+  it('is true for a self-hosted server, whose samplers these are', async () => {
+    const { LlamaCppProvider } = await import('./LlamaCppProvider');
+
+    expect(
+      LlamaCppProvider.new('http://localhost:8080').acceptsGenerationOptions()
+    ).toBe(true);
+  });
+
+  it('is false for a hosted API, which rejects what it does not know', async () => {
+    const { CloudOpenAIProvider } = await import('./CloudOpenAIProvider');
+
+    expect(
+      CloudOpenAIProvider.new(
+        'https://api.openai.com',
+        'k'
+      ).acceptsGenerationOptions()
+    ).toBe(false);
+  });
+
+  it('is true for OpenRouter, which opts back in', async () => {
+    const { OpenRouterProvider } = await import('./OpenRouterProvider');
+
+    expect(
+      OpenRouterProvider.new(
+        'https://openrouter.ai/api',
+        'k'
+      ).acceptsGenerationOptions()
+    ).toBe(true);
+  });
+});

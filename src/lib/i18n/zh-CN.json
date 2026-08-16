@@ -130,6 +130,7 @@
   "settings.sections.performance": "性能",
   "settings.sections.reasoning": "推理",
   "settings.sections.generation": "生成",
+  "settings.sections.optionsNotSent": "此提供商不接受这些选项，因此不会发送。",
   "settings.sections.samplers": "采样器",
   "settings.sections.penalties": "惩罚",
   "settings.sections.custom": "自定义",

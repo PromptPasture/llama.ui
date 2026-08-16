@@ -130,6 +130,7 @@
   "settings.sections.performance": "الأداء",
   "settings.sections.reasoning": "الاستنتاج",
   "settings.sections.generation": "الإنشاء",
+  "settings.sections.optionsNotSent": "لا يقبل هذا المزود هذه الخيارات، لذلك لن يتم إرسالها.",
   "settings.sections.samplers": "أدوات الاختيار",
   "settings.sections.penalties": "العقوبات",
   "settings.sections.custom": "مخصص",

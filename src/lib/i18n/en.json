@@ -130,6 +130,7 @@
   "settings.sections.performance": "Performance",
   "settings.sections.reasoning": "Reasoning",
   "settings.sections.generation": "Generation",
+  "settings.sections.optionsNotSent": "This provider does not accept these options, so they will not be sent.",
   "settings.sections.samplers": "Samplers",
   "settings.sections.penalties": "Penalties",
   "settings.sections.custom": "Custom",

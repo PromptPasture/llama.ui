@@ -349,6 +349,11 @@ export class BaseOpenAIProvider
     return false;
   }
 
+  /** @inheritdoc */
+  acceptsGenerationOptions(): boolean {
+    return this.isAllowCustomOptions();
+  }
+
   /**
    * Path of the model listing endpoint, relative to the base URL.
    *

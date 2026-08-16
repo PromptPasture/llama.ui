@@ -130,6 +130,7 @@
   "settings.sections.performance": "Leistung",
   "settings.sections.reasoning": "Argumentation",
   "settings.sections.generation": "Generierung",
+  "settings.sections.optionsNotSent": "Dieser Anbieter akzeptiert diese Optionen nicht, sie werden daher nicht gesendet.",
   "settings.sections.samplers": "Sampler",
   "settings.sections.penalties": "Strafen",
   "settings.sections.custom": "Benutzerdefiniert",

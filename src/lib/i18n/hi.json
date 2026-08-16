@@ -130,6 +130,7 @@
   "settings.sections.performance": "प्रदर्शन",
   "settings.sections.reasoning": "तर्क",
   "settings.sections.generation": "जनरेशन",
+  "settings.sections.optionsNotSent": "यह प्रदाता इन विकल्पों को स्वीकार नहीं करता, इसलिए ये नहीं भेजे जाएंगे।",
   "settings.sections.samplers": "सैंपलर",
   "settings.sections.penalties": "पेनाल्टी",
   "settings.sections.custom": "कस्टम",

@@ -138,6 +138,16 @@ export interface LLMProvider {
    * @returns {string | undefined} The API key, or undefined if not configured.
    */
   getApiKey(): string | undefined;
+
+  /**
+   * Whether generation options reach this provider.
+   *
+   * The samplers the settings offer are llama.cpp's, and a hosted API rejects
+   * the ones it does not know, so they are only sent where they are
+   * understood. The settings screen asks this so that it can say when what it
+   * is offering will not be used.
+   */
+  acceptsGenerationOptions(): boolean;
 }
 
 /**

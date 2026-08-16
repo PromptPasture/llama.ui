@@ -130,6 +130,7 @@
   "settings.sections.performance": "성능",
   "settings.sections.reasoning": "추론",
   "settings.sections.generation": "생성",
+  "settings.sections.optionsNotSent": "이 공급자는 이러한 옵션을 받지 않으므로 전송되지 않습니다.",
   "settings.sections.samplers": "샘플러",
   "settings.sections.penalties": "패널티",
   "settings.sections.custom": "사용자 지정",
