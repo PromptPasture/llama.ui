@@ -1,5 +1,36 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { LlamaCppProvider } from './LlamaCppProvider';
+import { LlamaCppProvider, parseLlamaCppModelName } from './LlamaCppProvider';
+
+describe('naming a llama.cpp model', () => {
+  it.each([
+    // The point of the function: drop the quantization tag and extension.
+    ['models/llama-3-8b.Q4_K_M.gguf', 'llama-3-8b'],
+    ['C:\\models\\mistral-7b.Q5_K_S.gguf', 'mistral-7b'],
+    ['Meta-Llama-3-8B-Instruct.Q4_K_M.gguf', 'Meta-Llama-3-8B-Instruct'],
+    ['Llama-3.2-3B-Instruct-Q8_0.gguf', 'Llama-3.2-3B-Instruct'],
+    ['qwen2.5-coder-7b-instruct-q4_0.gguf', 'qwen2.5-coder-7b-instruct'],
+    ['model-IQ3_XS.gguf', 'model'],
+    ['ggml-model-q4_0.bin', 'ggml-model'],
+    ['phi-3-mini-4k-instruct-fp16.gguf', 'phi-3-mini-4k-instruct'],
+  ])('strips the quantization and extension from %s', (input, expected) => {
+    expect(parseLlamaCppModelName(input)).toBe(expected);
+  });
+
+  it.each([
+    // A size is part of the name, not a suffix to discard.
+    ['/home/user/llama-7b', 'llama-7b'],
+    ['llama-3-8b', 'llama-3-8b'],
+    ['gpt-4o', 'gpt-4o'],
+    ['unknown-model', 'unknown-model'],
+  ])('keeps the whole name of %s', (input, expected) => {
+    expect(parseLlamaCppModelName(input)).toBe(expected);
+  });
+
+  it('falls back to the original when there is no filename', () => {
+    expect(parseLlamaCppModelName('models/')).toBe('models/');
+    expect(parseLlamaCppModelName('')).toBe('');
+  });
+});
 
 afterEach(() => {
   vi.unstubAllGlobals();

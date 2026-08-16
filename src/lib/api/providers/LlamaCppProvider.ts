@@ -37,18 +37,24 @@ interface LlamaCppServerProps {
  * ```ts
  * parseLlamaCppModelName("models/llama-3-8b.Q4_K_M.gguf") // => "llama-3-8b"
  * parseLlamaCppModelName("/home/user/llama-7b")           // => "llama-7b"
+ * parseLlamaCppModelName("Llama-3.2-3B-Instruct-Q8_0.gguf") // => "Llama-3.2-3B-Instruct"
  * parseLlamaCppModelName("unknown-model")                 // => "unknown-model"
  * ```
  *
  * @internal Used internally by {@link LlamaCppProvider} to normalize model IDs.
  */
 export function parseLlamaCppModelName(model: string): string {
-  return (
-    model
-      .split(/(\\|\/)/)
-      .pop()
-      ?.replace(/[-](?:[\d\w]+[_\d\w]+)(?:\.[a-z]+)?$/, '') || model
-  );
+  const file = model.split(/[\\/]/).pop() ?? '';
+  if (!file) return model;
+
+  // Weight file extensions, then a trailing quantization tag such as Q4_K_M,
+  // q4_0, IQ3_XS, fp16 or bf16. Anchoring on the tag rather than on "any
+  // trailing hyphenated word" is what keeps a size like -7b or -3-8b intact.
+  const name = file
+    .replace(/\.(gguf|bin|safetensors|pt|pth)$/i, '')
+    .replace(/[-._](?:i?q\d+[_a-z0-9]*|f?p?(?:16|32)|bf16)$/i, '');
+
+  return name || model;
 }
 
 /**
