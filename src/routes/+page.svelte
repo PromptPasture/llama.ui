@@ -69,7 +69,7 @@
           <button
             type="button"
             class="welcome__prompt-btn"
-            onclick={() => goto(`/chat?q=${encodeURIComponent(prompt)}`)}
+            onclick={() => handleSend(prompt, undefined)}
           >
             {prompt}
           </button>
