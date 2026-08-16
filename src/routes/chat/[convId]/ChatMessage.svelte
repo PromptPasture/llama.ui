@@ -199,7 +199,7 @@
               {/if}
               {#if thinkingOpen}<ChevronDownIcon
                   size={14}
-                />{:else}<ChevronRightIcon size={14} />{/if}
+                />{:else}<ChevronRightIcon size={14} class="rtl-flip" />{/if}
             </button>
             {#if thinkingOpen}
               <div
@@ -252,7 +252,7 @@
             title={$_('chatScreen.titles.previous')}
             aria-label={$_('chatScreen.ariaLabels.switchToPrevious')}
           >
-            <ChevronLeftIcon size={14} />
+            <ChevronLeftIcon size={14} class="rtl-flip" />
           </Button>
           <span>{siblingCurrIdx + 1} / {siblingLeafNodeIds.length}</span>
           <Button
@@ -263,7 +263,7 @@
             title={$_('chatScreen.titles.next')}
             aria-label={$_('chatScreen.ariaLabels.switchToNext')}
           >
-            <ChevronRightIcon size={14} />
+            <ChevronRightIcon size={14} class="rtl-flip" />
           </Button>
         </div>
       {/if}

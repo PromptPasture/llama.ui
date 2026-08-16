@@ -63,8 +63,10 @@ function renderMessage(display_: MessageDisplay = display()) {
     oneditassistantfn: vi.fn(),
     onchangesibling: vi.fn(),
   };
-  render(ChatMessage, { props: { message: display_, ...handlers } });
-  return handlers;
+  const rendered = render(ChatMessage, {
+    props: { message: display_, ...handlers },
+  });
+  return { ...rendered, ...handlers };
 }
 
 describe('ChatMessage roles', () => {
@@ -459,5 +461,42 @@ describe('ChatMessage announcing itself', () => {
       'aria-controls',
       region.id
     );
+  });
+});
+
+describe('ChatMessage icons that point along the line of text', () => {
+  /**
+   * jsdom applies no stylesheet, so the mirroring itself cannot be seen here.
+   * What is checked is that the icons carrying a direction are marked for it,
+   * and app.css is checked separately for the rule that acts on the mark.
+   */
+  it('marks the arrows between versions of a message', () => {
+    const { container } = renderMessage(
+      display({ siblingLeafNodeIds: [1, 2, 3], siblingCurrIdx: 1 })
+    );
+
+    const nav = container.querySelector('.msg__siblings');
+    expect(nav?.querySelectorAll('.rtl-flip')).toHaveLength(2);
+  });
+
+  it('marks the fold that opens the reasoning', () => {
+    const { container } = renderMessage(
+      display({ msg: message({ reasoning_content: 'weighing it up' }) })
+    );
+
+    // Closed, it points the way the text runs; open, it points down and needs
+    // no mirroring.
+    expect(container.querySelector('.msg__reasoning .rtl-flip')).not.toBeNull();
+  });
+
+  it('leaves the upright icons alone', () => {
+    const { container } = renderMessage(
+      display({ msg: message({ reasoning_content: 'weighing it up' }) })
+    );
+    const marked = container.querySelectorAll('.rtl-flip').length;
+
+    // Only the ones that point left or right; a mirrored bin or pencil would
+    // just look wrong.
+    expect(marked).toBe(1);
   });
 });

@@ -46,6 +46,16 @@
   --header-height: 56px;
 }
 
+/* ─── Icons that point along the line of text ────────────────────── */
+/*
+ * A chevron meaning "back" points left where the text runs left to right and
+ * right where it runs the other way. The layout mirrors itself under dir=rtl;
+ * the drawing inside an icon does not, so it is mirrored here.
+ */
+[dir='rtl'] .rtl-flip {
+  transform: scaleX(-1);
+}
+
 /* ─── Dark theme ────────────────────────────────────────────────── */
 [data-theme='dark'] {
   --color-bg: #1d232a;

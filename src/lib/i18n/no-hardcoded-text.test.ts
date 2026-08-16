@@ -73,3 +73,19 @@ describe('text the reader sees', () => {
     expect(found).toEqual([]);
   });
 });
+
+describe('icons that point along the line of text', () => {
+  it('have a rule to mirror them where the text runs the other way', () => {
+    const css = fs.readFileSync(path.join(SRC, 'app.css'), 'utf8');
+
+    // The components mark such icons with this class; without the rule the
+    // mark does nothing and a back arrow points forwards in Arabic.
+    expect(css).toMatch(/\[dir=['"]?rtl['"]?\]\s+\.rtl-flip/);
+  });
+
+  it('are marked somewhere, so the rule is not orphaned', () => {
+    const marked = components.filter(({ src }) => src.includes('rtl-flip'));
+
+    expect(marked.length).toBeGreaterThan(0);
+  });
+});
