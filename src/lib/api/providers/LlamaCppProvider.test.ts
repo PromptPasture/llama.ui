@@ -69,3 +69,60 @@ describe('reporting why the server properties could not be read', () => {
     timeout.mockRestore();
   });
 });
+
+describe('a server that does not offer its properties', () => {
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+  /** Answers /props with the given status, and /v1/models normally. */
+  function serverWithoutProps(propsStatus: number) {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockImplementation((url: string) =>
+          Promise.resolve(
+            String(url).includes('/props')
+              ? json({ error: { message: 'not found' } }, propsStatus)
+              : json({ data: [{ id: 'my-model.gguf' }] })
+          )
+        )
+    );
+  }
+
+  it('still lists the models', async () => {
+    serverWithoutProps(404);
+
+    const models = await LlamaCppProvider.new(
+      'http://localhost:8080'
+    ).getModels();
+
+    // The properties are behind a server flag and a proxy may not pass them
+    // through. Refusing to list anything left the picker empty against a
+    // server that answers /v1/models perfectly well.
+    expect(models.map((m) => m.id)).toEqual(['my-model.gguf']);
+  });
+
+  it('claims only text for them', async () => {
+    serverWithoutProps(404);
+
+    const [model] = await LlamaCppProvider.new(
+      'http://localhost:8080'
+    ).getModels();
+
+    expect(model.modalities).toEqual(['text']);
+  });
+
+  it('still lists them when the properties fail some other way', async () => {
+    serverWithoutProps(500);
+
+    const models = await LlamaCppProvider.new(
+      'http://localhost:8080'
+    ).getModels();
+
+    expect(models).toHaveLength(1);
+  });
+});

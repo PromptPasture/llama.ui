@@ -104,7 +104,17 @@ export class LlamaCppProvider extends SelfHostedOpenAIProvider {
 
   /** @inheritdoc */
   async getModels(): Promise<InferenceApiModel[]> {
-    await this.getServerProps();
+    // The properties say whether the model takes images or audio as well as
+    // text, and a server need not offer them — they are behind a flag, and a
+    // proxy may not pass them through. Not knowing costs a little detail;
+    // refusing to list any models at all, which is what a failure here used to
+    // do, costs the whole picker.
+    try {
+      await this.getServerProps();
+    } catch (error) {
+      if (isDev)
+        console.debug('llama.cpp server properties unavailable:', error);
+    }
 
     return super.getModels();
   }
