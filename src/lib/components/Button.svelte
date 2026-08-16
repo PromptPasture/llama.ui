@@ -79,8 +79,6 @@
     background: var(--color-surface-alt);
   }
 
-  .btn--size-default {
-  }
   .btn--size-small {
     @apply px-2 py-1 text-xs;
   }

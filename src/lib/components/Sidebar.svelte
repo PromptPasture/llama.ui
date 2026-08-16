@@ -203,7 +203,9 @@
     border-radius: var(--radius-md);
   }
 
-  .sidebar__search-icon {
+  /* The class is handed to <SearchIcon>, so scoped styles do not reach it; the
+     ancestor keeps this from applying beyond this component. */
+  .sidebar__search :global(.sidebar__search-icon) {
     color: var(--color-text-muted);
     flex-shrink: 0;
   }

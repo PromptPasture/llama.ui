@@ -183,7 +183,9 @@
     box-shadow: var(--shadow-md);
   }
 
-  .conv-item__delete-btn {
+  /* The class is handed to <Button>, so scoped styles do not reach it; the
+     ancestor keeps this from applying beyond this component. */
+  .conv-item__dropdown :global(.conv-item__delete-btn) {
     color: var(--color-danger);
   }
 </style>
