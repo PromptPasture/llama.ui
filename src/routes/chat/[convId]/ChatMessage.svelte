@@ -17,7 +17,6 @@
   import IndexedDB from '$lib/database/indexedDB';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
-  import { inference } from '$lib/state/inference.svelte';
   import { modal } from '$lib/state/modal.svelte';
   import { toast } from '$lib/components/toast.js';
   import MarkdownDisplay from '$lib/components/MarkdownDisplay.svelte';

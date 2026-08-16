@@ -92,6 +92,7 @@
   {/if}
 
   {#if note}
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -- note is a translation string from src/lib/i18n, not user input; it carries markup for links -->
     <div class="field__note">{@html note}</div>
   {/if}
 </div>

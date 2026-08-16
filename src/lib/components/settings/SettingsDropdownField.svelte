@@ -20,7 +20,10 @@
     value,
     options,
     filterable = false,
-    renderOption,
+    // Aliased: the template declares a `renderOption` snippet to hand to
+    // Dropdown, and sharing the name reads as shadowing even though Svelte
+    // resolves the inner reference to this prop.
+    renderOption: renderOptionProp,
     onchange,
   }: Props = $props();
 
@@ -50,8 +53,8 @@
         <span class="truncate">{selectedLabel}</span>
       {/snippet}
       {#snippet renderOption(option)}
-        {#if renderOption}
-          {@render renderOption(option)}
+        {#if renderOptionProp}
+          {@render renderOptionProp(option)}
         {:else}
           <span class="truncate">{option.label}</span>
         {/if}
@@ -59,6 +62,7 @@
     </Dropdown>
   </div>
   {#if note}
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -- note is a translation string from src/lib/i18n, not user input; it carries markup for links -->
     <div class="settings-dropdown__note">{@html note}</div>
   {/if}
 </div>

@@ -66,7 +66,7 @@
 
     {#if samplePrompts.length > 0}
       <div class="welcome__prompts">
-        {#each samplePrompts as prompt}
+        {#each samplePrompts as prompt (prompt)}
           <button
             type="button"
             class="welcome__prompt-btn"

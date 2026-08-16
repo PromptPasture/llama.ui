@@ -15,6 +15,7 @@
 
 <section>
   <div class="experimental-notice">
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -- translation string from src/lib/i18n, not user input -->
     {@html $_('settings.parameters.experimental.note', {
       default: '⚠ Experimental features may be unstable.',
     })}

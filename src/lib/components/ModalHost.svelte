@@ -20,9 +20,7 @@
     title={modal.current.message}
     onclose={() => modal.respond(false)}
   >
-    {#snippet children()}
-      <span></span>
-    {/snippet}
+    <span></span>
     {#snippet actions()}
       <Button variant="ghost" onclick={() => modal.respond(false)}
         >{$_('modals.cancelBtnLabel')}</Button
@@ -40,15 +38,13 @@
     title={modal.current.message}
     onclose={() => modal.respond(undefined)}
   >
-    {#snippet children()}
-      <Input
-        variant="bordered"
-        bind:value={promptValue}
-        onkeydown={(e) => {
-          if (e.key === 'Enter') modal.respond(promptValue);
-        }}
-      />
-    {/snippet}
+    <Input
+      variant="bordered"
+      bind:value={promptValue}
+      onkeydown={(e) => {
+        if (e.key === 'Enter') modal.respond(promptValue);
+      }}
+    />
     {#snippet actions()}
       <Button variant="ghost" onclick={() => modal.respond(undefined)}
         >{$_('modals.cancelBtnLabel')}</Button
@@ -66,9 +62,7 @@
     title={modal.current.message}
     onclose={() => modal.respond(undefined)}
   >
-    {#snippet children()}
-      <span></span>
-    {/snippet}
+    <span></span>
     {#snippet actions()}
       <Button onclick={() => modal.respond(undefined)}
         >{$_('modals.okBtnLabel')}</Button

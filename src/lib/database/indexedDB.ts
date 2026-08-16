@@ -494,10 +494,10 @@ export default class IndexedDB {
    */
   static offConversationChanged(callback: CallbackConversationChanged) {
     const index = onConversationChangedHandlers.findIndex(
-      ([cb, _]) => cb === callback
+      ([cb]) => cb === callback
     );
     if (index !== -1) {
-      const [_, wrappedListener] = onConversationChangedHandlers[index];
+      const [, wrappedListener] = onConversationChangedHandlers[index];
       event.removeEventListener('conversationChange', wrappedListener);
       onConversationChangedHandlers.splice(index, 1); // Remove the specific listener entry
     }
