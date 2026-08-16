@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getOneConversation: vi.fn(),
   getMessages: vi.fn().mockResolvedValue([]),
   onConversationChanged: vi.fn(),
+  offConversationChanged: vi.fn(),
   filterByLeafNodeId: vi.fn().mockReturnValue([]),
   appendMsg: vi.fn().mockResolvedValue(undefined),
 }));
@@ -58,6 +59,48 @@ describe('loading a conversation', () => {
 
     await expect(chat.loadConversation('conv-1')).resolves.toBe(true);
     expect(chat.viewingChat?.conv.name).toBe('Kept');
+  });
+});
+
+describe('conversation change listeners', () => {
+  const conv = { id: 'c', name: 'n', lastModified: 1, currNode: -1 };
+
+  it('removes the very listener it registered', async () => {
+    mocks.onConversationChanged.mockClear();
+    mocks.offConversationChanged.mockClear();
+    mocks.getOneConversation.mockResolvedValue(conv);
+
+    await chat.loadConversation('c');
+    chat.unloadConversation();
+
+    // Removal is by identity, so an equivalent-looking closure removes nothing.
+    const registered = mocks.onConversationChanged.mock.calls.at(-1)![0];
+    expect(mocks.offConversationChanged).toHaveBeenCalledWith(registered);
+  });
+
+  it('does not accumulate listeners across repeated visits', async () => {
+    mocks.onConversationChanged.mockClear();
+    mocks.offConversationChanged.mockClear();
+    mocks.getOneConversation.mockResolvedValue(conv);
+
+    const live = new Set<unknown>();
+    mocks.onConversationChanged.mockImplementation((cb: unknown) =>
+      live.add(cb)
+    );
+    mocks.offConversationChanged.mockImplementation((cb: unknown) =>
+      live.delete(cb)
+    );
+
+    for (let i = 0; i < 20; i++) {
+      await chat.loadConversation('c');
+      chat.unloadConversation();
+    }
+
+    // Every leaked listener reloads the whole message list on each change.
+    expect(live.size).toBe(0);
+
+    mocks.onConversationChanged.mockReset();
+    mocks.offConversationChanged.mockReset();
   });
 });
 

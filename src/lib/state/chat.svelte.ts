@@ -25,6 +25,21 @@ const state = $state<ChatState>({
   aborts: {},
 });
 
+/** The change listener for the conversation currently on screen, if any. */
+let viewingListener: ((convId: string) => void) | null = null;
+
+/**
+ * Listeners are removed by identity, so the reference has to be kept. Passing
+ * an equivalent-looking closure to off() removes nothing, and one listener
+ * then leaks per visit, each reloading the whole message list on every change.
+ */
+function detachViewingListener(): void {
+  if (viewingListener) {
+    IndexedDB.offConversationChanged(viewingListener);
+    viewingListener = null;
+  }
+}
+
 /** @returns whether the conversation exists. */
 async function loadViewingChat(convId: string): Promise<boolean> {
   const conv = await IndexedDB.getOneConversation(convId);
@@ -52,19 +67,21 @@ export const chat = {
   },
 
   /** @returns whether the conversation exists. */
+  /** @returns whether the conversation exists. */
   async loadConversation(convId: string): Promise<boolean> {
+    detachViewingListener();
     const found = await loadViewingChat(convId);
-    IndexedDB.onConversationChanged(async (changedConvId: string) => {
+
+    viewingListener = async (changedConvId: string) => {
       if (changedConvId === convId) await loadViewingChat(changedConvId);
-    });
+    };
+    IndexedDB.onConversationChanged(viewingListener);
     return found;
   },
 
-  unloadConversation(convId: string): void {
+  unloadConversation(): void {
     state.viewingChat = null;
-    IndexedDB.offConversationChanged(async (changedConvId: string) => {
-      if (changedConvId === convId) await loadViewingChat(changedConvId);
-    });
+    detachViewingListener();
   },
 
   stopGenerating(convId: string): void {

@@ -35,7 +35,7 @@
     requestAnimationFrame(() => {
       msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
     });
-    return () => chat.unloadConversation(id);
+    return () => chat.unloadConversation();
   });
 
   const displayMessages = $derived(
