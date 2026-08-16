@@ -96,6 +96,28 @@ describe('ChatMessage roles', () => {
   });
 });
 
+describe('ChatMessage tooltips', () => {
+  it('gives every icon-only action a hover tooltip', () => {
+    renderMessage(display({ siblingLeafNodeIds: [2, 4], siblingCurrIdx: 0 }));
+
+    const expected: Record<string, string> = {
+      'Switch to the previous message version': 'Previous',
+      'Switch to the next message version': 'Next',
+      'Regenerate response': 'Regenerate',
+      'Edit message': 'Edit',
+      'Copy content': 'Copy',
+      'Delete message': 'Delete',
+    };
+
+    for (const [label, tooltip] of Object.entries(expected)) {
+      expect(screen.getByRole('button', { name: label })).toHaveAttribute(
+        'title',
+        tooltip
+      );
+    }
+  });
+});
+
 describe('ChatMessage branch switcher', () => {
   it('stays hidden when a message has no alternatives', () => {
     renderMessage();

@@ -215,6 +215,7 @@
             size="icon"
             onclick={() => prevSibling && onchangesibling(prevSibling)}
             disabled={!prevSibling}
+            title={$_('chatScreen.titles.previous')}
             aria-label={$_('chatScreen.ariaLabels.switchToPrevious')}
           >
             <ChevronLeftIcon size={14} />
@@ -225,6 +226,7 @@
             size="icon"
             onclick={() => nextSibling && onchangesibling(nextSibling)}
             disabled={!nextSibling}
+            title={$_('chatScreen.titles.next')}
             aria-label={$_('chatScreen.ariaLabels.switchToNext')}
           >
             <ChevronRightIcon size={14} />
@@ -238,6 +240,7 @@
           size="icon"
           onclick={() => onregeneratefn(msg as Message)}
           disabled={!msg.content}
+          title={$_('chatScreen.titles.regenerate')}
           aria-label={$_('chatScreen.ariaLabels.regenerateResponse')}
         >
           <RefreshCwIcon size={14} />
@@ -249,6 +252,7 @@
         size="icon"
         onclick={startEdit}
         disabled={!msg.content}
+        title={$_('chatScreen.titles.edit')}
         aria-label={$_('chatScreen.ariaLabels.editMessage')}
       >
         <SquarePenIcon size={14} />
@@ -258,6 +262,7 @@
         variant="ghost"
         size="icon"
         onclick={() => copyStr(msg.content ?? '')}
+        title={$_('chatScreen.titles.copy')}
         aria-label={$_('chatScreen.ariaLabels.copyContent')}
       >
         <CopyIcon size={14} />
@@ -268,6 +273,7 @@
         size="icon"
         onclick={handleDelete}
         disabled={!msg.content}
+        title={$_('chatScreen.titles.delete')}
         aria-label={$_('chatScreen.ariaLabels.deleteMessage')}
       >
         <Trash2Icon size={14} />
@@ -278,6 +284,7 @@
         size="icon"
         onclick={handleBranch}
         disabled={!msg.content}
+        title={$_('chatScreen.titles.branchChat')}
         aria-label={$_('chatScreen.ariaLabels.branchChatAfterMessage')}
       >
         <GitMergeIcon size={14} />
