@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vitest/config';
 import loadVersion from 'vite-plugin-package-version';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -8,6 +9,8 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     sveltekit(),
+    // Resolves Svelte's browser build when mounting components under vitest.
+    svelteTesting(),
     loadVersion(),
     VitePWA({
       registerType: 'prompt',
@@ -131,8 +134,10 @@ export default defineConfig({
   },
   test: {
     // jsdom rather than node: the markdown pipeline sanitises through
-    // DOMPurify, which needs a DOM.
+    // DOMPurify, and component tests mount into a real DOM.
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,ts}'],
+    // Inside src/ so svelte-check picks up the matcher type augmentation too.
+    setupFiles: ['./src/vitest-setup.ts'],
   },
 });
