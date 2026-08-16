@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { waitLocale } from 'svelte-i18n';
+  import { _, waitLocale } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { app } from '$lib/state/app.svelte';
@@ -62,6 +62,9 @@
       <main class="app-shell__main">
         {@render children()}
       </main>
+      <footer class="app-shell__disclaimer">
+        {$_('footer.disclaimer')}
+      </footer>
     </div>
   </div>
 
@@ -84,6 +87,11 @@
   .app-shell__content {
     @apply flex-1 min-w-0 flex flex-col overflow-hidden px-1 pb-1 md:px-2 md:pb-2;
     background: var(--color-surface-alt);
+  }
+
+  .app-shell__disclaimer {
+    @apply shrink-0 text-center text-xs pt-1 pb-1 md:pb-0;
+    color: var(--color-text-muted);
   }
 
   .app-shell__main {
