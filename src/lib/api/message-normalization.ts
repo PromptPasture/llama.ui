@@ -19,7 +19,11 @@ export function normalizeMsgsForAPI(
   messages: Readonly<Message[]>
 ): InferenceApiMessage[] {
   return messages.map((msg) => {
-    if (msg.role !== 'user' || !msg.extra) {
+    // An empty array is truthy, and every user message is stored with
+    // `extra: []`, so checking `!msg.extra` sent plain text down the
+    // multimodal path — every request carried a content-parts array where a
+    // string was intended.
+    if (msg.role !== 'user' || !msg.extra?.length) {
       return {
         role: msg.role,
         content: msg.content,
