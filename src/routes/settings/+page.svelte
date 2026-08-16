@@ -1,6 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { CONFIG_DEFAULT, INFERENCE_PROVIDERS } from '$lib/config';
   import { app } from '$lib/state/app.svelte';
   import { inference } from '$lib/state/inference.svelte';
@@ -119,7 +120,7 @@
   function handleClose() {
     const conv = inference.selectedModel; // just checking if we have context
     void conv;
-    goto('/');
+    goto(resolve('/'));
   }
 
   async function handleSavePreset(name: string, config: Configuration) {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
   import { inference } from '$lib/state/inference.svelte';
@@ -66,7 +67,7 @@
     config: app.config,
     provider: inference.provider,
     selectedModel: inference.selectedModel,
-    navigate: (path: string) => goto(path),
+    navigate: (id: string) => goto(resolve('/chat/[convId]', { convId: id })),
     toast: toast.error,
   });
 

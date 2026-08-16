@@ -1,6 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import IndexedDB from '$lib/database/indexedDB';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
@@ -30,7 +31,7 @@
     extra: MessageExtra[] | undefined
   ): Promise<boolean | void> {
     const conv = await IndexedDB.createConversation(content.substring(0, 256));
-    await goto(`/chat/${conv.id}`);
+    await goto(resolve('/chat/[convId]', { convId: conv.id }));
     return chat.sendMessage(
       {
         convId: conv.id,
@@ -46,7 +47,7 @@
         config: app.config,
         provider: inference.provider,
         selectedModel: inference.selectedModel,
-        navigate: (path) => goto(path),
+        navigate: (id) => goto(resolve('/chat/[convId]', { convId: id })),
         toast: toast.error,
       }
     );

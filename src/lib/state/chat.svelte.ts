@@ -92,7 +92,7 @@ export const chat = {
       config: import('$lib/types').Configuration;
       provider: import('$lib/types').InferenceProvider | null;
       selectedModel: import('$lib/types').InferenceApiModel | null;
-      navigate: (path: string) => void;
+      navigate: (convId: import('$lib/types').Conversation['id']) => void;
       toast: ToastFn;
     }
   ): Promise<boolean> {
@@ -156,7 +156,7 @@ export const chat = {
       config: import('$lib/types').Configuration;
       provider: import('$lib/types').InferenceProvider | null;
       selectedModel: import('$lib/types').InferenceApiModel | null;
-      navigate: (path: string) => void;
+      navigate: (convId: import('$lib/types').Conversation['id']) => void;
       toast: ToastFn;
     }
   ): Promise<void> {
@@ -236,7 +236,7 @@ export const chat = {
       config: import('$lib/types').Configuration;
       provider: import('$lib/types').InferenceProvider | null;
       selectedModel: import('$lib/types').InferenceApiModel | null;
-      navigate: (path: string) => void;
+      navigate: (convId: import('$lib/types').Conversation['id']) => void;
       toast: ToastFn;
     }
   ): Promise<void> {
@@ -256,14 +256,14 @@ export const chat = {
   async branchMessage(
     msg: Message,
     deps: {
-      navigate: (path: string) => void;
+      navigate: (convId: import('$lib/types').Conversation['id']) => void;
       toast: ToastFn;
     }
   ): Promise<void> {
     if (chat.isGenerating(msg.convId)) return;
     try {
       const conv = await IndexedDB.branchConversation(msg.convId, msg.id);
-      deps.navigate(`/chat/${conv.id}`);
+      deps.navigate(conv.id);
     } catch (error) {
       console.error('Conversation branch failed:', error);
       deps.toast('Failed to branch conversation');

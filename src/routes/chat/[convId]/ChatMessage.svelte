@@ -13,6 +13,7 @@
     Trash2Icon,
   } from 'lucide-svelte';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import IndexedDB from '$lib/database/indexedDB';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
@@ -104,7 +105,7 @@
 
   async function handleBranch() {
     await chat.branchMessage(msg as Message, {
-      navigate: (path) => goto(path),
+      navigate: (id) => goto(resolve('/chat/[convId]', { convId: id })),
       toast: toast.error,
     });
   }

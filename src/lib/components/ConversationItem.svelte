@@ -7,6 +7,7 @@
     TrashIcon,
   } from 'lucide-svelte';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import IndexedDB from '$lib/database/indexedDB';
   import { chat } from '$lib/state/chat.svelte';
   import { modal } from '$lib/state/modal.svelte';
@@ -30,7 +31,7 @@
 
   function handleSelect() {
     onselect?.();
-    goto(`/chat/${conv.id}`);
+    goto(resolve('/chat/[convId]', { convId: conv.id }));
   }
 
   async function handleRename() {
@@ -69,7 +70,7 @@
     if (await modal.showConfirm($_('sidebar.actions.deleteConfirm'))) {
       toast.success($_('sidebar.actions.deleteSuccess'));
       await IndexedDB.deleteConversation(conv.id);
-      goto('/');
+      goto(resolve('/'));
     }
   }
 </script>

@@ -2,6 +2,7 @@
   import { _ } from 'svelte-i18n';
   import { CogIcon, MenuIcon, SquarePenIcon } from 'lucide-svelte';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { app } from '$lib/state/app.svelte';
   import { inference } from '$lib/state/inference.svelte';
   import { chat } from '$lib/state/chat.svelte';
@@ -49,8 +50,8 @@
       class="header__title-btn"
       onclick={() => {
         if (showSettings) return;
-        if (currConv) goto(`/chat/${currConv.id}`);
-        else goto('/');
+        if (currConv) goto(resolve('/chat/[convId]', { convId: currConv.id }));
+        else goto(resolve('/'));
       }}
       aria-label={title}
     >
@@ -60,7 +61,7 @@
     <Button
       variant="ghost"
       size="icon-xl"
-      onclick={() => goto('/')}
+      onclick={() => goto(resolve('/'))}
       title={$_('header.buttons.newConv')}
       aria-label={$_('header.ariaLabels.newConv')}
     >
@@ -93,7 +94,7 @@
       <Button
         variant="ghost"
         size="icon-xl"
-        onclick={() => goto('/settings')}
+        onclick={() => goto(resolve('/settings'))}
         title={$_('header.buttons.settings')}
         aria-label={$_('header.ariaLabels.settings')}
       >

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { waitLocale } from 'svelte-i18n';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { app } from '$lib/state/app.svelte';
   import { inference } from '$lib/state/inference.svelte';
   import { initI18n } from '$lib/i18n/index.js';
@@ -34,10 +35,10 @@
     const mod = e.ctrlKey || e.metaKey;
     if (mod && e.key === 'n') {
       e.preventDefault();
-      goto('/');
+      goto(resolve('/'));
     } else if (mod && e.key === ',') {
       e.preventDefault();
-      goto('/settings');
+      goto(resolve('/settings'));
     } else if (mod && e.key === 'k') {
       e.preventDefault();
       sidebarOpen = true;

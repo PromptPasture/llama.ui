@@ -2,6 +2,7 @@
   import { _ } from 'svelte-i18n';
   import { SearchIcon, SquarePenIcon, XIcon } from 'lucide-svelte';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import IndexedDB from '$lib/database/indexedDB';
   import { groupConversationsByDate } from '$lib/utils/conversation-grouper';
@@ -55,7 +56,7 @@
   }
 
   function handleNewChat() {
-    goto('/');
+    goto(resolve('/'));
     onclose?.();
   }
 </script>
