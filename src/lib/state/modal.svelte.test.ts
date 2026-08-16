@@ -85,3 +85,24 @@ describe('answering when nothing was asked', () => {
     expect(modal.current).toBeNull();
   });
 });
+
+describe('wording the buttons of a confirm', () => {
+  it('carries the wording it was given', () => {
+    void modal.showConfirm('Set up a provider?', {
+      confirm: 'Open Settings',
+      cancel: 'Skip',
+    });
+
+    expect(modal.current?.labels).toEqual({
+      confirm: 'Open Settings',
+      cancel: 'Skip',
+    });
+  });
+
+  it('carries none when none was given', () => {
+    void modal.showConfirm('Delete everything?');
+
+    // The host falls back to its own translated pair.
+    expect(modal.current?.labels).toBeUndefined();
+  });
+});

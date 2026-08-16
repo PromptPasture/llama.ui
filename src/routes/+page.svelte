@@ -7,6 +7,7 @@
   import { chat } from '$lib/state/chat.svelte';
   import { inference } from '$lib/state/inference.svelte';
   import { toast } from '$lib/components/toast.js';
+  import { offerToConfigure } from '$lib/first-run';
   import { getUniqueRandomElements } from '$lib/utils/array-helpers';
   import type { MessageExtra } from '$lib/types';
   import ChatInput from './chat/[convId]/ChatInput.svelte';
@@ -34,7 +35,7 @@
     // anyway leaves a new visitor looking at an empty conversation they did
     // not ask for, named after a message that was never answered.
     if (!inference.provider) {
-      toast.error($_('toast.noModelsPopup.description'));
+      await offerToConfigure();
       return false;
     }
     const conv = await IndexedDB.createConversation(content.substring(0, 256));

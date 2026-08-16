@@ -7,6 +7,7 @@
   import { tts } from '$lib/state/tts.svelte';
   import { toast } from '$lib/components/toast.js';
   import { t } from '$lib/i18n/translate';
+  import { offerToConfigure } from '$lib/first-run';
   import { isAtBottom } from '$lib/utils/dom-helpers';
   import { getListMessageDisplay } from '$lib/utils/message-hierarchy';
   import type { Message, MessageExtra } from '$lib/types';
@@ -106,6 +107,12 @@
     content: string,
     extra: MessageExtra[] | undefined
   ): Promise<boolean | void> {
+    // The same offer the welcome screen makes: there is nowhere to send this,
+    // and the settings are where that is fixed.
+    if (!inference.provider) {
+      await offerToConfigure();
+      return false;
+    }
     // Sending is a request to be shown the answer, so it re-engages following
     // even if the reader had scrolled away to check something first.
     following = true;

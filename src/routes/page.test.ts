@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   isGenerating: vi.fn(() => false),
   stopGenerating: vi.fn(),
   error: vi.fn(),
+  showConfirm: vi.fn().mockResolvedValue(false),
   provider: null as unknown,
 }));
 
@@ -35,6 +36,9 @@ vi.mock('$lib/state/inference.svelte', () => ({
     },
   },
 }));
+vi.mock('$lib/state/modal.svelte', () => ({
+  modal: { showConfirm: mocks.showConfirm },
+}));
 vi.mock('$lib/components/toast.js', () => ({
   toast: { error: mocks.error, success: vi.fn(), info: vi.fn() },
 }));
@@ -55,6 +59,7 @@ beforeEach(() => {
   });
   mocks.sendMessage.mockClear();
   mocks.error.mockClear();
+  mocks.showConfirm.mockClear().mockResolvedValue(false);
   mocks.provider = null;
 });
 
@@ -77,10 +82,29 @@ describe('sending the first message with nothing configured', () => {
     expect(mocks.goto).not.toHaveBeenCalled();
   });
 
-  it('says why', async () => {
+  it('offers to go and set one up', async () => {
     await typeAndSend('hello');
 
-    expect(mocks.error).toHaveBeenCalled();
+    // The message used to say 'let's go to the Settings' and then leave the
+    // reader to find them; the buttons for this have been translated in all
+    // twelve catalogues since before anything showed them.
+    const [message, labels] = mocks.showConfirm.mock.calls[0];
+    expect(message).toContain('Settings');
+    expect(labels).toEqual({ confirm: 'Open Settings', cancel: 'Skip' });
+  });
+
+  it('takes them there when they accept', async () => {
+    mocks.showConfirm.mockResolvedValue(true);
+
+    await typeAndSend('hello');
+
+    expect(mocks.goto).toHaveBeenCalledWith('/settings');
+  });
+
+  it('stays put when they decline', async () => {
+    await typeAndSend('hello');
+
+    expect(mocks.goto).not.toHaveBeenCalled();
   });
 
   it('keeps what was typed', async () => {

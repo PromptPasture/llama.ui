@@ -4,7 +4,14 @@ interface ModalEntry {
   type: ModalType;
   message: string;
   defaultValue?: string;
+  /** Wording for the buttons, when the generic pair does not say enough. */
+  labels?: ModalLabels;
   resolve: (value: boolean | string | undefined) => void;
+}
+
+export interface ModalLabels {
+  confirm?: string;
+  cancel?: string;
 }
 
 /**
@@ -26,11 +33,12 @@ export const modal = {
     return state.queue[0] ?? null;
   },
 
-  showConfirm(message: string): Promise<boolean> {
+  showConfirm(message: string, labels?: ModalLabels): Promise<boolean> {
     return new Promise((resolve) => {
       open({
         type: 'confirm',
         message,
+        labels,
         resolve: resolve as ModalEntry['resolve'],
       });
     });

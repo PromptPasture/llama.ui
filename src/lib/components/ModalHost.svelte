@@ -23,10 +23,10 @@
     <span></span>
     {#snippet actions()}
       <Button variant="ghost" onclick={() => modal.respond(false)}
-        >{$_('modals.cancelBtnLabel')}</Button
+        >{modal.current.labels?.cancel ?? $_('modals.cancelBtnLabel')}</Button
       >
       <Button variant="danger" onclick={() => modal.respond(true)}
-        >{$_('modals.confirmBtnLabel')}</Button
+        >{modal.current.labels?.confirm ?? $_('modals.confirmBtnLabel')}</Button
       >
     {/snippet}
   </Dialog>
