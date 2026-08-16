@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "Impossibile scaricare la conversazione durante la generazione.",
   "sidebar.errors.deleteOnGenerate": "Impossibile eliminare la conversazione durante la generazione.",
   "sidebar.errors.deleteFailed": "Impossibile eliminare la conversazione.",
+  "sidebar.errors.loadFailed": "Impossibile leggere le tue conversazioni.",
   "sidebar.errors.renameFailed": "Impossibile rinominare la conversazione.",
   "sidebar.errors.downloadFailed": "Impossibile scaricare la conversazione.",
   "sidebar.actions.newName": "Inserisci un nuovo nome per la conversazione",

@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "Cannot download conversation while generating.",
   "sidebar.errors.deleteOnGenerate": "Cannot delete conversation while generating.",
   "sidebar.errors.deleteFailed": "Failed to delete conversation.",
+  "sidebar.errors.loadFailed": "Could not read your conversations.",
   "sidebar.errors.renameFailed": "Failed to rename conversation.",
   "sidebar.errors.downloadFailed": "Failed to download conversation.",
   "sidebar.actions.newName": "Enter new name for the conversation",

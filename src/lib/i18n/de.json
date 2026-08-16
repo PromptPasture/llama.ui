@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "Unterhaltung kann nicht heruntergeladen werden, während sie generiert wird.",
   "sidebar.errors.deleteOnGenerate": "Unterhaltung kann nicht gelöscht werden, während sie generiert wird.",
   "sidebar.errors.deleteFailed": "Unterhaltung konnte nicht gelöscht werden.",
+  "sidebar.errors.loadFailed": "Unterhaltungen konnten nicht gelesen werden.",
   "sidebar.errors.renameFailed": "Unterhaltung konnte nicht umbenannt werden.",
   "sidebar.errors.downloadFailed": "Unterhaltung konnte nicht heruntergeladen werden.",
   "sidebar.actions.newName": "Neuen Namen für die Unterhaltung eingeben",

@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "생성 중에는 대화를 다운로드할 수 없습니다.",
   "sidebar.errors.deleteOnGenerate": "생성 중에는 대화를 삭제할 수 없습니다.",
   "sidebar.errors.deleteFailed": "대화를 삭제하지 못했습니다.",
+  "sidebar.errors.loadFailed": "대화를 불러오지 못했습니다.",
   "sidebar.errors.renameFailed": "대화 이름을 변경하지 못했습니다.",
   "sidebar.errors.downloadFailed": "대화를 다운로드하지 못했습니다.",
   "sidebar.actions.newName": "대화의 새 이름을 입력하세요",

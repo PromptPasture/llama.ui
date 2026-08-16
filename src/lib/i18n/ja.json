@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "生成中に会話をダウンロードすることはできません。",
   "sidebar.errors.deleteOnGenerate": "生成中に会話を削除することはできません。",
   "sidebar.errors.deleteFailed": "会話を削除できませんでした。",
+  "sidebar.errors.loadFailed": "会話を読み込めませんでした。",
   "sidebar.errors.renameFailed": "会話の名前を変更できませんでした。",
   "sidebar.errors.downloadFailed": "会話をダウンロードできませんでした。",
   "sidebar.actions.newName": "会話の新しい名前を入力",

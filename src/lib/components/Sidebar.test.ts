@@ -33,6 +33,7 @@ vi.mock('$lib/database/indexedDB', () => ({
 }));
 
 const { default: Sidebar } = await import('./Sidebar.svelte');
+const { toast } = await import('$lib/components/toast');
 
 // Set the locale explicitly rather than through initI18n(), which picks its
 // initial locale from navigator.language and is not deterministic here.
@@ -458,5 +459,32 @@ describe('Sidebar Escape while searching', () => {
     // Nothing to clear, so the press means what it means everywhere else.
     expect(watcher.heard).toHaveLength(1);
     watcher.stop();
+  });
+});
+
+describe('Sidebar when the conversations cannot be read', () => {
+  it('says so rather than showing an empty sidebar', async () => {
+    const shown = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    mocks.getAllConversations.mockRejectedValue(new Error('storage blocked'));
+
+    render(Sidebar, { props: { open: true, onclose: vi.fn() } });
+
+    // A browser set to allow no site data has none. Left unsaid, the whole
+    // history appears to have gone.
+    await vi.waitFor(() => expect(shown).toHaveBeenCalled());
+    shown.mockRestore();
+  });
+
+  it('does not report a failed search as nothing matching', async () => {
+    const user = userEvent.setup();
+    const shown = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    await renderSidebar();
+    mocks.searchConversations.mockRejectedValue(new Error('storage blocked'));
+
+    await user.type(screen.getByPlaceholderText('Search'), 'holiday');
+
+    await vi.waitFor(() => expect(shown).toHaveBeenCalled());
+    expect(screen.queryByText('No conversations found')).toBeNull();
+    shown.mockRestore();
   });
 });

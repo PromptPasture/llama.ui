@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "لا يمكن تنزيل المحادثة أثناء الإنشاء.",
   "sidebar.errors.deleteOnGenerate": "لا يمكن حذف المحادثة أثناء الإنشاء.",
   "sidebar.errors.deleteFailed": "فشل حذف المحادثة.",
+  "sidebar.errors.loadFailed": "تعذرت قراءة محادثاتك.",
   "sidebar.errors.renameFailed": "فشلت إعادة تسمية المحادثة.",
   "sidebar.errors.downloadFailed": "فشل تنزيل المحادثة.",
   "sidebar.actions.newName": "أدخل اسماً جديداً للمحادثة",

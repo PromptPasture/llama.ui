@@ -7,6 +7,7 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import IndexedDB from '$lib/database/indexedDB';
+  import { toast } from '$lib/components/toast.js';
   import { groupConversationsByDate } from '$lib/utils/conversation-grouper';
   import type { Conversation, ConversationMatch } from '$lib/types';
   import Button from './Button.svelte';
@@ -75,13 +76,20 @@
     }
     const mine = ++searchNo;
     const timer = setTimeout(() => {
-      IndexedDB.searchConversations(term).then((found) => {
-        if (mine !== searchNo) return;
-        matches = found;
-        // Which term the results answer. Without it, the moment before the
-        // first search runs looks exactly like a search that found nothing.
-        answeredTerm = term;
-      });
+      IndexedDB.searchConversations(term)
+        .then((found) => {
+          if (mine !== searchNo) return;
+          matches = found;
+          // Which term the results answer. Without it, the moment before the
+          // first search runs looks exactly like a search that found nothing.
+          answeredTerm = term;
+        })
+        .catch((error) => {
+          // Otherwise a failed search reports that nothing matched, which is
+          // not the same thing and not true.
+          console.error('Searching the conversations failed:', error);
+          toast.error($_('sidebar.errors.loadFailed'));
+        });
     }, SEARCH_SETTLE_MS);
     // Typing on cancels the search that was about to run for what came before.
     return () => clearTimeout(timer);
@@ -96,7 +104,15 @@
   );
 
   async function loadConversations() {
-    conversations = await IndexedDB.getAllConversations();
+    try {
+      conversations = await IndexedDB.getAllConversations();
+    } catch (error) {
+      // Storage can be unavailable outright — a browser set to allow no site
+      // data has none. Left unsaid, the whole history appears to have gone,
+      // which is a far worse thing to believe than that a read failed.
+      console.error('Reading the conversations failed:', error);
+      toast.error($_('sidebar.errors.loadFailed'));
+    }
   }
 
   function handleConversationChanged() {

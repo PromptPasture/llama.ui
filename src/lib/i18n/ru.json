@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "Невозможно скачать беседу во время генерации.",
   "sidebar.errors.deleteOnGenerate": "Невозможно удалить беседу во время генерации.",
   "sidebar.errors.deleteFailed": "Не удалось удалить беседу.",
+  "sidebar.errors.loadFailed": "Не удалось прочитать ваши беседы.",
   "sidebar.errors.renameFailed": "Не удалось переименовать беседу.",
   "sidebar.errors.downloadFailed": "Не удалось скачать беседу.",
   "sidebar.actions.newName": "Введите новое имя для беседы",

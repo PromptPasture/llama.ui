@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "जनरेट करते समय बातचीत डाउनलोड नहीं की जा सकती।",
   "sidebar.errors.deleteOnGenerate": "जनरेट करते समय बातचीत हटाई नहीं जा सकती।",
   "sidebar.errors.deleteFailed": "बातचीत हटाई नहीं जा सकी।",
+  "sidebar.errors.loadFailed": "आपकी बातचीत नहीं पढ़ी जा सकी।",
   "sidebar.errors.renameFailed": "बातचीत का नाम नहीं बदला जा सका।",
   "sidebar.errors.downloadFailed": "बातचीत डाउनलोड नहीं की जा सकी।",
   "sidebar.actions.newName": "बातचीत के लिए नया नाम दर्ज करें",

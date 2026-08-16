@@ -154,3 +154,27 @@ describe('what a new conversation is called', () => {
     expect(name.endsWith('…')).toBe(true);
   });
 });
+
+describe('when the conversation cannot be started', () => {
+  it('keeps what was typed rather than losing it', async () => {
+    mocks.provider = { id: 'llama.cpp' };
+    mocks.createConversation.mockRejectedValue(new Error('storage blocked'));
+
+    const box = await typeAndSend('a message worth keeping');
+
+    // The box is emptied as the message is sent; a failure after that took the
+    // words with it and said nothing.
+    expect(box).toHaveValue('a message worth keeping');
+    expect(mocks.error).toHaveBeenCalled();
+  });
+
+  it('does not navigate to a conversation that was never made', async () => {
+    mocks.provider = { id: 'llama.cpp' };
+    mocks.createConversation.mockRejectedValue(new Error('storage blocked'));
+
+    await typeAndSend('hello');
+
+    expect(mocks.goto).not.toHaveBeenCalled();
+    expect(mocks.sendMessage).not.toHaveBeenCalled();
+  });
+});

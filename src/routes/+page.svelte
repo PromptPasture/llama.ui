@@ -51,9 +51,16 @@
       await offerToConfigure(app.config.baseUrl);
       return false;
     }
-    const conv = await IndexedDB.createConversation(
-      toConversationName(content)
-    );
+    let conv;
+    try {
+      conv = await IndexedDB.createConversation(toConversationName(content));
+    } catch (error) {
+      // The box has already been emptied by this point; reporting the send as
+      // refused puts the message back rather than losing what was typed.
+      console.error('Starting the conversation failed:', error);
+      toast.error($_('state.chat.errors.cannotSaveMessage'));
+      return false;
+    }
     await goto(resolve('/chat/[convId]', { convId: conv.id }));
     return chat.sendMessage(
       {

@@ -32,6 +32,7 @@
   "sidebar.errors.downloadOnGenerate": "生成时无法下载对话。",
   "sidebar.errors.deleteOnGenerate": "生成时无法删除对话。",
   "sidebar.errors.deleteFailed": "无法删除对话。",
+  "sidebar.errors.loadFailed": "无法读取您的对话。",
   "sidebar.errors.renameFailed": "无法重命名对话。",
   "sidebar.errors.downloadFailed": "无法下载对话。",
   "sidebar.actions.newName": "输入对话的新名称",
