@@ -392,3 +392,28 @@ describe('Sidebar searching and finding nothing', () => {
     expect(screen.queryByText('No conversations found')).toBeNull();
   });
 });
+
+describe('Sidebar being asked to search', () => {
+  it('puts the cursor in the search box', async () => {
+    const { component } = await renderSidebar();
+
+    component.focusSearch();
+
+    // The shortcut for this means "search" everywhere else that has one; here
+    // it opened a sidebar that on a wide window was already open, so pressing
+    // it appeared to do nothing.
+    expect(screen.getByPlaceholderText('Search')).toHaveFocus();
+  });
+
+  it('selects what is already there, so a second press starts afresh', async () => {
+    const user = userEvent.setup();
+    const { component } = await renderSidebar();
+    const box = screen.getByPlaceholderText('Search') as HTMLInputElement;
+    await user.type(box, 'holiday');
+
+    component.focusSearch();
+
+    expect(box.selectionStart).toBe(0);
+    expect(box.selectionEnd).toBe('holiday'.length);
+  });
+});

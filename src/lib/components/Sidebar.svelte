@@ -32,6 +32,22 @@
    * as the list is derived. Results can arrive out of order when one search
    * outruns another, so each is numbered and only the newest is kept.
    */
+  let searchEl: HTMLInputElement | undefined = $state();
+
+  /**
+   * Puts the cursor in the search box.
+   *
+   * Called for the shortcut that opens the sidebar. Everywhere else that has
+   * one, that shortcut means "search"; here it opened a sidebar that on a wide
+   * window was already open, so pressing it appeared to do nothing at all.
+   */
+  export function focusSearch(): void {
+    searchEl?.focus();
+    // Selected rather than appended to, so pressing it again starts a new
+    // search rather than adding to the last one.
+    searchEl?.select();
+  }
+
   let searchNo = 0;
   let answeredTerm = $state('');
 
@@ -148,6 +164,7 @@
   <div class="sidebar__search">
     <SearchIcon size={16} class="sidebar__search-icon" />
     <input
+      bind:this={searchEl}
       type="text"
       class="sidebar__search-input"
       placeholder={$_('sidebar.searchPlaceHolder')}

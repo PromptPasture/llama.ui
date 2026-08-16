@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { _, waitLocale } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -24,6 +24,7 @@
   let { children } = $props();
 
   let sidebarOpen = $state(false);
+  let sidebar: ReturnType<typeof Sidebar> | undefined = $state();
   let ready = $state(false);
   /** Asked once a visit: declining should not be re-asked on every change. */
   let setupOffered = false;
@@ -80,6 +81,9 @@
     } else if (mod && e.key === 'k') {
       e.preventDefault();
       sidebarOpen = true;
+      // After the sidebar has been given the chance to open: on a narrow
+      // window the box does not exist until it has.
+      void tick().then(() => sidebar?.focusSearch());
     } else if (e.key === 'Escape') sidebarOpen = false;
   }
 </script>
@@ -92,7 +96,11 @@
 
 {#if ready}
   <div class="app-shell">
-    <Sidebar open={sidebarOpen} onclose={() => (sidebarOpen = false)} />
+    <Sidebar
+      bind:this={sidebar}
+      open={sidebarOpen}
+      onclose={() => (sidebarOpen = false)}
+    />
 
     <div class="app-shell__content">
       <Header onsidebartoggle={() => (sidebarOpen = !sidebarOpen)} />
