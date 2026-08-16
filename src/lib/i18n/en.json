@@ -49,6 +49,7 @@
   "chatScreen.titles.next": "Next",
   "chatScreen.titles.regenerate": "Regenerate",
   "chatScreen.titles.copy": "Copy",
+  "chatScreen.titles.copied": "Copied!",
   "chatScreen.titles.run": "Run",
   "chatScreen.titles.edit": "Edit",
   "chatScreen.titles.delete": "Delete",

@@ -1,14 +1,24 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ copyStr: vi.fn() }));
 vi.mock('$lib/utils/dom-helpers', () => ({ copyStr: mocks.copyStr }));
 
 const { default: MarkdownDisplay } = await import('./MarkdownDisplay.svelte');
 
-beforeEach(() => {
+beforeAll(async () => {
+  register('en', () => import('$lib/i18n/en.json'));
+  register('de', () => import('$lib/i18n/de.json'));
+  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  await waitLocale('en');
+});
+
+beforeEach(async () => {
   mocks.copyStr.mockClear();
+  locale.set('en');
+  await waitLocale('en');
 });
 
 /** Renders a message and presses the copy button on its code block. */
@@ -75,5 +85,63 @@ describe('a message without code', () => {
     await userEvent.click(screen.getByText('Just some prose.'));
 
     expect(mocks.copyStr).not.toHaveBeenCalled();
+  });
+});
+
+describe('the wording on the copy button', () => {
+  it('follows the language the reader has chosen', async () => {
+    locale.set('de');
+    await waitLocale('de');
+
+    render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
+
+    // 'Copy' is translated in all twelve catalogues; the code block was the
+    // one place that did not use it.
+    expect(
+      screen.getByRole('button', { name: 'Kopieren' })
+    ).toBeInTheDocument();
+  });
+
+  it('changes when the language does', async () => {
+    render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
+    expect(screen.getByRole('button', { name: 'Copy' })).toBeInTheDocument();
+
+    locale.set('de');
+    await waitLocale('de');
+
+    // The markup is derived from the locale as well as the content, so a
+    // message already on screen is relabelled too.
+    expect(
+      await screen.findByRole('button', { name: 'Kopieren' })
+    ).toBeInTheDocument();
+  });
+
+  it('goes back to the button wording after saying it has copied', async () => {
+    // In German, so that restoring a hardcoded 'Copy' would show.
+    locale.set('de');
+    await waitLocale('de');
+    vi.useFakeTimers();
+    try {
+      render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
+      const btn = screen.getByRole('button', { name: 'Kopieren' });
+      btn.click();
+
+      await vi.advanceTimersByTimeAsync(1600);
+
+      expect(btn.textContent).toBe('Kopieren');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('says it has copied, in English where nothing else exists yet', async () => {
+    render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
+    const btn = screen.getByRole('button', { name: 'Copy' });
+
+    btn.click();
+
+    // The only string here with no translation in the other eleven
+    // catalogues; they fall back to this.
+    expect(btn.textContent).toBe('Copied!');
   });
 });

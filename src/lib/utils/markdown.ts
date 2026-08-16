@@ -40,7 +40,7 @@ const renderer: RendererObject = {
     return `<div class="code-block" data-lang="${escapeHtml(lang)}">
         <div class="code-block__toolbar">
           ${lang ? `<span class="code-block__lang">${escapeHtml(lang)}</span>` : ''}
-          <button type="button" class="code-block__copy-btn">Copy</button>
+          <button type="button" class="code-block__copy-btn">${escapeHtml(copyLabel)}</button>
         </div>
         <pre><code class="language-${escapeHtml(lang)}">${escaped}</code></pre>
       </div>`;
@@ -50,6 +50,13 @@ const renderer: RendererObject = {
 // Registered once, at module scope. `marked.use` appends to marked's extension
 // chain, so registering per component instance made every parse progressively
 // slower as a conversation grew.
+/**
+ * The copy button's label. The renderer is registered once, so the label is
+ * handed over just before parsing rather than through the renderer itself;
+ * marked.parse is synchronous, so it cannot be overwritten mid-parse.
+ */
+let copyLabel = 'Copy';
+
 marked.use(markedKatex({ throwOnError: false }));
 marked.use({ breaks: true, gfm: true });
 marked.use({ renderer });
@@ -92,9 +99,14 @@ export function preprocessLaTeX(src: string): string {
  * keep KaTeX's MathML, which holds the original TeX source.
  *
  * @param content - The markdown to render
+ * @param labels - Wording for the controls the renderer adds
  * @returns Sanitised HTML
  */
-export function renderMarkdown(content: string): string {
+export function renderMarkdown(
+  content: string,
+  labels?: { copy?: string }
+): string {
+  copyLabel = labels?.copy || 'Copy';
   return DOMPurify.sanitize(marked.parse(preprocessLaTeX(content)) as string, {
     ADD_TAGS: ['annotation'],
     ADD_ATTR: ['encoding'],

@@ -1,5 +1,6 @@
 <script lang="ts">
   import 'katex/dist/katex.min.css';
+  import { _ } from 'svelte-i18n';
   import { copyStr } from '$lib/utils/dom-helpers';
   import { renderMarkdown } from '$lib/utils/markdown';
 
@@ -10,7 +11,12 @@
 
   let { content, streaming = false }: Props = $props();
 
-  const html = $derived(renderMarkdown(content));
+  // Depends on the locale as well as the content, so the button is relabelled
+  // when the language changes rather than keeping the wording it was rendered
+  // with.
+  const html = $derived(
+    renderMarkdown(content, { copy: $_('chatScreen.titles.copy') })
+  );
 
   function handleClick(e: MouseEvent) {
     const btn = (e.target as HTMLElement).closest<HTMLElement>(
@@ -28,9 +34,9 @@
     if (code === null || code === undefined) return;
 
     copyStr(code);
-    btn.textContent = 'Copied!';
+    btn.textContent = $_('chatScreen.titles.copied', { default: 'Copied!' });
     setTimeout(() => {
-      btn.textContent = 'Copy';
+      btn.textContent = $_('chatScreen.titles.copy');
     }, 1500);
   }
 </script>
