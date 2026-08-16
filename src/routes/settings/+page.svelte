@@ -106,6 +106,20 @@
         }
       }
     }
+    // configToCustomOptions parses this per request and drops it on failure
+    // with only a console message, so a typo here would silently stop every
+    // custom option from being sent.
+    if (cfg.custom.trim()) {
+      try {
+        JSON.parse(cfg.custom);
+      } catch (error) {
+        await modal.showAlert(
+          `Custom JSON config is not valid JSON: ${(error as Error).message}`
+        );
+        return;
+      }
+    }
+
     app.saveConfig(cfg);
     handleClose();
   }
