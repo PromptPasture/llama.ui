@@ -15,13 +15,15 @@ interface FakeUtterance {
 
 let spoken: FakeUtterance[] = [];
 let cancels = 0;
-let voices: { name: string }[] = [];
+let voices: { name: string; lang?: string }[] = [];
+let voicesChangedListeners: (() => void)[] = [];
 
 /** jsdom implements neither half of the Web Speech API. */
 function stubSpeechSynthesis() {
   spoken = [];
   cancels = 0;
   voices = [];
+  voicesChangedListeners = [];
 
   vi.stubGlobal(
     'SpeechSynthesisUtterance',
@@ -37,6 +39,9 @@ function stubSpeechSynthesis() {
     speak: (u: FakeUtterance) => spoken.push(u),
     cancel: () => cancels++,
     getVoices: () => voices,
+    addEventListener: (name: string, fn: () => void) => {
+      if (name === 'voiceschanged') voicesChangedListeners.push(fn);
+    },
   });
 }
 
@@ -146,5 +151,80 @@ describe('finishing', () => {
 
     expect(tts.isSpeaking(7)).toBe(false);
     expect(cancels).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * A module of its own. Subscribing to voiceschanged is deliberately done once
+ * per page, which is a fact the module remembers — so a test that wants to
+ * observe the subscription has to start from a module that has not yet made
+ * one.
+ */
+async function freshTts() {
+  vi.resetModules();
+  return (await import('./tts.svelte')).tts;
+}
+
+describe('the voices the browser offers', () => {
+  it('picks up the ones already loaded', async () => {
+    voices = [{ name: 'Kyoko', lang: 'ja-JP' }];
+    const fresh = await freshTts();
+
+    fresh.loadVoices();
+
+    expect(fresh.voices.map((v) => v.name)).toEqual(['Kyoko']);
+  });
+
+  it('picks up the ones that arrive late', async () => {
+    // Browsers routinely answer the first getVoices() with nothing and fill
+    // the list in afterwards, so a picker that asks once shows an empty list.
+    const fresh = await freshTts();
+    fresh.loadVoices();
+    expect(fresh.voices).toHaveLength(0);
+
+    voices = [
+      { name: 'Kyoko', lang: 'ja-JP' },
+      { name: 'Daniel', lang: 'en-GB' },
+    ];
+    voicesChangedListeners.forEach((fn) => fn());
+
+    expect(fresh.voices).toHaveLength(2);
+  });
+
+  it('subscribes once however often it is asked', async () => {
+    const fresh = await freshTts();
+
+    fresh.loadVoices();
+    fresh.loadVoices();
+    fresh.loadVoices();
+
+    expect(voicesChangedListeners).toHaveLength(1);
+  });
+});
+
+describe('previewing a voice', () => {
+  it('speaks the sample and reports itself as playing', () => {
+    tts.preview('This is a demo.', config());
+
+    expect(spoken.map((u) => u.text)).toEqual(['This is a demo.']);
+    expect(tts.isPreviewing()).toBe(true);
+  });
+
+  it('is not mistaken for a message being read', () => {
+    tts.preview('This is a demo.', config());
+
+    // Message ids are timestamps, so nothing real can collide with the
+    // sentinel the preview uses.
+    expect(tts.isSpeaking(-1)).toBe(true);
+    expect(tts.isPreviewing()).toBe(true);
+  });
+
+  it('stops being a preview once a message is read', () => {
+    tts.preview('This is a demo.', config());
+
+    tts.speak(7, 'the reply', config());
+
+    expect(tts.isPreviewing()).toBe(false);
+    expect(tts.isSpeaking(7)).toBe(true);
   });
 });

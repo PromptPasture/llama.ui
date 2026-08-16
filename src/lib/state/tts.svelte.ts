@@ -3,9 +3,15 @@ import type { Configuration } from '$lib/types';
 interface TtsState {
   /** The message being read aloud, or null when nothing is. */
   speakingId: number | null;
+  voices: SpeechSynthesisVoice[];
 }
 
-const state = $state<TtsState>({ speakingId: null });
+const state = $state<TtsState>({ speakingId: null, voices: [] });
+
+/** Previewing a voice in the settings, where there is no message to read. */
+const PREVIEW_ID = -1;
+
+let listening = false;
 
 /**
  * Reading a reply aloud. The browser allows one utterance queue per page, so
@@ -22,8 +28,24 @@ export const tts = {
   },
 
   /** The voices the browser offers, empty until it has loaded them. */
-  voices(): SpeechSynthesisVoice[] {
-    return tts.supported ? window.speechSynthesis.getVoices() : [];
+  get voices(): SpeechSynthesisVoice[] {
+    return state.voices;
+  },
+
+  /**
+   * Starts tracking the available voices. Browsers commonly answer the first
+   * getVoices() with an empty list and fill it in later, announcing the change
+   * — so asking once, as a picker rendering for the first time does, tends to
+   * come back with nothing.
+   */
+  loadVoices(): void {
+    if (!tts.supported) return;
+    state.voices = window.speechSynthesis.getVoices();
+    if (listening) return;
+    listening = true;
+    window.speechSynthesis.addEventListener?.('voiceschanged', () => {
+      state.voices = window.speechSynthesis.getVoices();
+    });
   },
 
   speak(id: number, text: string, config: Configuration): void {
@@ -39,7 +61,11 @@ export const tts = {
     utterance.rate = config.ttsRate;
     utterance.volume = config.ttsVolume;
 
-    const voice = tts.voices().find((v) => v.name === config.ttsVoice);
+    // Read straight from the browser rather than the tracked list, so speaking
+    // works on a page that never opened the settings.
+    const voice = window.speechSynthesis
+      .getVoices()
+      .find((v) => v.name === config.ttsVoice);
     if (voice) utterance.voice = voice;
 
     const release = () => {
@@ -52,6 +78,15 @@ export const tts = {
 
     state.speakingId = id;
     window.speechSynthesis.speak(utterance);
+  },
+
+  /** Speaks a sample so a voice can be judged before it is chosen. */
+  preview(text: string, config: Configuration): void {
+    tts.speak(PREVIEW_ID, text, config);
+  },
+
+  isPreviewing(): boolean {
+    return state.speakingId === PREVIEW_ID;
   },
 
   stop(): void {
