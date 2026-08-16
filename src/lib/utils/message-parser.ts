@@ -6,6 +6,25 @@ import { InferenceApiMessage } from '../types';
  * @param content - The text to parse
  * @returns An object mapping content and reasoning
  */
+/**
+ * Splits text at the first match of `pattern` into the part before it and the
+ * whole remainder. `String.split(pattern, 2)` cannot be used here: its limit
+ * truncates the result array rather than keeping the tail, so anything past the
+ * second delimiter would be discarded.
+ *
+ * @param text - The text to split
+ * @param pattern - The delimiter to split on
+ * @returns The leading part, plus the remainder when the pattern matched
+ */
+const splitOnce = (text: string, pattern: RegExp): [string, string?] => {
+  const match = pattern.exec(text);
+  if (!match) return [text];
+  return [
+    text.slice(0, match.index),
+    text.slice(match.index + match[0].length),
+  ];
+};
+
 export const splitMessageContent = (content: string | null) => {
   if (content == null || content.trim().length === 0) return { content };
 
@@ -15,15 +34,15 @@ export const splitMessageContent = (content: string | null) => {
 
   let actualContent = '';
   let thought = '';
-  let thinkSplit = content.split(REGEX_THINK_OPEN, 2);
+  let thinkSplit = splitOnce(content, REGEX_THINK_OPEN);
   actualContent += thinkSplit[0];
   while (thinkSplit[1] !== undefined) {
     // <think> tag found
-    thinkSplit = thinkSplit[1].split(REGEX_THINK_CLOSE, 2);
+    thinkSplit = splitOnce(thinkSplit[1], REGEX_THINK_CLOSE);
     thought += thinkSplit[0];
     if (thinkSplit[1] !== undefined) {
       // </think> closing tag found
-      thinkSplit = thinkSplit[1].split(REGEX_THINK_OPEN, 2);
+      thinkSplit = splitOnce(thinkSplit[1], REGEX_THINK_OPEN);
       actualContent += thinkSplit[0];
     }
   }

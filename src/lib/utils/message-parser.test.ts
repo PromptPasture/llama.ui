@@ -39,6 +39,20 @@ describe('splitMessageContent', () => {
     });
   });
 
+  it('accumulates several <think> blocks without dropping the tail', () => {
+    expect(
+      splitMessageContent('<think>a</think>mid<think>b</think>end')
+    ).toEqual({ content: 'midend', reasoning_content: 'ab' });
+  });
+
+  it('keeps the answer when reasoning is interleaved three times', () => {
+    expect(
+      splitMessageContent(
+        '<think>1</think>x<think>2</think>y<think>3</think>done'
+      )
+    ).toEqual({ content: 'xydone', reasoning_content: '123' });
+  });
+
   it('understands the harmony channel markers', () => {
     const raw =
       '<|channel|>analysis<|message|>thinking<|start|>assistant<|channel|>final<|message|>answer';
