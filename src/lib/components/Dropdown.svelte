@@ -52,11 +52,68 @@
   }
 
   let filterEl: HTMLInputElement | undefined = $state();
+  let panelEl: HTMLDivElement | undefined = $state();
 
-  // Typing should narrow the list straight away. Done here rather than with
-  // the autofocus attribute, which applies wherever the element appears.
+  /** The option buttons, in the order they are shown. */
+  const optionButtons = () => [
+    ...(panelEl?.querySelectorAll<HTMLButtonElement>('.dropdown__option') ??
+      []),
+  ];
+
+  /**
+   * Moves between the options with the arrow keys.
+   *
+   * Twenty providers is a long way to tab. A list of buttons may be walked
+   * this way; what it must not do is claim to be a listbox, which promises
+   * this and a good deal more besides.
+   */
+  function onPanelKeydown(event: KeyboardEvent) {
+    const items = optionButtons();
+    if (items.length === 0) return;
+
+    // Home and End belong to the filter box while it has the cursor, where
+    // they move within the text being typed.
+    const typing = event.target === filterEl;
+    const at = items.indexOf(document.activeElement as HTMLButtonElement);
+
+    let next: number;
+    switch (event.key) {
+      case 'ArrowDown':
+        next = at < 0 ? 0 : (at + 1) % items.length;
+        break;
+      case 'ArrowUp':
+        next = at <= 0 ? items.length - 1 : at - 1;
+        break;
+      case 'Home':
+        if (typing) return;
+        next = 0;
+        break;
+      case 'End':
+        if (typing) return;
+        next = items.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    items[next].focus();
+  }
+
+  // Opening puts the cursor inside the panel: in the filter box where there is
+  // one, so typing narrows the list straight away, and otherwise on the option
+  // already chosen, so the arrow keys start from where the reader is. Done
+  // here rather than with the autofocus attribute, which applies wherever the
+  // element appears.
   $effect(() => {
-    if (open && filterable) filterEl?.focus();
+    if (!open) return;
+    if (filterable) {
+      filterEl?.focus();
+      return;
+    }
+    const items = optionButtons();
+    const current = items.find((el) => el.getAttribute('aria-current'));
+    (current ?? items[0])?.focus();
   });
 
   function onkeydown(e: KeyboardEvent) {
@@ -104,7 +161,13 @@
         onclick={() => (open = false)}
         onkeydown={() => {}}
       ></div>
-      <div class="dropdown__panel" class:align-start={align === 'start'}>
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        bind:this={panelEl}
+        class="dropdown__panel"
+        class:align-start={align === 'start'}
+        onkeydown={onPanelKeydown}
+      >
         {#if filterable}
           <input
             class="dropdown__filter"

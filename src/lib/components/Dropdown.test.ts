@@ -194,3 +194,97 @@ describe('Dropdown structure', () => {
     expect(screen.getByRole('textbox')).toHaveFocus();
   });
 });
+
+describe('Dropdown keyboard movement', () => {
+  const option = (name: string) => screen.getByRole('button', { name });
+
+  async function openWith(props: Record<string, unknown> = {}) {
+    const user = userEvent.setup();
+    render(DropdownHarness, { props: { options: OPTIONS, ...props } });
+    await user.click(trigger());
+    return user;
+  }
+
+  it('starts on the first option', async () => {
+    await openWith();
+
+    // Opening puts the cursor in the panel, so the arrows have somewhere to
+    // start and the panel hears the keys at all.
+    expect(option('Alpha')).toHaveFocus();
+  });
+
+  it('starts on the option already chosen', async () => {
+    await openWith({ selectedValue: 'c' });
+
+    expect(option('Gamma')).toHaveFocus();
+  });
+
+  it('steps down the list', async () => {
+    const user = await openWith();
+
+    await user.keyboard('{ArrowDown}');
+    expect(option('Beta')).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}');
+    expect(option('Gamma')).toHaveFocus();
+  });
+
+  it('steps back up', async () => {
+    const user = await openWith();
+
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowUp}');
+
+    expect(option('Beta')).toHaveFocus();
+  });
+
+  it('wraps around at either end', async () => {
+    const user = await openWith();
+
+    // Up from the first lands on the last, which is how the end of a long
+    // list is reached without walking it.
+    await user.keyboard('{ArrowUp}');
+    expect(option('Gamma')).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}');
+    expect(option('Alpha')).toHaveFocus();
+  });
+
+  it('jumps to the first and last', async () => {
+    const user = await openWith();
+
+    await user.keyboard('{End}');
+    expect(option('Gamma')).toHaveFocus();
+
+    await user.keyboard('{Home}');
+    expect(option('Alpha')).toHaveFocus();
+  });
+
+  it('reaches the options from the filter box', async () => {
+    const user = await openWith({ filterable: true });
+    expect(screen.getByRole('textbox')).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}');
+
+    expect(option('Alpha')).toHaveFocus();
+  });
+
+  it('leaves Home and End to the filter box while typing in it', async () => {
+    const user = await openWith({ filterable: true });
+    await user.keyboard('alp');
+
+    await user.keyboard('{Home}');
+
+    // They move within the text being typed; taking them would make the box
+    // hard to correct.
+    expect(screen.getByRole('textbox')).toHaveFocus();
+  });
+
+  it('says nothing to other keys', async () => {
+    const user = await openWith();
+
+    await user.keyboard('{ArrowRight}');
+
+    // Left where it was, rather than treated as a step.
+    expect(option('Alpha')).toHaveFocus();
+  });
+});
