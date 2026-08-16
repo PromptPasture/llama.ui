@@ -16,6 +16,33 @@ interface LSMessage {
 }
 
 /**
+ * Checks that a parsed localStorage entry really is a legacy conversation.
+ *
+ * Anything under a `conv-` key is otherwise trusted on sight, and one entry of
+ * the wrong shape throws inside the migration transaction. That rolls the whole
+ * transaction back and leaves the completion flag unset, so every later load
+ * retries and fails the same way — every legacy conversation stays invisible
+ * for good.
+ *
+ * @param value The parsed contents of one localStorage entry.
+ * @returns Whether it can safely be migrated.
+ */
+function isLegacyConversation(value: unknown): value is LSConversation {
+  if (!value || typeof value !== 'object') return false;
+  const conv = value as Partial<LSConversation>;
+  if (typeof conv.id !== 'string') return false;
+  if (typeof conv.lastModified !== 'number') return false;
+  if (!Array.isArray(conv.messages)) return false;
+  return conv.messages.every(
+    (msg) =>
+      msg &&
+      typeof msg === 'object' &&
+      typeof msg.id === 'number' &&
+      typeof msg.content === 'string'
+  );
+}
+
+/**
  * Migrates conversation data from localStorage to IndexedDB.
  * Runs only once, indicated by the 'migratedToIDB' flag in localStorage.
  * @returns A promise that resolves when migration is complete or skipped.
@@ -36,7 +63,13 @@ export async function migrationLStoIDB(db: Database) {
         const item = localStorage.getItem(key);
         if (item) {
           const parsedItem: unknown = JSON.parse(item);
-          res.push(parsedItem as LSConversation);
+          if (isLegacyConversation(parsedItem)) {
+            res.push(parsedItem);
+          } else {
+            console.warn(
+              `Skipping localStorage item '${key}': not a legacy conversation.`
+            );
+          }
         }
       } catch (e) {
         console.warn(`Failed to parse localStorage item with key ${key}:`, e);
