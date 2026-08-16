@@ -35,13 +35,37 @@ const onConversationChangedHandlers: [
 ][] = [];
 
 /**
+ * Carries changes to the other tabs. They share the database but not the event
+ * target above, so without this a conversation started, renamed or deleted
+ * here stayed invisible there until the page was reloaded — and a deleted one
+ * stayed in their sidebar, leading to a conversation that no longer exists.
+ *
+ * Null where the browser has no BroadcastChannel; everything still works
+ * within the tab that made the change.
+ */
+const tabs =
+  typeof BroadcastChannel === 'undefined'
+    ? null
+    : new BroadcastChannel('llama-ui:conversations');
+
+const notifyThisTab = (convId: string) => {
+  event.dispatchEvent(
+    new CustomEvent<string>('conversationChange', { detail: convId })
+  );
+};
+
+// Announcing what another tab told us would bounce it back to them forever.
+tabs?.addEventListener('message', (message: MessageEvent<string>) => {
+  notifyThisTab(message.data);
+});
+
+/**
  * Dispatches a custom event indicating a conversation has changed.
  * @param convId The ID of the conversation that changed.
  */
 const dispatchConversationChange = (convId: string) => {
-  event.dispatchEvent(
-    new CustomEvent<string>('conversationChange', { detail: convId })
-  );
+  notifyThisTab(convId);
+  tabs?.postMessage(convId);
 };
 
 // --- Dexie Database Setup ---
