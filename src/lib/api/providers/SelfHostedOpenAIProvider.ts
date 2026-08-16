@@ -25,4 +25,21 @@ export class SelfHostedOpenAIProvider extends BaseOpenAIProvider {
   protected isExpired(): boolean {
     return Date.now() - this.lastUpdated > 60 * 1000;
   }
+
+  /**
+   * Self-hosted servers accept the extended sampling parameters the settings
+   * screen offers — top_k, min_p, repeat_penalty, dry_multiplier, samplers and
+   * the rest are llama.cpp's own. Without this they were built from the
+   * user's configuration and then dropped before the request, so every one of
+   * those controls silently did nothing.
+   *
+   * Hosted providers keep the default of `false`: the same parameters would be
+   * rejected as unrecognised by an API that only speaks OpenAI's subset.
+   *
+   * @returns `true`
+   * @inheritdoc
+   */
+  protected isAllowCustomOptions(): boolean {
+    return true;
+  }
 }
