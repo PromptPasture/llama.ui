@@ -25,16 +25,18 @@ const state = $state<ChatState>({
   aborts: {},
 });
 
-async function loadViewingChat(convId: string): Promise<void> {
+/** @returns whether the conversation exists. */
+async function loadViewingChat(convId: string): Promise<boolean> {
   const conv = await IndexedDB.getOneConversation(convId);
   if (!conv) {
     state.viewingChat = null;
-    return;
+    return false;
   }
   state.viewingChat = {
     conv,
     messages: await IndexedDB.getMessages(convId),
   };
+  return true;
 }
 
 export const chat = {
@@ -49,11 +51,13 @@ export const chat = {
     return convId in state.pendingMessages;
   },
 
-  async loadConversation(convId: string): Promise<void> {
-    await loadViewingChat(convId);
+  /** @returns whether the conversation exists. */
+  async loadConversation(convId: string): Promise<boolean> {
+    const found = await loadViewingChat(convId);
     IndexedDB.onConversationChanged(async (changedConvId: string) => {
       if (changedConvId === convId) await loadViewingChat(changedConvId);
     });
+    return found;
   },
 
   unloadConversation(convId: string): void {

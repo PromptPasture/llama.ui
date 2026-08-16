@@ -5,6 +5,7 @@
   import { chat } from '$lib/state/chat.svelte';
   import { inference } from '$lib/state/inference.svelte';
   import { toast } from '$lib/components/toast.js';
+  import { t } from '$lib/i18n/translate';
   import { getListMessageDisplay } from '$lib/utils/message-hierarchy';
   import type { Message, MessageExtra } from '$lib/types';
   import type { PageProps } from './$types';
@@ -23,7 +24,14 @@
     const id = convId;
     if (!id) return;
     currNodeId = -1;
-    chat.loadConversation(id);
+    chat.loadConversation(id).then((found) => {
+      // A deleted conversation or a stale link would otherwise render as an
+      // empty chat that looks perfectly normal, until sending a message failed.
+      if (!found && id === convId) {
+        toast.error(t('state.chat.errors.conversationNotFound'));
+        goto(resolve('/'));
+      }
+    });
     requestAnimationFrame(() => {
       msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
     });
