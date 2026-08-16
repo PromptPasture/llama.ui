@@ -14,6 +14,7 @@
     InferenceApiModel,
     InferenceProvidersKey,
   } from '$lib/types';
+  import { deepEqual } from '$lib/utils/object-helpers';
   import { isBoolean, isNumeric, isString } from '$lib/utils/type-guards';
   import SettingsTabs from './SettingsTabs.svelte';
   import GeneralTab from './GeneralTab.svelte';
@@ -121,7 +122,7 @@
     }
 
     app.saveConfig(cfg);
-    handleClose();
+    leave();
   }
 
   async function handleReset() {
@@ -146,11 +147,22 @@
     cameFrom = path && path !== resolve('/settings') ? path : null;
   });
 
-  function handleClose() {
+  /** Whether anything on these screens differs from what is stored. */
+  const edited = $derived(!deepEqual(localConfig, app.config));
+
+  /** Leaves without asking — for the paths that have just saved something. */
+  function leave() {
     // cameFrom is a pathname SvelteKit itself reported for a completed
     // navigation, so it already carries the base path that resolve() adds.
     // eslint-disable-next-line svelte/no-navigation-without-resolve
     goto(cameFrom ?? resolve('/'));
+  }
+
+  async function handleClose() {
+    // Closing is one button away from Save and discards everything typed since
+    // it was opened — a rewritten system prompt is a lot to lose to a misclick.
+    if (edited && !(await modal.showConfirm('Discard your changes?'))) return;
+    leave();
   }
 
   async function handleSavePreset(name: string, config: Configuration) {
@@ -198,7 +210,7 @@
         onremovepreset={handleRemovePreset}
         onsaveconfig={async (c) => {
           app.saveConfig(c);
-          handleClose();
+          leave();
         }}
       />
     {:else if tabId === 'import-export'}
