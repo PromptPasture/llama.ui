@@ -218,6 +218,13 @@ export const chat = {
       delete state.pendingMessages[convId];
       if ((err as Error).name === 'AbortError') {
         if (isDev) console.debug('Generation aborted by user.');
+        // Stopping is not discarding. Keep what was streamed before the user
+        // pressed stop, the same way a completed reply is kept.
+        if (pendingMsg.content !== null) {
+          await IndexedDB.appendMsg(pendingMsg as Message, leafNodeId);
+          onChunk(pendingMsg.id);
+        }
+        delete state.aborts[convId];
         return;
       }
       console.error('Error during message generation:', err);

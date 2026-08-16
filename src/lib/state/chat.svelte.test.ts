@@ -5,9 +5,17 @@ const mocks = vi.hoisted(() => ({
   getOneConversation: vi.fn(),
   getMessages: vi.fn().mockResolvedValue([]),
   onConversationChanged: vi.fn(),
+  filterByLeafNodeId: vi.fn().mockReturnValue([]),
+  appendMsg: vi.fn().mockResolvedValue(undefined),
 }));
 
+const stream = vi.hoisted(() => ({ generateChatStream: vi.fn() }));
+
 vi.mock('$lib/database/indexedDB', () => ({ default: mocks }));
+vi.mock('$lib/services/inference-service', () => stream);
+vi.mock('$lib/api/message-normalization', () => ({
+  normalizeMsgsForAPI: () => [],
+}));
 
 const { chat } = await import('./chat.svelte');
 
@@ -50,6 +58,65 @@ describe('loading a conversation', () => {
 
     await expect(chat.loadConversation('conv-1')).resolves.toBe(true);
     expect(chat.viewingChat?.conv.name).toBe('Kept');
+  });
+});
+
+describe('stopping generation partway', () => {
+  function abortAfterStreaming(text: string) {
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ content: text });
+        const err = new Error('aborted');
+        err.name = 'AbortError';
+        throw err;
+      }
+    );
+  }
+
+  it('keeps the text streamed before the user pressed stop', async () => {
+    mocks.appendMsg.mockClear();
+    abortAfterStreaming('half an answer');
+
+    await chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      deps({ provider: {} }) as never
+    );
+
+    // Watching a reply appear and then vanish on stop is the wrong trade:
+    // every mainstream chat client keeps what was produced.
+    expect(mocks.appendMsg).toHaveBeenCalledTimes(1);
+    expect(mocks.appendMsg.mock.calls[0][0]).toMatchObject({
+      content: 'half an answer',
+      role: 'assistant',
+    });
+  });
+
+  it('saves nothing when stopped before any text arrived', async () => {
+    mocks.appendMsg.mockClear();
+    stream.generateChatStream.mockImplementationOnce(async () => {
+      const err = new Error('aborted');
+      err.name = 'AbortError';
+      throw err;
+    });
+
+    await chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      deps({ provider: {} }) as never
+    );
+
+    expect(mocks.appendMsg).not.toHaveBeenCalled();
+  });
+
+  it('does not report an error when the user stopped deliberately', async () => {
+    abortAfterStreaming('partial');
+    const d = deps({ provider: {} });
+
+    await chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      d as never
+    );
+
+    expect(d.toast).not.toHaveBeenCalled();
   });
 });
 
