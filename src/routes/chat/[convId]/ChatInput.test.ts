@@ -1,7 +1,15 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   isGenerating: vi.fn(() => false),
@@ -196,5 +204,38 @@ describe('ChatInput while a reply is generating', () => {
     await user.click(screen.getByRole('button', { name: 'Stop generation' }));
 
     expect(mocks.stopGenerating).toHaveBeenCalledWith('conv-1');
+  });
+});
+
+describe('ChatInput taking the cursor when a conversation opens', () => {
+  /** jsdom answers every media query with `matches: false`. */
+  const viewport = (wide: boolean) =>
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: wide,
+      media: query,
+    }));
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('is ready to type on the wide layout', () => {
+    viewport(true);
+
+    const { textarea } = renderInput();
+
+    // Otherwise every conversation opens with a click before a word can be
+    // written, which the original did not ask for.
+    expect(textarea).toHaveFocus();
+  });
+
+  it('leaves it alone on a narrow one', () => {
+    viewport(false);
+
+    const { textarea } = renderInput();
+
+    // Focusing here raises the on-screen keyboard over the conversation
+    // before the reader has decided to write anything.
+    expect(textarea).not.toHaveFocus();
   });
 });

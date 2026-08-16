@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { _ } from 'svelte-i18n';
   import ArrowUpIcon from 'lucide-svelte/icons/arrow-up';
   import SquareIcon from 'lucide-svelte/icons/square';
@@ -55,6 +56,16 @@
 
   $effect(() => {
     resize();
+  });
+
+  onMount(() => {
+    // Opening a conversation and having to click the box before typing is a
+    // step the original did not ask for. Only on the wide layout: on a narrow
+    // one this raises the on-screen keyboard over the conversation before the
+    // reader has decided to write anything.
+    if (window.matchMedia?.('(min-width: 1280px)').matches) {
+      textareaEl?.focus();
+    }
   });
 </script>
 
