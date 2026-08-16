@@ -33,6 +33,7 @@
    * outruns another, so each is numbered and only the newest is kept.
    */
   let searchNo = 0;
+  let answeredTerm = $state('');
 
   // Named so the effect below tracks both: the list matters as well as the
   // term, or a conversation renamed or deleted during a search would linger in
@@ -59,7 +60,11 @@
     const mine = ++searchNo;
     const timer = setTimeout(() => {
       IndexedDB.searchConversations(term).then((found) => {
-        if (mine === searchNo) matches = found;
+        if (mine !== searchNo) return;
+        matches = found;
+        // Which term the results answer. Without it, the moment before the
+        // first search runs looks exactly like a search that found nothing.
+        answeredTerm = term;
       });
     }, SEARCH_SETTLE_MS);
     // Typing on cancels the search that was about to run for what came before.
@@ -175,6 +180,9 @@
         />
       {/each}
     {:else}
+      {#if matches.length === 0 && answeredTerm === searchInputs.term}
+        <p class="sidebar__no-results">{$_('sidebar.search.noResults')}</p>
+      {/if}
       <ul class="sidebar__filtered-list">
         {#each matches as match (match.conv.id)}
           <ConversationItem
@@ -255,6 +263,11 @@
     border: none;
     outline: none;
     color: var(--color-text);
+  }
+
+  .sidebar__no-results {
+    @apply text-sm text-center py-6 px-3;
+    color: var(--color-text-muted);
   }
 
   .sidebar__list {

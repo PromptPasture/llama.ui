@@ -349,3 +349,46 @@ describe('Sidebar showing why a conversation matched', () => {
     ).toBe('Holiday planning');
   });
 });
+
+describe('Sidebar searching and finding nothing', () => {
+  const search = () => screen.getByPlaceholderText('Search');
+
+  it('says so, rather than showing an empty space', async () => {
+    const user = userEvent.setup();
+    await renderSidebar();
+
+    await user.type(search(), 'zzzzz');
+
+    expect(
+      await screen.findByText('No conversations found')
+    ).toBeInTheDocument();
+  });
+
+  it('says nothing of the sort before the search has run', async () => {
+    const user = userEvent.setup();
+    // Never answers, standing in for the moment between typing and the search
+    // returning.
+    mocks.searchConversations.mockImplementation(
+      () => new Promise<ConversationMatch[]>(() => {})
+    );
+    await renderSidebar();
+
+    await user.type(search(), 'holiday');
+
+    // Otherwise the first keystroke reports failure before anything has looked.
+    expect(screen.queryByText('No conversations found')).toBeNull();
+  });
+
+  it('takes it back once something matches', async () => {
+    const user = userEvent.setup();
+    await renderSidebar();
+
+    await user.type(search(), 'zzzzz');
+    await screen.findByText('No conversations found');
+    await user.clear(search());
+    await user.type(search(), 'holiday');
+
+    expect(await screen.findByText('Holiday planning')).toBeInTheDocument();
+    expect(screen.queryByText('No conversations found')).toBeNull();
+  });
+});
