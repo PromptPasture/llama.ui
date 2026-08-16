@@ -24,7 +24,6 @@
   import PresetsTab from './PresetsTab.svelte';
   import ImportExportTab from './ImportExportTab.svelte';
   import AdvancedTab from './AdvancedTab.svelte';
-  import ExperimentalTab from './ExperimentalTab.svelte';
 
   const tabs = [
     { id: 'general', label: 'settings.tabs.general', default: 'General' },
@@ -42,11 +41,6 @@
       default: 'Import / Export',
     },
     { id: 'advanced', label: 'settings.tabs.advanced', default: 'Advanced' },
-    {
-      id: 'experimental',
-      label: 'settings.sections.experimental',
-      default: 'Experimental',
-    },
   ];
 
   let tabId = $state('general');
@@ -249,8 +243,6 @@
       <ImportExportTab onclose={handleClose} />
     {:else if tabId === 'advanced'}
       <AdvancedTab config={localConfig} {onchange} />
-    {:else if tabId === 'experimental'}
-      <ExperimentalTab config={localConfig} {onchange} />
     {/if}
 
     <footer class="settings__footer">

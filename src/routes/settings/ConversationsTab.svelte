@@ -17,12 +17,6 @@
   <h4 class="section-heading section-heading--first">
     {$_('settings.sections.chat')}
   </h4>
-  <SettingsField
-    type="short"
-    configKey="pasteLongTextToFileLen"
-    value={config.pasteLongTextToFileLen}
-    onchange={onchange('pasteLongTextToFileLen')}
-  />
 
   <h4 class="section-heading">{$_('settings.sections.performance')}</h4>
   <SettingsField
