@@ -1,5 +1,6 @@
 <script lang="ts">
   import 'katex/dist/katex.min.css';
+  import DOMPurify from 'dompurify';
   import { marked, type RendererObject } from 'marked';
   import markedKatex from 'marked-katex-extension';
   import { copyStr } from '$lib/utils/dom-helpers';
@@ -45,7 +46,15 @@
   };
   marked.use({ renderer });
 
-  const html = $derived(marked.parse(preprocessLaTeX(content)) as string);
+  // marked passes raw HTML through untouched and this content is model output,
+  // so it is sanitised before reaching {@html}. The extra tag and attribute
+  // keep KaTeX's MathML annotation, which holds the original TeX source.
+  const html = $derived(
+    DOMPurify.sanitize(marked.parse(preprocessLaTeX(content)) as string, {
+      ADD_TAGS: ['annotation'],
+      ADD_ATTR: ['encoding'],
+    })
+  );
 
   function preprocessLaTeX(src: string): string {
     const codeBlocks: string[] = [];
@@ -91,6 +100,7 @@
   onclick={handleClick}
   onkeydown={() => {}}
 >
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitised with DOMPurify above -->
   {@html html}
 </div>
 

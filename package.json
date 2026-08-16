@@ -23,6 +23,7 @@
 		"@tailwindcss/vite": "^4.3.1",
 		"bits-ui": "^2.18.1",
 		"dexie": "^4.4.4",
+		"dompurify": "^3.4.13",
 		"katex": "^0.17.0",
 		"lucide-svelte": "^1.0.1",
 		"marked": "^18.0.5",
