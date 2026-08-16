@@ -22,11 +22,22 @@
   }
 
   async function handleImport(e: Event) {
-    const files = (e.target as HTMLInputElement).files;
-    if (!files || files.length !== 1) return;
-    const text = await files[0].text();
-    await app.importDB(text, { success: toast.success, error: toast.error });
-    onclose();
+    const input = e.target as HTMLInputElement;
+    try {
+      const files = input.files;
+      if (!files || files.length !== 1) return;
+      const text = await files[0].text();
+      await app.importDB(text, { success: toast.success, error: toast.error });
+      onclose();
+    } catch {
+      // importDB has already raised a toast; swallowing keeps the rejection
+      // from going unhandled.
+    } finally {
+      // Clearing the value lets the same file be chosen again. Without it a
+      // rejected import cannot be retried after fixing the file, because
+      // selecting an unchanged value fires no change event.
+      input.value = '';
+    }
   }
 </script>
 

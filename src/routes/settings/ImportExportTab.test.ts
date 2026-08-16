@@ -2,7 +2,15 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import ImportExportTab from './ImportExportTab.svelte';
+
+const mocks = vi.hoisted(() => ({
+  importDB: vi.fn().mockResolvedValue(undefined),
+  exportDB: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('$lib/state/app.svelte', () => ({ app: mocks }));
+
+const { default: ImportExportTab } = await import('./ImportExportTab.svelte');
 
 // Set the locale explicitly rather than going through initI18n(), which picks
 // its initial locale from navigator.language and is not deterministic here.
@@ -68,6 +76,52 @@ describe('ImportExportTab import control', () => {
 
     await user.tab();
     expect(screen.getByRole('button', { name: 'Import' })).toHaveFocus();
+  });
+
+  it('clears the input so a rejected file can be chosen again', async () => {
+    const user = userEvent.setup();
+    mocks.importDB.mockRejectedValueOnce(new Error('not a llama.ui export'));
+    const { fileInput } = renderTab();
+
+    await user.upload(
+      fileInput,
+      new File(['nonsense'], 'wrong.json', { type: 'application/json' })
+    );
+
+    // Selecting an unchanged value fires no change event, so without this the
+    // user cannot retry the same file after fixing it.
+    expect(mocks.importDB).toHaveBeenCalled();
+    expect(fileInput.value).toBe('');
+  });
+
+  it('clears the input after a successful import too', async () => {
+    const user = userEvent.setup();
+    mocks.importDB.mockResolvedValueOnce(undefined);
+    const { fileInput } = renderTab();
+
+    await user.upload(
+      fileInput,
+      new File(['[]'], 'db.json', { type: 'application/json' })
+    );
+
+    expect(fileInput.value).toBe('');
+  });
+
+  it('does not close the settings screen when the import fails', async () => {
+    const user = userEvent.setup();
+    mocks.importDB.mockRejectedValueOnce(new Error('malformed conversation'));
+    const onclose = vi.fn();
+    const { container } = render(ImportExportTab, { props: { onclose } });
+    const input = container.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+
+    await user.upload(
+      input,
+      new File(['{}'], 'bad.json', { type: 'application/json' })
+    );
+
+    expect(onclose).not.toHaveBeenCalled();
   });
 
   it('keeps the file input itself out of the tab order', () => {
