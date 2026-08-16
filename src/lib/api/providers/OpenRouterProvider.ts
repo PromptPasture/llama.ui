@@ -74,13 +74,16 @@ export class OpenRouterProvider extends CloudOpenAIProvider {
   /** @inheritdoc */
   protected jsonToModel(m: unknown): InferenceApiModel {
     const model = m as OpenRouterModel;
+    // Read defensively: this is a third party's payload, describing hundreds
+    // of models from many vendors, and one entry missing a field used to throw
+    // and take the whole list with it.
     return {
       id: model.id,
-      name: model.name,
+      name: model.name || model.id,
       created: model.created,
       description: model.description,
-      modalities: model.architecture.input_modalities || [],
-      output_modalities: model.architecture.output_modalities || [],
+      modalities: model.architecture?.input_modalities ?? [],
+      output_modalities: model.architecture?.output_modalities ?? [],
     };
   }
 }
