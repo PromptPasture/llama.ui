@@ -86,6 +86,16 @@ describe('locale catalogues', () => {
 
     expect(orphans).toEqual([]);
   });
+
+  it.each(locales)('%s translates every key en.json has', (file: string) => {
+    const loc = JSON.parse(fs.readFileSync(path.join(__dirname, file), 'utf8'));
+    // A key only in en.json falls back to English, which shows as one English
+    // phrase in the middle of a translated screen rather than as a fault. The
+    // search box read 'Search' in every language for exactly that reason.
+    const untranslated = [...catalogue].filter((k) => !(k in loc));
+
+    expect(untranslated).toEqual([]);
+  });
 });
 
 describe('translation keys', () => {
