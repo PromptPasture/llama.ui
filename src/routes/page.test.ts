@@ -127,3 +127,30 @@ describe('sending the first message once a provider is set up', () => {
     expect(mocks.sendMessage).toHaveBeenCalled();
   });
 });
+
+describe('what a new conversation is called', () => {
+  it('is named after the message that started it', async () => {
+    mocks.provider = { id: 'llama.cpp' };
+
+    await typeAndSend('How do I centre a div?');
+
+    expect(mocks.createConversation).toHaveBeenCalledWith(
+      'How do I centre a div?'
+    );
+  });
+
+  it('is not named after a paragraph of it', async () => {
+    mocks.provider = { id: 'llama.cpp' };
+    const long =
+      'I would like a detailed explanation of how the borrow checker decides when a reference outlives its owner';
+
+    await typeAndSend(long);
+
+    // The name is the tooltip, the label read aloud for the item in the list,
+    // and the name of the file it downloads as. It used to be the first 256
+    // characters of the message, newlines and all.
+    const [name] = mocks.createConversation.mock.calls[0];
+    expect(name.length).toBeLessThan(long.length);
+    expect(name.endsWith('…')).toBe(true);
+  });
+});

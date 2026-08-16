@@ -9,6 +9,7 @@
   import { toast } from '$lib/components/toast.js';
   import { offerToConfigure } from '$lib/first-run';
   import { getUniqueRandomElements } from '$lib/utils/array-helpers';
+  import { toConversationName } from '$lib/utils/conversation-name';
   import type { MessageExtra } from '$lib/types';
   import ChatInput from './chat/[convId]/ChatInput.svelte';
 
@@ -50,7 +51,9 @@
       await offerToConfigure(app.config.baseUrl);
       return false;
     }
-    const conv = await IndexedDB.createConversation(content.substring(0, 256));
+    const conv = await IndexedDB.createConversation(
+      toConversationName(content)
+    );
     await goto(resolve('/chat/[convId]', { convId: conv.id }));
     return chat.sendMessage(
       {
