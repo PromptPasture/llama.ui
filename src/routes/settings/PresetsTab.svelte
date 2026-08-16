@@ -1,11 +1,9 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import {
-    CirclePlayIcon,
-    SaveIcon,
-    Trash2Icon,
-    PencilIcon,
-  } from 'lucide-svelte';
+  import CirclePlayIcon from 'lucide-svelte/icons/circle-play';
+  import SaveIcon from 'lucide-svelte/icons/save';
+  import Trash2Icon from 'lucide-svelte/icons/trash-2';
+  import PencilIcon from 'lucide-svelte/icons/pencil';
   import { CONFIG_DEFAULT } from '$lib/config';
   import { modal } from '$lib/state/modal.svelte';
   import { toast } from '$lib/components/toast.js';

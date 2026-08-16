@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { RefreshCwIcon } from 'lucide-svelte';
+  import RefreshCwIcon from 'lucide-svelte/icons/refresh-cw';
   import { INFERENCE_PROVIDERS } from '$lib/config';
   import type {
     Configuration,

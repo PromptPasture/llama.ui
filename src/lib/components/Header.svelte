@@ -1,6 +1,8 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { CogIcon, MenuIcon, SquarePenIcon } from 'lucide-svelte';
+  import CogIcon from 'lucide-svelte/icons/cog';
+  import MenuIcon from 'lucide-svelte/icons/menu';
+  import SquarePenIcon from 'lucide-svelte/icons/square-pen';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { app } from '$lib/state/app.svelte';

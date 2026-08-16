@@ -1,11 +1,9 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import {
-    DownloadIcon,
-    EllipsisVerticalIcon,
-    PencilIcon,
-    TrashIcon,
-  } from 'lucide-svelte';
+  import DownloadIcon from 'lucide-svelte/icons/download';
+  import EllipsisVerticalIcon from 'lucide-svelte/icons/ellipsis-vertical';
+  import PencilIcon from 'lucide-svelte/icons/pencil';
+  import TrashIcon from 'lucide-svelte/icons/trash';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import IndexedDB from '$lib/database/indexedDB';

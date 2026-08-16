@@ -1,17 +1,15 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import {
-    AtomIcon,
-    BotIcon,
-    ChevronDownIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    CopyIcon,
-    GitMergeIcon,
-    RefreshCwIcon,
-    SquarePenIcon,
-    Trash2Icon,
-  } from 'lucide-svelte';
+  import AtomIcon from 'lucide-svelte/icons/atom';
+  import BotIcon from 'lucide-svelte/icons/bot';
+  import ChevronDownIcon from 'lucide-svelte/icons/chevron-down';
+  import ChevronLeftIcon from 'lucide-svelte/icons/chevron-left';
+  import ChevronRightIcon from 'lucide-svelte/icons/chevron-right';
+  import CopyIcon from 'lucide-svelte/icons/copy';
+  import GitMergeIcon from 'lucide-svelte/icons/git-merge';
+  import RefreshCwIcon from 'lucide-svelte/icons/refresh-cw';
+  import SquarePenIcon from 'lucide-svelte/icons/square-pen';
+  import Trash2Icon from 'lucide-svelte/icons/trash-2';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import IndexedDB from '$lib/database/indexedDB';

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { ArrowUpIcon, SquareIcon } from 'lucide-svelte';
+  import ArrowUpIcon from 'lucide-svelte/icons/arrow-up';
+  import SquareIcon from 'lucide-svelte/icons/square';
   import { chat } from '$lib/state/chat.svelte';
   import type { MessageExtra } from '$lib/types';
 

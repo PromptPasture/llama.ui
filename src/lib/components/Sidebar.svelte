@@ -1,6 +1,8 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { SearchIcon, SquarePenIcon, XIcon } from 'lucide-svelte';
+  import SearchIcon from 'lucide-svelte/icons/search';
+  import SquarePenIcon from 'lucide-svelte/icons/square-pen';
+  import XIcon from 'lucide-svelte/icons/x';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
