@@ -11,6 +11,8 @@
 
   let { onclose }: Props = $props();
 
+  let fileInput: HTMLInputElement;
+
   async function handleExport() {
     const data = await app.exportDB(undefined, {
       success: toast.success,
@@ -38,10 +40,16 @@
       >{$_('settings.importExport.exportBtnLabel')}</Button
     >
 
-    <label class="import-label" role="button" tabindex="0">
-      {$_('settings.importExport.importBtnLabel')}
-      <input type="file" accept=".json" hidden onchange={handleImport} />
-    </label>
+    <Button onclick={() => fileInput.click()}
+      >{$_('settings.importExport.importBtnLabel')}</Button
+    >
+    <input
+      bind:this={fileInput}
+      type="file"
+      accept=".json"
+      hidden
+      onchange={handleImport}
+    />
   </div>
 </section>
 
@@ -54,15 +62,5 @@
 
   .import-export__actions {
     @apply flex gap-2 flex-wrap;
-  }
-
-  .import-label {
-    @apply inline-flex items-center px-3 py-1.5 text-sm font-medium cursor-pointer;
-    border-radius: var(--radius-md);
-    background: var(--color-accent);
-    color: var(--color-accent-fg);
-  }
-  .import-label:hover {
-    background: var(--color-accent-hover);
   }
 </style>

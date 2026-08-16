@@ -161,7 +161,7 @@
 
       <!-- Content -->
     {:else if content || reasoning_content}
-      <div dir="auto" tabindex="0">
+      <div dir="auto">
         {#if reasoning_content}
           <div class="msg__reasoning">
             <button
