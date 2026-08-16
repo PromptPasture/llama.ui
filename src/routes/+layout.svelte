@@ -49,7 +49,6 @@
 <svelte:window onkeydown={onKeydown} />
 
 <svelte:head>
-  <meta name="theme-color" content="#EEEEEE" />
   <title>llama.ui</title>
 </svelte:head>
 

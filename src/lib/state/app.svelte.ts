@@ -1,4 +1,4 @@
-import { CONFIG_DEFAULT } from '$lib/config';
+import { CONFIG_DEFAULT, THEME_COLORS } from '$lib/config';
 import IndexedDB from '$lib/database/indexedDB';
 import LocalStorage from '$lib/database/localStorage';
 import { t } from '$lib/i18n/translate';
@@ -14,6 +14,26 @@ interface AppState {
   config: Configuration;
   presets: ConfigurationPreset[];
   currentTheme: string;
+}
+
+/**
+ * Repaints the browser's own chrome to match the theme. A `theme-color` that
+ * disagrees with the page leaves a stripe of the wrong colour above it, which
+ * is most obvious in an installed app, where that stripe is the status bar.
+ */
+function applyThemeColor(theme: string): void {
+  const meta = document.querySelector<HTMLMetaElement>(
+    'meta[name="theme-color"]'
+  );
+  if (!meta) return;
+
+  const resolved =
+    theme === 'auto'
+      ? window.matchMedia?.('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light'
+      : theme;
+  meta.content = THEME_COLORS[resolved] ?? THEME_COLORS.light;
 }
 
 const state = $state<AppState>({
@@ -80,6 +100,7 @@ export const app = {
     } else {
       document.documentElement.setAttribute('data-theme', theme);
     }
+    applyThemeColor(theme);
   },
 
   async importDB(

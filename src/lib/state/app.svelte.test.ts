@@ -64,6 +64,51 @@ describe('following the system theme', () => {
   });
 });
 
+describe('the browser chrome', () => {
+  const themeColor = () =>
+    document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+      ?.content;
+
+  beforeEach(() => {
+    document.head.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+      m.remove();
+    });
+    // app.html declares it; jsdom starts without one.
+    const meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    meta.content = '#ffffff';
+    document.head.appendChild(meta);
+  });
+
+  it('darkens with the page', () => {
+    app.switchTheme('dark');
+
+    // A theme-color left behind shows as a stripe of the wrong colour above
+    // the page — the status bar, in an installed app.
+    expect(themeColor()).toBe('#1d232a');
+  });
+
+  it('lightens again', () => {
+    app.switchTheme('dark');
+
+    app.switchTheme('light');
+
+    expect(themeColor()).toBe('#ffffff');
+  });
+
+  it('resolves auto against the system preference', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('dark'),
+      media: query,
+    }));
+
+    app.switchTheme('auto');
+
+    expect(themeColor()).toBe('#1d232a');
+    vi.unstubAllGlobals();
+  });
+});
+
 describe('starting up', () => {
   it('reads the stored configuration', async () => {
     localStorage.setItem('config', stored({ apiKey: 'from-storage' }));

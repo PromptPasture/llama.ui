@@ -21,8 +21,10 @@ export default defineConfig({
         description:
           'A minimal Interface for AI Companion that runs entirely in your browser.',
         display: 'standalone',
-        theme_color: '#EEEEEE',
-        background_color: '#EEEEEE',
+        // The light palette's --color-bg. A manifest carries one colour, so
+        // the splash screen cannot follow the theme the way the page does.
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         start_url: 'https://llama-ui.js.org',
         scope: 'https://llama-ui.js.org',
         orientation: 'any',

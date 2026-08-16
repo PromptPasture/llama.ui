@@ -18,6 +18,9 @@
       rel="apple-touch-icon"
       href="%sveltekit.assets%/assets/apple-icon-180.png"
     />
+    <!-- Overwritten below to match the theme. Declared here, ahead of the
+         script, so that it exists by the time the script looks for it. -->
+    <meta name="theme-color" content="#ffffff" />
     <script>
       // Apply the stored theme before the first paint. The app itself only
       // reaches switchTheme once it has hydrated, awaited the locale and read
@@ -26,9 +29,20 @@
       // attribute off and lets the stylesheet's prefers-color-scheme rule win.
       try {
         var storedTheme = localStorage.getItem('theme');
-        if (storedTheme && storedTheme !== 'auto') {
+        // 'auto' is normally stored as nothing at all; accept it either way.
+        if (storedTheme === 'auto') storedTheme = null;
+        if (storedTheme) {
           document.documentElement.setAttribute('data-theme', storedTheme);
         }
+        // Mirrors THEME_COLORS in src/lib/config/theme.ts, which cannot be
+        // imported here — change the two together.
+        var prefersDark =
+          storedTheme === 'dark' ||
+          (!storedTheme &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.querySelector('meta[name="theme-color"]').content = prefersDark
+          ? '#1d232a'
+          : '#ffffff';
       } catch {
         // Storage blocked; the system preference still applies.
       }
