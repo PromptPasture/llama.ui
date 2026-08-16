@@ -32,7 +32,7 @@ describe('copying over a secure connection', () => {
       configurable: true,
     });
 
-    copyStr('some text');
+    await copyStr('some text');
 
     expect(writeText).toHaveBeenCalledWith('some text');
     expect(textareas()).toHaveLength(0);
@@ -40,25 +40,25 @@ describe('copying over a secure connection', () => {
 });
 
 describe('copying without one', () => {
-  it('falls back to the selection trick', () => {
+  it('falls back to the selection trick', async () => {
     const execCommand = insecureContext();
 
-    copyStr('some text');
+    await copyStr('some text');
 
     expect(execCommand).toHaveBeenCalledWith('copy');
   });
 
-  it('leaves nothing behind in the page', () => {
+  it('leaves nothing behind in the page', async () => {
     insecureContext();
 
-    copyStr('some text');
+    await copyStr('some text');
 
     // The element used to stay, so one accumulated per copy — invisible, but
     // still in the document and reachable by tabbing.
     expect(textareas()).toHaveLength(0);
   });
 
-  it('leaves nothing behind even when the copy command fails', () => {
+  it('leaves nothing behind even when the copy command fails', async () => {
     vi.stubGlobal('isSecureContext', false);
     Object.defineProperty(document, 'execCommand', {
       value: vi.fn(() => {
@@ -68,14 +68,15 @@ describe('copying without one', () => {
       writable: true,
     });
 
-    expect(() => copyStr('some text')).toThrow();
+    // The refusal is the answer, not an exception for the caller to handle.
+    await expect(copyStr('some text')).resolves.toBe(false);
     expect(textareas()).toHaveLength(0);
   });
 
-  it('does not accumulate across repeated copies', () => {
+  it('does not accumulate across repeated copies', async () => {
     insecureContext();
 
-    for (let i = 0; i < 25; i++) copyStr(`copy ${i}`);
+    for (let i = 0; i < 25; i++) await copyStr(`copy ${i}`);
 
     expect(textareas()).toHaveLength(0);
   });
@@ -114,5 +115,42 @@ describe('deciding whether a conversation is showing its end', () => {
   it('accepts a tolerance of its own', () => {
     expect(isAtBottom(at(1000), 400)).toBe(true);
     expect(isAtBottom(at(1000), 300)).toBe(false);
+  });
+});
+
+describe('a copy the clipboard refuses', () => {
+  it('says it did not happen', async () => {
+    vi.stubGlobal('isSecureContext', true);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: vi.fn().mockRejectedValue(new Error('not focused')),
+      },
+      configurable: true,
+    });
+
+    // The permission withheld, or the document not focused: ordinary, and it
+    // used to leave a button reporting a success it had never checked.
+    await expect(copyStr('some text')).resolves.toBe(false);
+  });
+
+  it('says so when the older command reports failure', async () => {
+    vi.stubGlobal('isSecureContext', false);
+    Object.defineProperty(document, 'execCommand', {
+      value: vi.fn(() => false),
+      configurable: true,
+      writable: true,
+    });
+
+    await expect(copyStr('some text')).resolves.toBe(false);
+  });
+
+  it('says a copy that worked did', async () => {
+    vi.stubGlobal('isSecureContext', true);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      configurable: true,
+    });
+
+    await expect(copyStr('some text')).resolves.toBe(true);
   });
 });

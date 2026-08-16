@@ -160,6 +160,16 @@
     oneditassistantfn(msg as Message, editContent);
   }
 
+  async function copyContent() {
+    // Confirmed rather than assumed: the clipboard refuses for ordinary
+    // reasons, and there is nothing else on screen to say either way.
+    if (await copyStr(msg.content ?? '')) {
+      toast.success($_('chatScreen.titles.copied'));
+    } else {
+      toast.error($_('chatScreen.errors.copyFailed'));
+    }
+  }
+
   async function handleDelete() {
     if (await modal.showConfirm($_('chatScreen.actions.delete.confirm'))) {
       await IndexedDB.deleteMessage(msg as Message);
@@ -418,7 +428,7 @@
       <Button
         variant="ghost"
         size="icon"
-        onclick={() => copyStr(msg.content ?? '')}
+        onclick={copyContent}
         title={$_('chatScreen.titles.copy')}
         aria-label={$_('chatScreen.ariaLabels.copyContent')}
       >

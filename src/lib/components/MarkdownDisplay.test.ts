@@ -3,10 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { init, locale, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ copyStr: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  copyStr: vi.fn().mockResolvedValue(true),
+}));
 vi.mock('$lib/utils/dom-helpers', () => ({ copyStr: mocks.copyStr }));
 
 const { default: MarkdownDisplay } = await import('./MarkdownDisplay.svelte');
+const { toast } = await import('$lib/components/toast');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
@@ -141,7 +144,36 @@ describe('the wording on the copy button', () => {
     btn.click();
 
     // The only string here with no translation in the other eleven
-    // catalogues; they fall back to this.
-    expect(btn.textContent).toBe('Copied!');
+    // catalogues; they fall back to this. Awaited because the button now
+    // waits to know the copy worked before saying it did.
+    await vi.waitFor(() => expect(btn.textContent).toBe('Copied!'));
+  });
+});
+
+describe('a code copy the clipboard refuses', () => {
+  it('does not say it has copied', async () => {
+    mocks.copyStr.mockResolvedValueOnce(false);
+    render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
+    const btn = screen.getByRole('button', { name: 'Copy' });
+
+    btn.click();
+    await vi.waitFor(() => expect(mocks.copyStr).toHaveBeenCalled());
+
+    // It used to say "Copied!" whatever happened, and the reader pasted
+    // whatever was on the clipboard before.
+    expect(btn.textContent).toBe('Copy');
+  });
+
+  it('says what went wrong instead', async () => {
+    mocks.copyStr.mockResolvedValueOnce(false);
+    const failed = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
+
+    screen.getByRole('button', { name: 'Copy' }).click();
+
+    await vi.waitFor(() =>
+      expect(failed).toHaveBeenCalledWith('Could not copy to the clipboard')
+    );
+    failed.mockRestore();
   });
 });

@@ -57,6 +57,7 @@
   "chatScreen.titles.getReply": "الحصول على رد",
   "chatScreen.titles.copy": "نسخ",
   "chatScreen.titles.copied": "تم النسخ!",
+  "chatScreen.errors.copyFailed": "تعذّر النسخ إلى الحافظة",
   "chatScreen.titles.run": "تشغيل",
   "chatScreen.titles.edit": "تعديل",
   "chatScreen.titles.delete": "حذف",

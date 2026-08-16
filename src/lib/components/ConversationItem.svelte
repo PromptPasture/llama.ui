@@ -106,12 +106,17 @@
       // The branch on screen, rather than every version ever written: what is
       // copied should be the conversation as it reads.
       const shown = IndexedDB.filterByLeafNodeId(all, conv.currNode, false);
-      copyStr(
+      const copied = await copyStr(
         toMarkdown(shown, {
           user: $_('chatScreen.labels.user'),
           assistant: $_('chatScreen.labels.assistant'),
         })
       );
+      if (copied) {
+        toast.success($_('chatScreen.titles.copied'));
+      } else {
+        toast.error($_('chatScreen.errors.copyFailed'));
+      }
     } catch (error) {
       console.error('Conversation copy failed:', error);
       toast.error($_('sidebar.errors.downloadFailed'));

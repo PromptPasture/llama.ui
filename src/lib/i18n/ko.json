@@ -57,6 +57,7 @@
   "chatScreen.titles.getReply": "답변 받기",
   "chatScreen.titles.copy": "복사",
   "chatScreen.titles.copied": "복사됨",
+  "chatScreen.errors.copyFailed": "클립보드에 복사하지 못했습니다",
   "chatScreen.titles.run": "실행",
   "chatScreen.titles.edit": "편집",
   "chatScreen.titles.delete": "삭제",

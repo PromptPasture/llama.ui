@@ -57,6 +57,7 @@
   "chatScreen.titles.getReply": "उत्तर प्राप्त करें",
   "chatScreen.titles.copy": "कॉपी करें",
   "chatScreen.titles.copied": "कॉपी हो गया!",
+  "chatScreen.errors.copyFailed": "क्लिपबोर्ड पर कॉपी नहीं किया जा सका",
   "chatScreen.titles.run": "चलाएं",
   "chatScreen.titles.edit": "संपादित करें",
   "chatScreen.titles.delete": "हटाएं",

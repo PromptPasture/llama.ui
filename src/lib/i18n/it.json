@@ -57,6 +57,7 @@
   "chatScreen.titles.getReply": "Ottieni una risposta",
   "chatScreen.titles.copy": "Copia",
   "chatScreen.titles.copied": "Copiato!",
+  "chatScreen.errors.copyFailed": "Impossibile copiare negli appunti",
   "chatScreen.titles.run": "Esegui",
   "chatScreen.titles.edit": "Modifica",
   "chatScreen.titles.delete": "Elimina",

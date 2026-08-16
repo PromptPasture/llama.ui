@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
   showConfirm: vi.fn().mockResolvedValue(false),
   deleteMessage: vi.fn(),
   branchMessage: vi.fn(),
-  copyStr: vi.fn(),
+  copyStr: vi.fn().mockResolvedValue(true),
   isGenerating: vi.fn(() => false),
 }));
 
@@ -36,6 +36,7 @@ vi.mock('$lib/utils/dom-helpers', () => ({ copyStr: mocks.copyStr }));
 
 const { default: ChatMessage } = await import('./ChatMessage.svelte');
 const { app } = await import('$lib/state/app.svelte');
+const { toast } = await import('$lib/components/toast');
 
 // Set the locale explicitly rather than through initI18n(), which picks its
 // initial locale from navigator.language and is not deterministic here.
@@ -853,5 +854,31 @@ describe('a message that never got a reply', () => {
     expect(
       screen.queryByRole('button', { name: 'Get a reply to this message' })
     ).toBeNull();
+  });
+});
+
+describe('copying a message', () => {
+  it('confirms that it happened', async () => {
+    const user = userEvent.setup();
+    const said = vi.spyOn(toast, 'success').mockImplementation(() => {});
+    renderMessage();
+
+    await user.click(screen.getByRole('button', { name: 'Copy content' }));
+
+    // Pressing it gave no sign of anything at all.
+    expect(said).toHaveBeenCalledWith('Copied!');
+    said.mockRestore();
+  });
+
+  it('says so when the clipboard refuses', async () => {
+    const user = userEvent.setup();
+    mocks.copyStr.mockResolvedValueOnce(false);
+    const failed = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    renderMessage();
+
+    await user.click(screen.getByRole('button', { name: 'Copy content' }));
+
+    expect(failed).toHaveBeenCalledWith('Could not copy to the clipboard');
+    failed.mockRestore();
   });
 });

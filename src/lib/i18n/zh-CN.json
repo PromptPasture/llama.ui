@@ -57,6 +57,7 @@
   "chatScreen.titles.getReply": "获取回复",
   "chatScreen.titles.copy": "复制",
   "chatScreen.titles.copied": "已复制",
+  "chatScreen.errors.copyFailed": "无法复制到剪贴板",
   "chatScreen.titles.run": "运行",
   "chatScreen.titles.edit": "编辑",
   "chatScreen.titles.delete": "删除",

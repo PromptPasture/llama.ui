@@ -57,6 +57,7 @@
   "chatScreen.titles.getReply": "Получить ответ",
   "chatScreen.titles.copy": "Копировать",
   "chatScreen.titles.copied": "Скопировано!",
+  "chatScreen.errors.copyFailed": "Не удалось скопировать в буфер обмена",
   "chatScreen.titles.run": "Запустить",
   "chatScreen.titles.edit": "Редактировать",
   "chatScreen.titles.delete": "Удалить",

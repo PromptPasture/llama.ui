@@ -57,6 +57,7 @@
   "chatScreen.titles.getReply": "返信を取得",
   "chatScreen.titles.copy": "コピー",
   "chatScreen.titles.copied": "コピーしました",
+  "chatScreen.errors.copyFailed": "クリップボードにコピーできませんでした",
   "chatScreen.titles.run": "実行",
   "chatScreen.titles.edit": "編集",
   "chatScreen.titles.delete": "削除",

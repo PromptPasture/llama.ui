@@ -33,11 +33,26 @@ export const isAtBottom = (
  *
  * @param textToCopy - The text to copy to the clipboard
  */
-export const copyStr = (textToCopy: string) => {
+/**
+ * Puts text on the clipboard.
+ *
+ * Says whether it worked. The clipboard refuses for ordinary reasons — the
+ * permission withheld, the document not focused — and the refusal arrives as
+ * a rejected promise. Unawaited, it went nowhere: the button reported success
+ * it had never checked, and the reader pasted whatever was there before.
+ *
+ * @param textToCopy - What to put on the clipboard
+ * @returns Whether the text is now on it
+ */
+export const copyStr = async (textToCopy: string): Promise<boolean> => {
   // Navigator clipboard api needs a secure context (https)
   if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(textToCopy);
-    return;
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // Use the 'out of viewport hidden text area' trick
@@ -53,7 +68,9 @@ export const copyStr = (textToCopy: string) => {
   document.body.prepend(textArea);
   try {
     textArea.select();
-    document.execCommand('copy');
+    return document.execCommand('copy');
+  } catch {
+    return false;
   } finally {
     textArea.remove();
   }

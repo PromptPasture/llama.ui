@@ -2,6 +2,7 @@
   import 'katex/dist/katex.min.css';
   import { _ } from 'svelte-i18n';
   import { copyStr } from '$lib/utils/dom-helpers';
+  import { toast } from '$lib/components/toast';
   import { renderMarkdown } from '$lib/utils/markdown';
 
   interface Props {
@@ -18,7 +19,7 @@
     renderMarkdown(content, { copy: $_('chatScreen.titles.copy') })
   );
 
-  function handleClick(e: MouseEvent) {
+  async function handleClick(e: MouseEvent) {
     const btn = (e.target as HTMLElement).closest<HTMLElement>(
       '.code-block__copy-btn'
     );
@@ -33,7 +34,12 @@
       ?.querySelector('pre code')?.textContent;
     if (code === null || code === undefined) return;
 
-    copyStr(code);
+    // Said only once it has happened: the clipboard refuses for ordinary
+    // reasons, and the button used to report a success it never checked.
+    if (!(await copyStr(code))) {
+      toast.error($_('chatScreen.errors.copyFailed'));
+      return;
+    }
     btn.textContent = $_('chatScreen.titles.copied', { default: 'Copied!' });
     setTimeout(() => {
       btn.textContent = $_('chatScreen.titles.copy');

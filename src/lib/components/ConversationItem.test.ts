@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   downloadAsFile: vi.fn(),
   getMessages: vi.fn(),
   filterByLeafNodeId: vi.fn(),
-  copyStr: vi.fn(),
+  copyStr: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('$app/navigation', () => ({ goto: mocks.goto }));
@@ -376,5 +376,31 @@ describe('copying a conversation', () => {
     // Without this the menu simply closed and nothing reached the clipboard.
     expect(mocks.error).toHaveBeenCalled();
     expect(mocks.copyStr).not.toHaveBeenCalled();
+  });
+
+  it('confirms that the copy happened', async () => {
+    mocks.getMessages.mockResolvedValue([turn('user', 'hi')]);
+    mocks.filterByLeafNodeId.mockReturnValue([turn('user', 'hi')]);
+
+    await copy();
+
+    // Choosing Copy from the menu gave no sign of anything at all.
+    await vi.waitFor(() =>
+      expect(mocks.success).toHaveBeenCalledWith('Copied!')
+    );
+  });
+
+  it('says when the clipboard refused', async () => {
+    mocks.getMessages.mockResolvedValue([turn('user', 'hi')]);
+    mocks.filterByLeafNodeId.mockReturnValue([turn('user', 'hi')]);
+    mocks.copyStr.mockResolvedValueOnce(false);
+
+    await copy();
+
+    await vi.waitFor(() =>
+      expect(mocks.error).toHaveBeenCalledWith(
+        'Could not copy to the clipboard'
+      )
+    );
   });
 });
