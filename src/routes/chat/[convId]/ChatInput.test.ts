@@ -131,6 +131,19 @@ describe('ChatInput and input methods', () => {
     expect(textarea).toHaveValue('にほん');
   });
 
+  it('leaves Enter alone when only the legacy code says so', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, 'にほん');
+    // Some browsers report the Enter that accepts a conversion with
+    // isComposing already false, and only this code to say what it was for.
+    await fireEvent.keyDown(textarea, { key: 'Enter', keyCode: 229 });
+
+    expect(onsend).not.toHaveBeenCalled();
+    expect(textarea).toHaveValue('にほん');
+  });
+
   it('sends on the Enter that follows, once composing has finished', async () => {
     const user = userEvent.setup();
     const { onsend, textarea } = renderInput();

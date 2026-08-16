@@ -44,7 +44,13 @@
     // which is how Japanese, Korean and Chinese are typed at all. Sending on
     // that Enter would post the half-converted text and swallow the keystroke
     // the writer meant for the IME.
-    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    //
+    // 229 is the code a browser reports while an input method owns the key.
+    // Some report it on the very Enter that accepts a conversion, with
+    // isComposing already back to false, so the flag alone lets that one
+    // through. The original checked both.
+    const composing = e.isComposing || e.keyCode === 229;
+    if (e.key === 'Enter' && !e.shiftKey && !composing) {
       e.preventDefault();
       send();
     }
