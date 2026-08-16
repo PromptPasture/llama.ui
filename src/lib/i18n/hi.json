@@ -105,7 +105,7 @@
   "dropdown.chooseEntity": "{entity} चुनें",
   "dropdown.searchPlaceholder": "{entity} खोजें...",
   "dropdown.noOptions": "कोई विकल्प नहीं मिला",
-  "fileUpload.errors.fileTooLarge": "फ़ाइल बहुत बड़ी है। अधिकतम आकार 500MB है।",
+  "fileUpload.errors.fileTooLarge": "फ़ाइल बहुत बड़ी है। अधिकतम आकार {size} है।",
   "fileUpload.errors.multimodalNotSupported": "इस सर्वर या मॉडल द्वारा मल्टीमॉडल समर्थित नहीं है।",
   "fileUpload.errors.videoNotSupported": "वीडियो फ़ाइलें अभी तक समर्थित नहीं हैं।",
   "fileUpload.errors.audioNotSupported": "केवल mp3 और wav ऑडियो फ़ाइलें समर्थित हैं।",

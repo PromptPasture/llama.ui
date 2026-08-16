@@ -105,7 +105,7 @@
   "dropdown.chooseEntity": "Choose {entity}",
   "dropdown.searchPlaceholder": "Search {entity}s...",
   "dropdown.noOptions": "No options found",
-  "fileUpload.errors.fileTooLarge": "File is too large. Maximum size is 500MB.",
+  "fileUpload.errors.fileTooLarge": "File is too large. Maximum size is {size}.",
   "fileUpload.errors.multimodalNotSupported": "Multimodal is not supported by this server or model.",
   "fileUpload.errors.videoNotSupported": "Video files are not supported yet.",
   "fileUpload.errors.audioNotSupported": "Only mp3 and wav audio files are supported.",

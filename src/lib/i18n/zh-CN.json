@@ -105,7 +105,7 @@
   "dropdown.chooseEntity": "选择 {entity}",
   "dropdown.searchPlaceholder": "搜索 {entity}...",
   "dropdown.noOptions": "未找到选项",
-  "fileUpload.errors.fileTooLarge": "文件太大。最大大小为500MB。",
+  "fileUpload.errors.fileTooLarge": "文件太大。最大大小为{size}。",
   "fileUpload.errors.multimodalNotSupported": "此服务器或模型不支持多模态。",
   "fileUpload.errors.videoNotSupported": "视频文件尚不支持。",
   "fileUpload.errors.audioNotSupported": "仅支持 mp3 和 wav 音频文件。",

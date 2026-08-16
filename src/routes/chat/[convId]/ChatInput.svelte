@@ -5,10 +5,17 @@
   import SquareIcon from 'lucide-svelte/icons/square';
   import XIcon from 'lucide-svelte/icons/x';
   import FileTextIcon from 'lucide-svelte/icons/file-text';
+  import PaperclipIcon from 'lucide-svelte/icons/paperclip';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
+  import { toast } from '$lib/components/toast';
   import { readDraft, writeDraft } from '$lib/utils/drafts';
   import { isLongPaste } from '$lib/utils/long-paste';
+  import {
+    describeSize,
+    looksBinary,
+    MAX_FILE_BYTES,
+  } from '$lib/utils/text-file';
   import type { MessageExtra } from '$lib/types';
 
   interface Props {
@@ -33,12 +40,20 @@
    * Held in memory rather than stored with the draft: an attachment is as long
    * as whatever was pasted, and filling the browser's storage quota would cost
    * the reader every other draft they have.
+   *
+   * Carries an id of its own because two attachments can share a name — the
+   * same file picked twice — and keying the list by name crashes the render.
    */
-  let attached = $state<MessageExtra[]>([]);
+  let attached = $state<{ id: number; extra: MessageExtra }[]>([]);
 
-  /** Numbers the attachments. Only ever counts up, so removing one leaves no
-   * two of them sharing a name. */
+  /** Identifies every attachment. Only ever counts up. */
+  let counter = 0;
+
+  /** Numbers pasted text, which has no name of its own to be known by. */
   let pasteCount = 0;
+
+  let fileInputEl: HTMLInputElement;
+  let draggingOver = $state(false);
 
   const isPending = $derived(convId ? chat.isGenerating(convId) : false);
 
@@ -76,7 +91,10 @@
     attached = [];
     writeDraft(convId, '');
     resize();
-    const ok = await onsend(msg, sent.length ? sent : undefined);
+    const ok = await onsend(
+      msg,
+      sent.length ? sent.map((a) => a.extra) : undefined
+    );
     if (ok === false) {
       value = msg;
       attached = sent;
@@ -108,18 +126,77 @@
     // scroll inside it to find their own question.
     e.preventDefault();
     pasteCount += 1;
-    attached = [
-      ...attached,
-      {
-        type: 'textFile',
-        name: $_('chatInput.pastedText', { values: { index: pasteCount } }),
-        content: text,
-      },
-    ];
+    attach({
+      type: 'textFile',
+      name: $_('chatInput.pastedText', { values: { index: pasteCount } }),
+      content: text,
+    });
   }
 
-  function unattach(index: number) {
-    attached = attached.filter((_unused, i) => i !== index);
+  function attach(extra: MessageExtra) {
+    counter += 1;
+    attached = [...attached, { id: counter, extra }];
+  }
+
+  function unattach(id: number) {
+    attached = attached.filter((a) => a.id !== id);
+  }
+
+  /**
+   * Reads files into the message as text.
+   *
+   * Anything binary is refused rather than decoded: as text it is pages of
+   * replacement characters, which say nothing to a model and would be sent all
+   * the same.
+   */
+  async function attachFiles(files: readonly File[]) {
+    for (const file of files) {
+      if (file.size > MAX_FILE_BYTES) {
+        toast.error(
+          $_('fileUpload.errors.fileTooLarge', {
+            values: { size: describeSize(MAX_FILE_BYTES) },
+          })
+        );
+        continue;
+      }
+      try {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        if (looksBinary(bytes)) {
+          toast.error($_('fileUpload.errors.fileIsBinary'));
+          continue;
+        }
+        attach({
+          type: 'textFile',
+          name: file.name,
+          content: new TextDecoder().decode(bytes),
+        });
+      } catch {
+        // An unreadable file is not a broken box; say so and keep the rest.
+        toast.error($_('fileUpload.errors.failedToReadFile'));
+      }
+    }
+  }
+
+  async function onFilesPicked(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    await attachFiles([...(input.files ?? [])]);
+    // Cleared so that picking the same file again is still a change.
+    input.value = '';
+  }
+
+  function onDragOver(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('Files')) return;
+    // Without this the browser navigates away to the dropped file.
+    e.preventDefault();
+    draggingOver = true;
+  }
+
+  async function onDrop(e: DragEvent) {
+    const files = [...(e.dataTransfer?.files ?? [])];
+    if (files.length === 0) return;
+    e.preventDefault();
+    draggingOver = false;
+    await attachFiles(files);
   }
 
   function onInput() {
@@ -146,20 +223,30 @@
   });
 </script>
 
-<div class="chat-input">
+<!-- Dropping onto the message area attaches the files. It carries no role
+     because it is a convenience for a mouse: the attach button below does the
+     same thing, and is what a reader is offered. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+  class="chat-input"
+  class:chat-input--dragging={draggingOver}
+  ondragover={onDragOver}
+  ondragleave={() => (draggingOver = false)}
+  ondrop={onDrop}
+>
   {#if attached.length > 0}
     <ul
       class="chat-input__attachments"
       aria-label={$_('chatScreen.attachments')}
     >
-      {#each attached as item, i (item.name)}
+      {#each attached as item (item.id)}
         <li class="chat-input__attachment">
           <FileTextIcon size={14} />
-          <span class="chat-input__attachment-name">{item.name}</span>
+          <span class="chat-input__attachment-name">{item.extra.name}</span>
           <button
             type="button"
             class="chat-input__attachment-remove"
-            onclick={() => unattach(i)}
+            onclick={() => unattach(item.id)}
             aria-label={$_('chatInput.ariaLabels.removeButton')}
           >
             <XIcon size={14} />
@@ -185,6 +272,27 @@
       onpaste={onPaste}></textarea>
 
     <div class="chat-input__actions">
+      <!-- The button is the control; this only opens the picker for it. Left
+           out of the accessibility tree so the two are not announced as two
+           separate ways to attach a file. -->
+      <input
+        bind:this={fileInputEl}
+        type="file"
+        multiple
+        class="chat-input__file"
+        tabindex="-1"
+        aria-hidden="true"
+        onchange={onFilesPicked}
+      />
+      <button
+        type="button"
+        class="chat-input__btn chat-input__btn--attach"
+        onclick={() => fileInputEl?.click()}
+        aria-label={$_('chatInput.ariaLabels.uploadFile')}
+      >
+        <PaperclipIcon size={18} />
+      </button>
+
       {#if isPending}
         <button
           type="button"
@@ -232,6 +340,14 @@
     font: inherit;
     min-height: 1.5rem;
     max-height: 12rem;
+  }
+
+  .chat-input--dragging .chat-input__box {
+    border-color: var(--color-accent);
+  }
+
+  .chat-input__file {
+    @apply hidden;
   }
 
   .chat-input__attachments {

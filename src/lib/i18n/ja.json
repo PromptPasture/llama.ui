@@ -105,7 +105,7 @@
   "dropdown.chooseEntity": "{entity}を選択",
   "dropdown.searchPlaceholder": "{entity}を検索...",
   "dropdown.noOptions": "オプションが見つかりません",
-  "fileUpload.errors.fileTooLarge": "ファイルが大きすぎます。最大サイズは500MBです。",
+  "fileUpload.errors.fileTooLarge": "ファイルが大きすぎます。最大サイズは{size}です。",
   "fileUpload.errors.multimodalNotSupported": "このサーバーまたはモデルはマルチモーダルをサポートしていません。",
   "fileUpload.errors.videoNotSupported": "動画ファイルはまだサポートされていません。",
   "fileUpload.errors.audioNotSupported": "mp3およびwav形式のオーディオファイルのみサポートされています。",

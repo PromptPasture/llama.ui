@@ -105,7 +105,7 @@
   "dropdown.chooseEntity": "{entity} 선택",
   "dropdown.searchPlaceholder": "{entity} 검색...",
   "dropdown.noOptions": "옵션을 찾을 수 없음",
-  "fileUpload.errors.fileTooLarge": "파일이 너무 큽니다. 최대 크기는 500MB입니다.",
+  "fileUpload.errors.fileTooLarge": "파일이 너무 큽니다. 최대 크기는 {size}입니다.",
   "fileUpload.errors.multimodalNotSupported": "이 서버 또는 모델은 멀티모달을 지원하지 않습니다.",
   "fileUpload.errors.videoNotSupported": "비디오 파일은 아직 지원되지 않습니다.",
   "fileUpload.errors.audioNotSupported": "mp3 및 wav 오디오 파일만 지원됩니다.",

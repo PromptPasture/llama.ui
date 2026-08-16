@@ -105,7 +105,7 @@
   "dropdown.chooseEntity": "اختر {entity}",
   "dropdown.searchPlaceholder": "البحث عن {entity}s...",
   "dropdown.noOptions": "لم يتم العثور على خيارات",
-  "fileUpload.errors.fileTooLarge": "الملف كبير جداً. الحجم الأقصى هو 500 ميجابايت.",
+  "fileUpload.errors.fileTooLarge": "الملف كبير جداً. الحجم الأقصى هو {size}.",
   "fileUpload.errors.multimodalNotSupported": "النموذج متعدد الوسائط غير مدعوم بواسطة هذا الخادم أو النموذج.",
   "fileUpload.errors.videoNotSupported": "ملفات الفيديو غير مدعومة بعد.",
   "fileUpload.errors.audioNotSupported": "يتم دعم ملفات الصوت بصيغة mp3 و wav فقط.",

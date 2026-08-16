@@ -20,6 +20,7 @@ vi.mock('$lib/state/chat.svelte', () => ({ chat: mocks }));
 
 const { default: ChatInput } = await import('./ChatInput.svelte');
 const { app } = await import('$lib/state/app.svelte');
+const { toast } = await import('$lib/components/toast');
 
 // Set the locale explicitly rather than through initI18n(), which picks its
 // initial locale from navigator.language and is not deterministic here.
@@ -39,7 +40,17 @@ beforeEach(() => {
 
 function renderInput(onsend = vi.fn().mockResolvedValue(undefined)) {
   const result = render(ChatInput, { props: { convId: 'conv-1', onsend } });
-  return { ...result, onsend, textarea: screen.getByRole('textbox') };
+  // The picker itself is plumbing behind the attach button, so it is out of
+  // the accessibility tree and has to be reached directly.
+  const filePicker =
+    result.container.querySelector<HTMLInputElement>('input[type="file"]');
+  if (!filePicker) throw new Error('the box has no file picker');
+  return {
+    ...result,
+    onsend,
+    filePicker,
+    textarea: screen.getByRole('textbox'),
+  };
 }
 
 describe('ChatInput sending', () => {
@@ -480,5 +491,148 @@ describe('sending what was attached', () => {
 
     // Nothing was sent, so nothing should have to be pasted again.
     expect(screen.getByText('Pasted text 1')).toBeInTheDocument();
+  });
+});
+
+describe('two attachments that share a name', () => {
+  it('shows both of them', async () => {
+    const user = userEvent.setup();
+    const { textarea, filePicker } = renderInput();
+    const file = () =>
+      new File(['a long log'], 'log.txt', { type: 'text/plain' });
+
+    await user.upload(filePicker, [file(), file()]);
+
+    // Attaching the same file twice is a thing people do; keying the list by
+    // name crashes the render outright.
+    expect(screen.getAllByText('log.txt')).toHaveLength(2);
+    expect(textarea).toBeInTheDocument();
+  });
+});
+
+describe('attaching a file', () => {
+  const textFile = (name: string, content: string) =>
+    new File([content], name, { type: 'text/plain' });
+
+  it('reads it into the message', async () => {
+    const user = userEvent.setup();
+    const { filePicker } = renderInput();
+
+    await user.upload(filePicker, textFile('notes.txt', 'the contents'));
+
+    expect(screen.getByText('notes.txt')).toBeInTheDocument();
+  });
+
+  it('sends what the file held', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea, filePicker } = renderInput();
+    await user.upload(filePicker, textFile('notes.txt', 'the contents'));
+
+    await user.type(textarea, 'what is this?{Enter}');
+
+    expect(onsend).toHaveBeenCalledWith('what is this?', [
+      { type: 'textFile', name: 'notes.txt', content: 'the contents' },
+    ]);
+  });
+
+  it('takes several at once', async () => {
+    const user = userEvent.setup();
+    const { filePicker } = renderInput();
+
+    await user.upload(filePicker, [
+      textFile('one.txt', 'a'),
+      textFile('two.txt', 'b'),
+    ]);
+
+    expect(screen.getByText('one.txt')).toBeInTheDocument();
+    expect(screen.getByText('two.txt')).toBeInTheDocument();
+  });
+
+  it('refuses one that is not text', async () => {
+    const user = userEvent.setup();
+    const failed = vi.spyOn(toast, 'error');
+    const { filePicker } = renderInput();
+
+    const binary = new File([new Uint8Array([0x89, 0x50, 0, 0x47])], 'a.png');
+    await user.upload(filePicker, binary);
+
+    // Decoded as text it is pages of replacement characters, which say
+    // nothing to a model and would be sent all the same.
+    expect(failed).toHaveBeenCalledWith(
+      'File is binary. Please upload a text file.'
+    );
+    expect(screen.queryByText('a.png')).not.toBeInTheDocument();
+    failed.mockRestore();
+  });
+
+  it('says how large a file it will take', async () => {
+    const user = userEvent.setup();
+    const failed = vi.spyOn(toast, 'error');
+    const { filePicker } = renderInput();
+
+    const huge = textFile('huge.txt', 'x');
+    Object.defineProperty(huge, 'size', { value: 20 * 1024 * 1024 });
+    await user.upload(filePicker, huge);
+
+    // The message used to name a limit of 500MB that nothing enforced.
+    expect(failed).toHaveBeenCalledWith(
+      'File is too large. Maximum size is 10MB.'
+    );
+    failed.mockRestore();
+  });
+
+  it('keeps the others when one of them fails', async () => {
+    const user = userEvent.setup();
+    const { filePicker } = renderInput();
+
+    const binary = new File([new Uint8Array([0, 1])], 'a.png');
+    await user.upload(filePicker, [binary, textFile('notes.txt', 'kept')]);
+
+    expect(screen.getByText('notes.txt')).toBeInTheDocument();
+  });
+
+  it('lets go of the file once it has read it', async () => {
+    const user = userEvent.setup();
+    const { filePicker } = renderInput();
+
+    await user.upload(filePicker, textFile('notes.txt', 'a'));
+
+    // A real file input holding the same value is not a change, so picking
+    // the same file a second time would raise no event at all. jsdom fires
+    // one regardless, so the cleared value is what there is to check.
+    expect(filePicker.value).toBe('');
+  });
+});
+
+describe('dropping a file on the message box', () => {
+  /** What a browser sends when files are dragged over and let go. */
+  function dropEvent(files: File[]) {
+    const event = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'dataTransfer', { value: { files } });
+    return event;
+  }
+
+  it('attaches it', async () => {
+    const { container } = renderInput();
+    const area = container.querySelector('.chat-input');
+    if (!area) throw new Error('the box has no drop target');
+
+    const file = new File(['the contents'], 'dropped.txt');
+    area.dispatchEvent(dropEvent([file]));
+    await vi.waitFor(() =>
+      expect(screen.getByText('dropped.txt')).toBeInTheDocument()
+    );
+  });
+
+  it('leaves a drop of something else alone', async () => {
+    const { container } = renderInput();
+    const area = container.querySelector('.chat-input');
+    if (!area) throw new Error('the box has no drop target');
+
+    const event = dropEvent([]);
+    area.dispatchEvent(event);
+
+    // Dragged text, not files: the browser's own handling should stand.
+    expect(event.defaultPrevented).toBe(false);
   });
 });

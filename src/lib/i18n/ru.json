@@ -105,7 +105,7 @@
   "dropdown.chooseEntity": "Выберите {entity}",
   "dropdown.searchPlaceholder": "Поиск {entity}...",
   "dropdown.noOptions": "Совпадений не найдено",
-  "fileUpload.errors.fileTooLarge": "Файл слишком велик. Максимальный размер — 500 МБ.",
+  "fileUpload.errors.fileTooLarge": "Файл слишком велик. Максимальный размер — {size}.",
   "fileUpload.errors.multimodalNotSupported": "Мультимодальность не поддерживается этим сервером или моделью.",
   "fileUpload.errors.videoNotSupported": "Видео-файлы пока не поддерживаются.",
   "fileUpload.errors.audioNotSupported": "Поддерживаются только аудио-файлы форматов mp3 и wav.",
