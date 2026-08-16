@@ -141,6 +141,16 @@ npm run build  # 🔨 Craft the magic
 npm start      # 🎬 Launch dev server (http://localhost:5173) for live-coding bliss! 🔥
 ```
 
+**Before opening a pull request** — CI runs all three, so save yourself a round trip:
+
+```bash
+npm test       # 🧪 Run the suite
+npm run lint   # 🧹 ESLint + Prettier
+npm run check  # 🔍 svelte-check (types)
+```
+
+`npm run format` rewrites `src/` with Prettier if the lint step complains.
+
 ### 🧰 Preconfiguring Defaults
 
 Planning to redistribute the app with opinionated settings out of the box? Any JSON under
@@ -156,10 +166,11 @@ so model metadata is fetched without requiring manual input.
 
 - **Frontend**: [SvelteKit 5](https://svelte.dev/) with [TypeScript](https://www.typescriptlang.org/)
 - **State Management**: Svelte 5 Runes (`$state`, `$derived`, `$effect`) in `.svelte.ts` modules
-- **UI Primitives**: [Bits UI](https://bits-ui.com/) (headless, accessible)
+- **UI Primitives**: hand-rolled components in `src/lib/components`
 - **Styling**: [TailwindCSS v4](https://tailwindcss.com/) + CSS custom properties for theming
 - **Storage**: IndexedDB via [Dexie.js](https://dexie.org/)
-- **Markdown**: [marked](https://marked.js.org/) + [marked-katex-extension](https://github.com/UziTech/marked-katex-extension)
+- **Markdown**: [marked](https://marked.js.org/) + [marked-katex-extension](https://github.com/UziTech/marked-katex-extension), sanitised with [DOMPurify](https://github.com/cure53/DOMPurify)
+- **Testing**: [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/docs/svelte-testing-library/intro/)
 - **i18n**: [svelte-i18n](https://github.com/kaisermann/svelte-i18n)
 - **Build Tool**: [Vite](https://vite.dev/) + [`@sveltejs/adapter-static`](https://kit.svelte.dev/docs/adapter-static)
 
