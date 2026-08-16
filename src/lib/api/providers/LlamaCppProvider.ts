@@ -1,7 +1,7 @@
 import { isDev } from '../../config';
 import { InferenceApiModel, Modality } from '../../types';
 import { normalizeUrl } from '../../utils/url-helpers';
-import { noResponse } from '../response-utils';
+import { describeNetworkFailure, PROVIDER_TIMEOUT_MS } from '../response-utils';
 import { SelfHostedOpenAIProvider } from './SelfHostedOpenAIProvider';
 
 /**
@@ -155,14 +155,14 @@ export class LlamaCppProvider extends SelfHostedOpenAIProvider {
    * @internal Used internally by {@link getModels} and {@link jsonToModel}.
    */
   private async getServerProps(): Promise<LlamaCppServerProps> {
-    let fetchResponse = noResponse;
+    let fetchResponse: Response;
     try {
       fetchResponse = await fetch(normalizeUrl('/props', this.getBaseUrl()), {
         headers: this.getHeaders(),
-        signal: AbortSignal.timeout(1000),
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
       });
-    } catch {
-      // Silently ignore network/timeout errors — will be handled by isErrorResponse
+    } catch (error) {
+      throw describeNetworkFailure(error);
     }
 
     await this.isErrorResponse(fetchResponse);
