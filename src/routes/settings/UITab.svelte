@@ -21,6 +21,8 @@
   ];
 
   const THEMES = [
+    // The stored default, and the only way back to it once a theme is picked.
+    { value: 'auto', label: 'System' },
     { value: 'light', label: 'Light' },
     { value: 'dark', label: 'Dark' },
   ];

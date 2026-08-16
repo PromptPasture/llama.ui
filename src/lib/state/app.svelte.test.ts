@@ -23,6 +23,45 @@ function anotherTabWrote(key: string, value: string) {
 
 beforeEach(() => {
   localStorage.clear();
+  document.documentElement.removeAttribute('data-theme');
+});
+
+describe('following the system theme', () => {
+  // app.css puts the dark palette behind `:root:not([data-theme])`, so the
+  // attribute being absent is what "auto" means to the stylesheet.
+  const themeAttr = () => document.documentElement.getAttribute('data-theme');
+
+  it('leaves no theme attribute for a first-time visitor', async () => {
+    await app.init();
+
+    expect(app.currentTheme).toBe('auto');
+    // With data-theme="auto" nothing matches but the light defaults on :root,
+    // so a visitor whose system is dark would be shown the light palette.
+    expect(themeAttr()).toBeNull();
+  });
+
+  it('marks a chosen theme', () => {
+    app.switchTheme('dark');
+
+    expect(themeAttr()).toBe('dark');
+  });
+
+  it('hands control back to the system when auto is chosen again', () => {
+    app.switchTheme('dark');
+
+    app.switchTheme('auto');
+
+    expect(themeAttr()).toBeNull();
+    expect(localStorage.getItem('theme')).toBeNull();
+  });
+
+  it('restores a stored theme on the next visit', async () => {
+    app.switchTheme('dark');
+
+    await app.init();
+
+    expect(themeAttr()).toBe('dark');
+  });
 });
 
 describe('starting up', () => {

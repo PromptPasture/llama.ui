@@ -72,7 +72,14 @@ export const app = {
   switchTheme(theme: string): void {
     LocalStorage.setTheme(theme);
     state.currentTheme = theme;
-    document.documentElement.setAttribute('data-theme', theme);
+    // 'auto' means follow the system. The stylesheet expresses that as
+    // `:root:not([data-theme])`, so the attribute has to be absent — setting it
+    // to 'auto' matches no theme rule and leaves the light defaults on :root.
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
   },
 
   async importDB(
