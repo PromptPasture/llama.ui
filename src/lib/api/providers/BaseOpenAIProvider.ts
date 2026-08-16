@@ -121,7 +121,7 @@ export class BaseOpenAIProvider
     let fetchResponse: Response;
     try {
       fetchResponse = await fetch(
-        normalizeUrl('/v1/models', this.getBaseUrl()),
+        normalizeUrl(this.getModelsPath(), this.getBaseUrl()),
         {
           method: 'GET',
           headers: this.getHeaders(),
@@ -205,7 +205,7 @@ export class BaseOpenAIProvider
     let fetchResponse: Response;
     try {
       fetchResponse = await fetch(
-        normalizeUrl('/v1/chat/completions', this.getBaseUrl()),
+        normalizeUrl(this.getChatCompletionsPath(), this.getBaseUrl()),
         {
           method: 'POST',
           headers: this.getHeaders(),
@@ -333,6 +333,29 @@ export class BaseOpenAIProvider
    */
   protected isAllowCustomOptions(): boolean {
     return false;
+  }
+
+  /**
+   * Path of the model listing endpoint, relative to the base URL.
+   *
+   * Override where a provider's OpenAI-compatible surface is not mounted under
+   * `/v1` — Google's, for instance, sits directly under `/v1beta/openai`.
+   *
+   * @returns The path to request.
+   * @protected
+   */
+  protected getModelsPath(): string {
+    return '/v1/models';
+  }
+
+  /**
+   * Path of the chat completions endpoint, relative to the base URL.
+   *
+   * @returns The path to request.
+   * @protected
+   */
+  protected getChatCompletionsPath(): string {
+    return '/v1/chat/completions';
   }
 
   protected getDefaultChatParams(): Record<string, unknown> {

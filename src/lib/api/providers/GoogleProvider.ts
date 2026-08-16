@@ -48,6 +48,24 @@ export class GoogleProvider extends CloudOpenAIProvider {
     return new GoogleProvider(baseUrl, apiKey);
   }
 
+  /**
+   * Gemini's OpenAI-compatible surface is mounted directly on the base URL —
+   * `https://generativelanguage.googleapis.com/v1beta/openai/` — so the
+   * endpoints carry no further `/v1` segment. Requesting `/v1/models` there
+   * returns 404, which left this provider unable to list models or reply.
+   *
+   * @returns The path to request.
+   * @see https://ai.google.dev/gemini-api/docs/openai
+   */
+  protected getModelsPath(): string {
+    return '/models';
+  }
+
+  /** @inheritdoc */
+  protected getChatCompletionsPath(): string {
+    return '/chat/completions';
+  }
+
   /** @inheritdoc */
   protected jsonToModel(m: unknown): InferenceApiModel {
     const model = m as GoogleModel;
