@@ -40,7 +40,7 @@
   const note = $derived(
     $_(`settings.parameters.${configKey}.note`, { default: '' })
   );
-  const defaultVal = CONFIG_DEFAULT[configKey];
+  const defaultVal = $derived(CONFIG_DEFAULT[configKey]);
 </script>
 
 <div class="field">

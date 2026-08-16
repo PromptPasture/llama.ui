@@ -16,15 +16,16 @@
     ...rest
   }: Props = $props();
 
-  const resolvedType =
+  const resolvedType = $derived(
     type ??
-    (variant === 'file'
-      ? 'file'
-      : variant === 'toggle'
-        ? 'checkbox'
-        : variant === 'range'
-          ? 'range'
-          : 'text');
+      (variant === 'file'
+        ? 'file'
+        : variant === 'toggle'
+          ? 'checkbox'
+          : variant === 'range'
+            ? 'range'
+            : 'text')
+  );
 
   // `bind:value` requires a static `type`, which this component resolves at
   // runtime, so the write-back is wired by hand. The caller's own `oninput`

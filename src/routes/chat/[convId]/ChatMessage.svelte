@@ -72,6 +72,9 @@
 
   let isEditing = $state(false);
   let editContent = $state('');
+  // Deliberately seeded from config once: this tracks whether the user has
+  // expanded the reasoning panel, so it must not follow config afterwards.
+  // svelte-ignore state_referenced_locally
   let thinkingOpen = $state(config.showThoughtInProgress ?? true);
 
   const showActions = $derived(!isEditing && !isPending);
