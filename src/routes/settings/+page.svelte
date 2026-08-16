@@ -48,6 +48,34 @@
   ];
 
   let tabId = $state('general');
+  let tabRefs: HTMLButtonElement[] = [];
+
+  // A tablist is expected to move between tabs with the arrow keys, with only
+  // the selected tab in the tab order (roving tabindex).
+  function onTabKeydown(event: KeyboardEvent, index: number) {
+    let next: number;
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        next = (index + 1) % tabs.length;
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        next = (index - 1 + tabs.length) % tabs.length;
+        break;
+      case 'Home':
+        next = 0;
+        break;
+      case 'End':
+        next = tabs.length - 1;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    tabId = tabs[next].id;
+    tabRefs[next]?.focus();
+  }
   let localConfig = $state<Configuration>({ ...app.config });
   let localModels = $state<InferenceApiModel[]>([...inference.models]);
 
@@ -138,23 +166,33 @@
 
 <div class="settings">
   <!-- Tab sidebar (desktop) / tab bar (mobile) -->
-  <nav class="settings__tabs" role="tablist" aria-label="Settings sections">
-    {#each tabs as tab (tab.id)}
+  <div class="settings__tabs" role="tablist" aria-label="Settings sections">
+    {#each tabs as tab, i (tab.id)}
       <button
+        bind:this={tabRefs[i]}
         type="button"
         role="tab"
+        id="settings-tab-{tab.id}"
         class="settings__tab"
         class:active={tabId === tab.id}
         aria-selected={tabId === tab.id}
+        aria-controls="settings-panel-{tab.id}"
+        tabindex={tabId === tab.id ? 0 : -1}
         onclick={() => (tabId = tab.id)}
+        onkeydown={(e) => onTabKeydown(e, i)}
       >
         {$_(tab.label, { default: tab.default })}
       </button>
     {/each}
-  </nav>
+  </div>
 
   <!-- Tab content -->
-  <div class="settings__content">
+  <div
+    class="settings__content"
+    role="tabpanel"
+    id="settings-panel-{tabId}"
+    aria-labelledby="settings-tab-{tabId}"
+  >
     {#if tabId === 'general'}
       <GeneralTab
         config={localConfig}
