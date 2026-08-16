@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -100,6 +100,43 @@ describe('ChatInput sending', () => {
     await user.type(textarea, 'fine{Enter}');
 
     expect(textarea).toHaveValue('');
+  });
+});
+
+describe('ChatInput and input methods', () => {
+  // Japanese, Korean and Chinese are typed by converting candidates and
+  // pressing Enter to accept one — userEvent cannot express that, so the flag
+  // the browser sets during composition is fired directly.
+  const composingEnter = (textarea: HTMLElement) =>
+    fireEvent.keyDown(textarea, { key: 'Enter', isComposing: true });
+
+  it('leaves Enter to the input method while it is composing', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, 'にほん');
+    await composingEnter(textarea);
+
+    // Sending here posts the unconverted reading and swallows the keystroke
+    // meant to accept the conversion.
+    expect(onsend).not.toHaveBeenCalled();
+    expect(textarea).toHaveValue('にほん');
+  });
+
+  it('sends on the Enter that follows, once composing has finished', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, '日本');
+    await composingEnter(textarea);
+    // Asserted here too: without it the send below still looks right, because
+    // the first Enter would have sent the message and emptied the box.
+    expect(onsend).not.toHaveBeenCalled();
+
+    await fireEvent.keyDown(textarea, { key: 'Enter' });
+
+    expect(onsend).toHaveBeenCalledOnce();
+    expect(onsend).toHaveBeenCalledWith('日本', undefined);
   });
 });
 

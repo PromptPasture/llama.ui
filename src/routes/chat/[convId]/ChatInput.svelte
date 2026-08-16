@@ -36,7 +36,11 @@
   }
 
   function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Enter also confirms a candidate while an input method is composing —
+    // which is how Japanese, Korean and Chinese are typed at all. Sending on
+    // that Enter would post the half-converted text and swallow the keystroke
+    // the writer meant for the IME.
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
       send();
     }
