@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "Conversa excluída.",
   "sidebar.searchPlaceHolder": "Buscar",
   "sidebar.search.noResults": "Nenhuma conversa encontrada",
+  "sidebar.noConversations": "Ainda não há conversas",
   "sidebar.storageNote": "As conversas são salvas no IndexedDB do navegador.",
   "chatScreen.labels.system": "Sistema",
   "chatScreen.labels.user": "Você",

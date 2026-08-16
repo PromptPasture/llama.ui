@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "会話を削除しました。",
   "sidebar.searchPlaceHolder": "検索",
   "sidebar.search.noResults": "会話が見つかりません",
+  "sidebar.noConversations": "まだ会話はありません",
   "sidebar.storageNote": "会話はブラウザのIndexedDBに保存されます。",
   "chatScreen.labels.system": "システム",
   "chatScreen.labels.user": "あなた",

@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "Unterhaltung gelöscht.",
   "sidebar.searchPlaceHolder": "Suchen",
   "sidebar.search.noResults": "Keine Unterhaltungen gefunden",
+  "sidebar.noConversations": "Noch keine Unterhaltungen",
   "sidebar.storageNote": "Unterhaltungen werden in der IndexedDB des Browsers gespeichert.",
   "chatScreen.labels.system": "System",
   "chatScreen.labels.user": "Sie",

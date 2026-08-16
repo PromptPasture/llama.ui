@@ -488,3 +488,44 @@ describe('Sidebar when the conversations cannot be read', () => {
     shown.mockRestore();
   });
 });
+
+describe('a sidebar with nothing in it', () => {
+  it('says so when there are no conversations', async () => {
+    mocks.getAllConversations.mockResolvedValue([]);
+
+    render(Sidebar, { props: { open: true, onclose: vi.fn() } });
+
+    // A blank panel is indistinguishable from one that failed to load.
+    expect(await screen.findByText('No conversations yet')).toBeInTheDocument();
+  });
+
+  it('says nothing before the list has been read', async () => {
+    // A read that never settles: what the first frame after opening looks
+    // like, before the database has answered.
+    mocks.getAllConversations.mockReturnValue(new Promise(() => {}));
+
+    render(Sidebar, { props: { open: true, onclose: vi.fn() } });
+    await Promise.resolve();
+
+    expect(screen.queryByText('No conversations yet')).not.toBeInTheDocument();
+  });
+
+  it('does not claim emptiness when the read failed', async () => {
+    mocks.getAllConversations.mockRejectedValue(new Error('storage blocked'));
+    const failed = vi.spyOn(toast, 'error');
+
+    render(Sidebar, { props: { open: true, onclose: vi.fn() } });
+    await vi.waitFor(() => expect(failed).toHaveBeenCalled());
+
+    // Telling someone whose storage is unavailable that they have no
+    // conversations is the same lie as showing them an empty history.
+    expect(screen.queryByText('No conversations yet')).not.toBeInTheDocument();
+    failed.mockRestore();
+  });
+
+  it('stops saying so once there is a conversation', async () => {
+    await renderSidebar();
+
+    expect(screen.queryByText('No conversations yet')).not.toBeInTheDocument();
+  });
+});

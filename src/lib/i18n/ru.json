@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "Беседа удалена.",
   "sidebar.searchPlaceHolder": "Поиск",
   "sidebar.search.noResults": "Беседы не найдены",
+  "sidebar.noConversations": "Пока нет разговоров",
   "sidebar.storageNote": "Беседы сохраняются в IndexedDB браузера.",
   "chatScreen.labels.system": "Система",
   "chatScreen.labels.user": "Вы",

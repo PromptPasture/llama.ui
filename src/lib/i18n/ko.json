@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "대화가 삭제되었습니다.",
   "sidebar.searchPlaceHolder": "검색",
   "sidebar.search.noResults": "대화를 찾을 수 없음",
+  "sidebar.noConversations": "아직 대화가 없습니다",
   "sidebar.storageNote": "대화는 브라우저의 IndexedDB에 저장됩니다.",
   "chatScreen.labels.system": "시스템",
   "chatScreen.labels.user": "나",

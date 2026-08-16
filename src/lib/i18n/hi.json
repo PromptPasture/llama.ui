@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "बातचीत हटा दी गई है।",
   "sidebar.searchPlaceHolder": "खोजें",
   "sidebar.search.noResults": "कोई बातचीत नहीं मिली",
+  "sidebar.noConversations": "अभी तक कोई बातचीत नहीं",
   "sidebar.storageNote": "बातचीत ब्राउज़र के IndexedDB में सहेजी जाती हैं।",
   "chatScreen.labels.system": "सिस्टम",
   "chatScreen.labels.user": "आप",

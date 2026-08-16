@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "对话已删除。",
   "sidebar.searchPlaceHolder": "搜索",
   "sidebar.search.noResults": "未找到对话",
+  "sidebar.noConversations": "还没有对话",
   "sidebar.storageNote": "对话保存在浏览器的 IndexedDB 中。",
   "chatScreen.labels.system": "系统",
   "chatScreen.labels.user": "你",

@@ -22,6 +22,16 @@
   let { open = false, onclose }: Props = $props();
 
   let conversations = $state<Conversation[]>([]);
+
+  /**
+   * Whether the list has actually been read.
+   *
+   * An empty list means three different things — not read yet, read and
+   * empty, and the read failed — and only the middle one is worth saying out
+   * loud. Telling someone whose storage is unavailable that they have no
+   * conversations is the same lie as showing them an empty history.
+   */
+  let readSucceeded = $state(false);
   let searchTerm = $state('');
 
   const currentConvId = $derived(page.params.convId as string | undefined);
@@ -106,7 +116,9 @@
   async function loadConversations() {
     try {
       conversations = await IndexedDB.getAllConversations();
+      readSucceeded = true;
     } catch (error) {
+      readSucceeded = false;
       // Storage can be unavailable outright — a browser set to allow no site
       // data has none. Left unsaid, the whole history appears to have gone,
       // which is a far worse thing to believe than that a read failed.
@@ -210,6 +222,9 @@
   <!-- Conversation list -->
   <div class="sidebar__list">
     {#if !isFiltered}
+      {#if groupedConv.length === 0 && readSucceeded}
+        <p class="sidebar__empty">{$_('sidebar.noConversations')}</p>
+      {/if}
       {#each groupedConv as group, idx (group.title)}
         <ConversationGroup
           {group}
@@ -304,7 +319,8 @@
     color: var(--color-text);
   }
 
-  .sidebar__no-results {
+  .sidebar__no-results,
+  .sidebar__empty {
     @apply text-sm text-center py-6 px-3;
     color: var(--color-text-muted);
   }

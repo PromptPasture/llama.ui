@@ -40,6 +40,7 @@
   "sidebar.actions.deleteSuccess": "تم حذف المحادثة.",
   "sidebar.searchPlaceHolder": "بحث",
   "sidebar.search.noResults": "لم يتم العثور على محادثات",
+  "sidebar.noConversations": "لا توجد محادثات بعد",
   "sidebar.storageNote": "يتم حفظ المحادثات في IndexedDB الخاص بالمتصفح.",
   "chatScreen.labels.system": "النظام",
   "chatScreen.labels.user": "أنت",
