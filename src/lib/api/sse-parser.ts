@@ -19,16 +19,19 @@ export async function* processSSEStream<T = SSEData>(
     while (true) {
       const { done, value } = await reader.read();
 
-      if (done) {
-        break;
-      }
-
-      buffer += decoder.decode(value, { stream: true });
+      // decode() with no argument flushes any partial multi-byte character.
+      buffer += done
+        ? decoder.decode()
+        : decoder.decode(value, { stream: true });
 
       // Split buffer into lines
       const lines = buffer.split('\n');
-      // Keep the last incomplete line in buffer
-      buffer = lines.pop() || '';
+      // Mid-stream the trailing fragment is an incomplete line, so hold it
+      // back. Once the stream is done nothing further is coming, so that
+      // fragment is a whole line: a server that closes straight after its last
+      // event, without a final newline, would otherwise have it discarded and
+      // the closing tokens of the reply would be lost.
+      buffer = done ? '' : lines.pop() || '';
 
       for (const line of lines) {
         if (line.trim() === '') continue;
@@ -61,6 +64,8 @@ export async function* processSSEStream<T = SSEData>(
           }
         }
       }
+
+      if (done) break;
     }
   } finally {
     reader.releaseLock();
