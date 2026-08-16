@@ -1,6 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import loadVersion from 'vite-plugin-package-version';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -128,5 +128,11 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
     },
+  },
+  test: {
+    // jsdom rather than node: the markdown pipeline sanitises through
+    // DOMPurify, which needs a DOM.
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{js,ts}'],
   },
 });
