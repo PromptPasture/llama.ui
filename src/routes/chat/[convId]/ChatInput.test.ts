@@ -1,0 +1,129 @@
+import { render, screen } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { init, register, waitLocale } from 'svelte-i18n';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mocks = vi.hoisted(() => ({
+  isGenerating: vi.fn(() => false),
+  stopGenerating: vi.fn(),
+}));
+
+vi.mock('$lib/state/chat.svelte', () => ({ chat: mocks }));
+
+const { default: ChatInput } = await import('./ChatInput.svelte');
+
+// Set the locale explicitly rather than through initI18n(), which picks its
+// initial locale from navigator.language and is not deterministic here.
+beforeAll(async () => {
+  register('en', () => import('../../../lib/i18n/en.json'));
+  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  await waitLocale('en');
+});
+
+beforeEach(() => {
+  mocks.isGenerating.mockReturnValue(false);
+  mocks.stopGenerating.mockClear();
+});
+
+function renderInput(onsend = vi.fn().mockResolvedValue(undefined)) {
+  const result = render(ChatInput, { props: { convId: 'conv-1', onsend } });
+  return { ...result, onsend, textarea: screen.getByRole('textbox') };
+}
+
+describe('ChatInput sending', () => {
+  it('sends on Enter and clears the box', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, 'hello{Enter}');
+
+    expect(onsend).toHaveBeenCalledWith('hello', undefined);
+    expect(textarea).toHaveValue('');
+  });
+
+  it('trims surrounding whitespace before sending', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, '   spaced   {Enter}');
+
+    expect(onsend).toHaveBeenCalledWith('spaced', undefined);
+  });
+
+  it('does not send on Shift+Enter, so a newline can be typed', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, 'line1{Shift>}{Enter}{/Shift}line2');
+
+    expect(onsend).not.toHaveBeenCalled();
+    expect(textarea).toHaveValue('line1\nline2');
+  });
+
+  it('ignores an empty or whitespace-only message', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, '{Enter}');
+    await user.type(textarea, '   {Enter}');
+
+    expect(onsend).not.toHaveBeenCalled();
+  });
+
+  it('sends when the send button is pressed', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, 'via button');
+    await user.click(screen.getByRole('button', { name: 'Send message' }));
+
+    expect(onsend).toHaveBeenCalledWith('via button', undefined);
+  });
+
+  it('puts the text back when sending reports failure', async () => {
+    const user = userEvent.setup();
+    const onsend = vi.fn().mockResolvedValue(false);
+    const { textarea } = renderInput(onsend);
+
+    await user.type(textarea, 'unlucky{Enter}');
+
+    // Losing what the user typed because the request failed would be worse
+    // than leaving it in place.
+    expect(textarea).toHaveValue('unlucky');
+  });
+
+  it('leaves the box empty when sending succeeds', async () => {
+    const user = userEvent.setup();
+    const onsend = vi.fn().mockResolvedValue(true);
+    const { textarea } = renderInput(onsend);
+
+    await user.type(textarea, 'fine{Enter}');
+
+    expect(textarea).toHaveValue('');
+  });
+});
+
+describe('ChatInput while a reply is generating', () => {
+  it('offers stop instead of send, and locks the box', () => {
+    mocks.isGenerating.mockReturnValue(true);
+    renderInput();
+
+    expect(
+      screen.getByRole('button', { name: 'Stop generation' })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Send message' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('stops generation for its own conversation', async () => {
+    const user = userEvent.setup();
+    mocks.isGenerating.mockReturnValue(true);
+    renderInput();
+
+    await user.click(screen.getByRole('button', { name: 'Stop generation' }));
+
+    expect(mocks.stopGenerating).toHaveBeenCalledWith('conv-1');
+  });
+});
