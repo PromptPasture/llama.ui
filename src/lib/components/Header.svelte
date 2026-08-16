@@ -36,7 +36,7 @@
 </script>
 
 <header class="header">
-  <!-- Mobile row: sidebar toggle + title + new chat -->
+  <!-- Mobile row: sidebar toggle + title + new chat + settings -->
   <div class="header__mobile-row">
     <Button
       variant="ghost"
@@ -69,6 +69,21 @@
     >
       <SquarePenIcon size={20} />
     </Button>
+
+    <!-- The desktop row is hidden below xl, so without this the settings page
+         is unreachable on a narrow window: the only other route to it is the
+         Ctrl+, shortcut, which a touch device has no way to send. -->
+    {#if !showSettings}
+      <Button
+        variant="ghost"
+        size="icon-xl"
+        onclick={() => goto(resolve('/settings'))}
+        title={$_('header.buttons.settings')}
+        aria-label={$_('header.ariaLabels.settings')}
+      >
+        <CogIcon size={20} />
+      </Button>
+    {/if}
   </div>
 
   <!-- Desktop row (hidden on mobile): model selector + settings -->
