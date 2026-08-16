@@ -56,13 +56,34 @@ describe('renderMarkdown sanitisation', () => {
 });
 
 describe('renderMarkdown structure', () => {
-  it('wraps code blocks with a copy button carrying the source', () => {
+  it('wraps code blocks with a copy button', () => {
     const out = renderMarkdown('```js\nconst x = 1;\n```');
     expect(out).toContain('class="code-block"');
     expect(out).toContain('data-lang="js"');
-    // the copy button's payload must survive sanitisation, or copying breaks
-    expect(out).toContain('data-code=');
+    expect(out).toContain('code-block__copy-btn');
     expect(out).toContain('const x = 1;');
+  });
+
+  it('does not carry a second copy of the code in an attribute', () => {
+    const out = renderMarkdown('```js\nconst x = 1;\n```');
+
+    // It used to, which meant escaping the same text correctly for two places
+    // at once and doubled the markup of every code block. What the button
+    // copies is read off the block itself; see MarkdownDisplay.
+    expect(out).not.toContain('data-code=');
+  });
+
+  it('escapes the language, which comes from the model too', () => {
+    const el = document.createElement('div');
+    el.innerHTML = renderMarkdown('```js" onmouseover="alert(1)\nx\n```');
+
+    // The text is allowed to contain that; what matters is that it stayed a
+    // value and did not become an attribute of its own. Two things stop it —
+    // the escaping here and DOMPurify afterwards — so this pins the outcome
+    // rather than either mechanism, and passes if only one of them is doing
+    // the work.
+    expect(el.querySelector('[onmouseover]')).toBeNull();
+    expect(el.querySelector('.code-block')).not.toBeNull();
   });
 
   it('escapes markup inside code blocks rather than rendering it', () => {

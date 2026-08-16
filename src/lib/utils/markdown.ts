@@ -3,6 +3,23 @@ import { marked, type RendererObject } from 'marked';
 import markedKatex from 'marked-katex-extension';
 
 /**
+ * Escapes text for either an element's content or a quoted attribute value.
+ *
+ * The ampersand has to go first, or the escapes produced here would be escaped
+ * again. The language comes from whatever follows the opening fence, which is
+ * model output like everything else here.
+ *
+ * @param text - The text to escape
+ * @returns The text with `&`, `<`, `>` and `"` replaced by entities
+ */
+const escapeHtml = (text: string): string =>
+  text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+/**
  * Custom renderer: wrap tables and code blocks so they can be styled and given
  * a copy button.
  */
@@ -19,16 +36,13 @@ const renderer: RendererObject = {
   },
   code(token) {
     const lang = token.lang ?? '';
-    const escaped = token.text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    return `<div class="code-block" data-lang="${lang}">
+    const escaped = escapeHtml(token.text);
+    return `<div class="code-block" data-lang="${escapeHtml(lang)}">
         <div class="code-block__toolbar">
-          ${lang ? `<span class="code-block__lang">${lang}</span>` : ''}
-          <button type="button" class="code-block__copy-btn" data-code="${token.text.replace(/"/g, '&quot;')}">Copy</button>
+          ${lang ? `<span class="code-block__lang">${escapeHtml(lang)}</span>` : ''}
+          <button type="button" class="code-block__copy-btn">Copy</button>
         </div>
-        <pre><code class="language-${lang}">${escaped}</code></pre>
+        <pre><code class="language-${escapeHtml(lang)}">${escaped}</code></pre>
       </div>`;
   },
 };

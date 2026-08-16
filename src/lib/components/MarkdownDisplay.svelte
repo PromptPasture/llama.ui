@@ -13,16 +13,25 @@
   const html = $derived(renderMarkdown(content));
 
   function handleClick(e: MouseEvent) {
-    const btn = (e.target as HTMLElement).closest(
-      '[data-code]'
-    ) as HTMLElement | null;
-    if (btn?.dataset.code !== undefined) {
-      copyStr(btn.dataset.code);
-      btn.textContent = 'Copied!';
-      setTimeout(() => {
-        btn.textContent = 'Copy';
-      }, 1500);
-    }
+    const btn = (e.target as HTMLElement).closest<HTMLElement>(
+      '.code-block__copy-btn'
+    );
+    if (!btn) return;
+
+    // Read the code off the block itself. Carrying a copy of it in an
+    // attribute meant escaping it correctly for two places at once, and
+    // DOMPurify dropped the attribute outright when the code looked like
+    // markup — leaving a button that did nothing.
+    const code = btn
+      .closest('.code-block')
+      ?.querySelector('pre code')?.textContent;
+    if (code === null || code === undefined) return;
+
+    copyStr(code);
+    btn.textContent = 'Copied!';
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+    }, 1500);
   }
 </script>
 
