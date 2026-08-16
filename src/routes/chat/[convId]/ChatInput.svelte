@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { _ } from 'svelte-i18n';
   import ArrowUpIcon from 'lucide-svelte/icons/arrow-up';
   import SquareIcon from 'lucide-svelte/icons/square';
   import { chat } from '$lib/state/chat.svelte';
+  import { readDraft, writeDraft } from '$lib/utils/drafts';
   import type { MessageExtra } from '$lib/types';
 
   interface Props {
@@ -16,10 +17,25 @@
 
   let { convId, onsend }: Props = $props();
 
-  let value = $state('');
+  // The conversation the box was opened for; untracked because a later one
+  // arrives as a change of parameters, handled by the effect below.
+  let shownConv = untrack(() => convId);
+  let value = $state(readDraft(shownConv));
   let textareaEl: HTMLTextAreaElement;
 
   const isPending = $derived(convId ? chat.isGenerating(convId) : false);
+
+  // Opening another conversation is a change of parameters, not a new page, so
+  // without this the box would carry its contents across.
+  $effect(() => {
+    const id = convId;
+    untrack(() => {
+      if (id === shownConv) return;
+      shownConv = id;
+      value = readDraft(id);
+      resize();
+    });
+  });
 
   function resize() {
     if (!textareaEl) return;
@@ -34,9 +50,13 @@
     const msg = value.trim();
     if (!msg) return;
     value = '';
+    writeDraft(convId, '');
     resize();
     const ok = await onsend(msg, undefined);
-    if (ok === false) value = msg;
+    if (ok === false) {
+      value = msg;
+      writeDraft(convId, msg);
+    }
   }
 
   function onkeydown(e: KeyboardEvent) {
@@ -54,6 +74,11 @@
       e.preventDefault();
       send();
     }
+  }
+
+  function onInput() {
+    resize();
+    writeDraft(convId, value);
   }
 
   function stop() {
@@ -88,7 +113,7 @@
       rows={1}
       dir="auto"
       {onkeydown}
-      oninput={resize}></textarea>
+      oninput={onInput}></textarea>
 
     <div class="chat-input__actions">
       {#if isPending}

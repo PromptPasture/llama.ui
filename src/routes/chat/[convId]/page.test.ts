@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -36,6 +36,8 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  // An unsent message is kept for the next visit, including the next test.
+  localStorage.clear();
   vi.clearAllMocks();
 });
 
@@ -49,16 +51,22 @@ function measuresAsScrolledUp(el: Element) {
   Object.defineProperty(el, 'scrollTop', { value: 0, configurable: true });
 }
 
-async function renderChat() {
-  const { container } = render(ChatPage, {
-    props: { data: {}, params: { convId: 'c1' } },
+async function renderChat(convId = 'c1') {
+  const { container, rerender } = render(ChatPage, {
+    props: { data: {}, params: { convId } },
   });
   const scroller = container.querySelector('.chat-page__scroll');
   if (!scroller) throw new Error('the message list has no scrolling element');
   // Opening a conversation scrolls to its end on the next frame. Letting that
   // land first keeps it from being mistaken for something a test asked for.
   await new Promise((resolve) => setTimeout(resolve, 20));
-  return scroller;
+  // The route is the same for every conversation, so switching to another one
+  // hands the page new params rather than mounting it again.
+  const openAnother = (id: string) =>
+    rerender({ data: {}, params: { convId: id } });
+  // Scoped to this page: a test may have more than one of them open.
+  const box = () => within(container).getByRole('textbox');
+  return { scroller, openAnother, box };
 }
 
 const jumpButton = () =>
@@ -81,7 +89,7 @@ describe('getting back to the latest message', () => {
   });
 
   it('offers a way back once the reader has scrolled up', async () => {
-    const scroller = await renderChat();
+    const { scroller } = await renderChat();
 
     measuresAsScrolledUp(scroller);
     await scroller.dispatchEvent(new Event('scroll'));
@@ -92,7 +100,7 @@ describe('getting back to the latest message', () => {
   });
 
   it('scrolls to the end of the conversation when pressed', async () => {
-    const scroller = await renderChat();
+    const { scroller } = await renderChat();
     measuresAsScrolledUp(scroller);
     await scroller.dispatchEvent(new Event('scroll'));
     // Opening the conversation scrolls to the end too; only the press counts.
@@ -106,7 +114,7 @@ describe('getting back to the latest message', () => {
   });
 
   it('takes itself out of the way once it has been used', async () => {
-    const scroller = await renderChat();
+    const { scroller } = await renderChat();
     measuresAsScrolledUp(scroller);
     await scroller.dispatchEvent(new Event('scroll'));
 
@@ -129,5 +137,40 @@ describe('leaving the conversation', () => {
     // Speech outlives the page otherwise, and carries on reading a
     // conversation the reader has already left.
     expect(mocks.ttsStop).toHaveBeenCalled();
+  });
+});
+
+describe('a message that has been typed but not sent', () => {
+  it('stays behind when another conversation is opened', async () => {
+    const { openAnother, box } = await renderChat('c1');
+    await userEvent.type(box(), 'half a thought');
+
+    await openAnother('c2');
+
+    // The box belongs to the conversation it was typed in. Carrying the text
+    // over means the next Enter sends it to the wrong one.
+    expect(box()).toHaveValue('');
+  });
+
+  it('is waiting on the way back', async () => {
+    const { openAnother, box } = await renderChat('c1');
+    await userEvent.type(box(), 'half a thought');
+
+    await openAnother('c2');
+    await openAnother('c1');
+
+    expect(box()).toHaveValue('half a thought');
+  });
+
+  it('survives the page being opened afresh', async () => {
+    const first = await renderChat('c1');
+    await userEvent.type(first.box(), 'half a thought');
+    await first.openAnother('c2');
+
+    // A reload, or coming back from the settings screen: a new page rather
+    // than new params.
+    const second = await renderChat('c1');
+
+    expect(second.box()).toHaveValue('half a thought');
   });
 });

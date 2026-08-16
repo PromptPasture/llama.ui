@@ -30,6 +30,8 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  // An unsent message is kept for the next visit, including the next test.
+  localStorage.clear();
   mocks.isGenerating.mockReturnValue(false);
   mocks.stopGenerating.mockClear();
 });
@@ -268,5 +270,43 @@ describe('the wording of the stop button', () => {
 
     await locale.set('en');
     await waitLocale();
+  });
+});
+
+describe('the message box remembering what was typed', () => {
+  it('has it waiting when the conversation is opened again', async () => {
+    const user = userEvent.setup();
+    const first = renderInput();
+    await user.type(first.textarea, 'half a thought');
+    first.unmount();
+
+    const { textarea } = renderInput();
+
+    expect(textarea).toHaveValue('half a thought');
+  });
+
+  it('forgets a message once it has been sent', async () => {
+    const user = userEvent.setup();
+    const first = renderInput();
+    await user.type(first.textarea, 'a question{Enter}');
+    first.unmount();
+
+    const { textarea } = renderInput();
+
+    // Otherwise reopening the conversation refills the box with the message
+    // that was already sent, ready to be sent a second time.
+    expect(textarea).toHaveValue('');
+  });
+
+  it('keeps a message the send refused', async () => {
+    const user = userEvent.setup();
+    // What sending does when there is no provider configured yet.
+    const first = renderInput(vi.fn().mockResolvedValue(false));
+    await user.type(first.textarea, 'a question{Enter}');
+    first.unmount();
+
+    const { textarea } = renderInput();
+
+    expect(textarea).toHaveValue('a question');
   });
 });

@@ -52,6 +52,8 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  // An unsent message is kept for the next visit, including the next test.
+  localStorage.clear();
   mocks.goto.mockClear();
   mocks.createConversation.mockClear().mockResolvedValue({
     id: 'conv-1',
