@@ -19,11 +19,42 @@ export default class LocalStorage {
         console.error('Failed to parse saved config.');
       }
     }
-    // Provide default values for any missing keys
-    return {
-      ...CONFIG_DEFAULT,
-      ...savedVal,
-    };
+    return LocalStorage.mergeConfig(savedVal);
+  }
+
+  /**
+   * Layers stored values over the defaults, keeping only those whose type
+   * matches. CONFIG_DEFAULT is the schema: every key holds a string, boolean
+   * or number, so a stored value of another type cannot have come from a
+   * healthy save.
+   *
+   * Presets bypass the settings screen's validation and can arrive from an
+   * imported database, so a single wrong-typed value would otherwise persist
+   * into localStorage. One bad `custom` is enough to make every send throw in
+   * configToCustomOptions before a request is even attempted.
+   *
+   * @param saved Parsed contents of the stored configuration.
+   * @returns A configuration whose every value has the expected type.
+   */
+  static mergeConfig(saved: Partial<Configuration>): Configuration {
+    const merged: Configuration = { ...CONFIG_DEFAULT };
+    if (!saved || typeof saved !== 'object') return merged;
+
+    const defaults = CONFIG_DEFAULT as unknown as Record<string, unknown>;
+    const target = merged as unknown as Record<string, unknown>;
+
+    for (const [key, value] of Object.entries(saved)) {
+      const fallback = defaults[key];
+      if (fallback === undefined) continue; // key this version does not know
+      if (typeof value !== typeof fallback) {
+        console.warn(
+          `Ignoring stored config '${key}': expected ${typeof fallback}, got ${value === null ? 'null' : typeof value}.`
+        );
+        continue;
+      }
+      target[key] = value;
+    }
+    return merged;
   }
 
   /**
