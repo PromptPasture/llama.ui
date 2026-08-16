@@ -81,7 +81,7 @@ describe('Sidebar conversation list', () => {
 });
 
 describe('Sidebar search', () => {
-  const search = () => screen.getByPlaceholderText('Search conversations...');
+  const search = () => screen.getByPlaceholderText('Search');
 
   it('narrows the list to matching names', async () => {
     const user = userEvent.setup();
