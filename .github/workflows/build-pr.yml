@@ -32,13 +32,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Test
-      #   run: |
-      #     if [ -f "package.json" ] && grep -q '"test"' package.json; then
-      #       npm test
-      #     else
-      #       echo "No test script defined, skipping tests."
-      #     fi
+      - name: Test
+        run: npm test
 
       - name: Build
         run: npm run build:prod

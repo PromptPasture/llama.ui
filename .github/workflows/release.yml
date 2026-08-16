@@ -73,12 +73,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Test
-        run: |
-          if [ -f "package.json" ] && grep -q '"test"' package.json; then
-            npm test
-          else
-            echo "No test script defined, skipping tests."
-          fi
+        run: npm test
 
       - name: Build
         run: npm run build:prod
