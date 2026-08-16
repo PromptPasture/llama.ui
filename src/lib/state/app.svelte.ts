@@ -1,6 +1,7 @@
 import { CONFIG_DEFAULT } from '$lib/config';
 import IndexedDB from '$lib/database/indexedDB';
 import LocalStorage from '$lib/database/localStorage';
+import { t } from '$lib/i18n/translate';
 import type {
   Configuration,
   ConfigurationPreset,
@@ -51,13 +52,13 @@ export const app = {
   ): Promise<void> {
     await IndexedDB.savePreset(name, config);
     state.presets = await IndexedDB.getPresets();
-    toast?.('Preset saved');
+    toast?.(t('state.preset.saved'));
   },
 
   async removePreset(name: string, toast?: ToastFn): Promise<void> {
     await IndexedDB.removePreset(name);
     state.presets = await IndexedDB.getPresets();
-    toast?.('Preset removed');
+    toast?.(t('state.preset.removed'));
   },
 
   switchTheme(theme: string): void {
@@ -73,10 +74,10 @@ export const app = {
     try {
       await IndexedDB.importDB(JSON.parse(data));
       state.presets = await IndexedDB.getPresets();
-      toast?.success('Import completed');
+      toast?.success(t('state.database.import.completed'));
     } catch (error) {
       console.error('Error during database import:', error);
-      toast?.error('Import failed');
+      toast?.error(t('state.database.import.failed'));
       throw error;
     }
   },
@@ -87,11 +88,11 @@ export const app = {
   ): Promise<ExportJsonStructure> {
     try {
       const data = await IndexedDB.exportDB(convId);
-      toast?.success('Export completed');
+      toast?.success(t('state.database.export.completed'));
       return data;
     } catch (error) {
       console.error('Error during database export:', error);
-      toast?.error('Export failed');
+      toast?.error(t('state.database.export.failed'));
       throw error;
     }
   },

@@ -1,6 +1,7 @@
 import { normalizeMsgsForAPI } from '$lib/api/message-normalization';
 import { isDev } from '$lib/config';
 import IndexedDB from '$lib/database/indexedDB';
+import { t } from '$lib/i18n/translate';
 import { generateChatStream } from '$lib/services/inference-service';
 import type {
   Conversation,
@@ -120,7 +121,7 @@ export const chat = {
           parent
         );
       } catch {
-        deps.toast('Cannot save message');
+        deps.toast(t('state.chat.errors.cannotSaveMessage'));
         return false;
       }
     }
@@ -135,7 +136,7 @@ export const chat = {
       return true;
     } catch (error) {
       console.error('Message sending failed:', error);
-      deps.toast('Failed to get response');
+      deps.toast(t('state.chat.errors.failedToGetResponse'));
     }
     return false;
   },
@@ -210,7 +211,10 @@ export const chat = {
         return;
       }
       console.error('Error during message generation:', err);
-      deps.toast((err as Error)?.message ?? 'Unknown error during generation');
+      deps.toast(
+        (err as Error)?.message ??
+          t('state.chat.errors.unknownErrorDuringGeneration')
+      );
       throw err;
     }
 
@@ -266,7 +270,7 @@ export const chat = {
       deps.navigate(conv.id);
     } catch (error) {
       console.error('Conversation branch failed:', error);
-      deps.toast('Failed to branch conversation');
+      deps.toast(t('state.chat.errors.failedToBranchConversation'));
     }
   },
 };
