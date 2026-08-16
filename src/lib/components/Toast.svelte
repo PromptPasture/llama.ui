@@ -4,7 +4,11 @@
 
 <div class="toast-host" role="status" aria-live="polite" aria-atomic="false">
   {#each $toastStore as item (item.id)}
-    <div class="toast" class:toast--success={item.level === 'success'} class:toast--error={item.level === 'error'}>
+    <div
+      class="toast"
+      class:toast--success={item.level === 'success'}
+      class:toast--error={item.level === 'error'}
+    >
       {item.message}
     </div>
   {/each}

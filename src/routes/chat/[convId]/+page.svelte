@@ -41,7 +41,12 @@
   const pendingMsg = $derived.by(() => {
     const p = chat.pendingMessages[convId];
     if (!p || displayMessages.at(-1)?.msg.id === p.id) return null;
-    return { msg: p, siblingLeafNodeIds: [], siblingCurrIdx: 0, isPending: true as const };
+    return {
+      msg: p,
+      siblingLeafNodeIds: [],
+      siblingCurrIdx: 0,
+      isPending: true as const,
+    };
   });
 
   // Auto-scroll when pending message updates
@@ -65,9 +70,21 @@
     toast: toast.error,
   });
 
-  async function handleSend(content: string, extra: MessageExtra[] | undefined): Promise<boolean | void> {
+  async function handleSend(
+    content: string,
+    extra: MessageExtra[] | undefined
+  ): Promise<boolean | void> {
     return chat.sendMessage(
-      { convId, type: 'text', role: 'user', parent: lastMsgNodeId, content, extra: extra ?? [], system: app.config.systemMessage, onChunk },
+      {
+        convId,
+        type: 'text',
+        role: 'user',
+        parent: lastMsgNodeId,
+        content,
+        extra: extra ?? [],
+        system: app.config.systemMessage,
+        onChunk,
+      },
       deps
     );
   }
@@ -75,15 +92,37 @@
   function handleRegenerate(msg: Message) {
     currNodeId = msg.parent as number;
     chat.sendMessage(
-      { convId, type: msg.type, role: msg.role, parent: msg.parent, content: null, extra: [], system: app.config.systemMessage, onChunk },
+      {
+        convId,
+        type: msg.type,
+        role: msg.role,
+        parent: msg.parent,
+        content: null,
+        extra: [],
+        system: app.config.systemMessage,
+        onChunk,
+      },
       deps
     );
   }
 
-  function handleEditUser(msg: Message, content: string, extra: MessageExtra[]) {
+  function handleEditUser(
+    msg: Message,
+    content: string,
+    extra: MessageExtra[]
+  ) {
     currNodeId = msg.id;
     chat.sendMessage(
-      { convId, type: msg.type, role: msg.role, parent: msg.parent, content, extra, system: app.config.systemMessage, onChunk },
+      {
+        convId,
+        type: msg.type,
+        role: msg.role,
+        parent: msg.parent,
+        content,
+        extra,
+        system: app.config.systemMessage,
+        onChunk,
+      },
       deps
     );
   }

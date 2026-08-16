@@ -27,11 +27,23 @@
     { id: 'general', label: 'settings.tabs.general', default: 'General' },
     { id: 'ui', label: 'settings.tabs.ui', default: 'UI' },
     { id: 'voice', label: 'settings.tabs.voice', default: 'Voice' },
-    { id: 'conversations', label: 'settings.tabs.conversations', default: 'Conversations' },
+    {
+      id: 'conversations',
+      label: 'settings.tabs.conversations',
+      default: 'Conversations',
+    },
     { id: 'presets', label: 'settings.tabs.presets', default: 'Presets' },
-    { id: 'import-export', label: 'settings.tabs.importExport', default: 'Import / Export' },
+    {
+      id: 'import-export',
+      label: 'settings.tabs.importExport',
+      default: 'Import / Export',
+    },
     { id: 'advanced', label: 'settings.tabs.advanced', default: 'Advanced' },
-    { id: 'experimental', label: 'settings.sections.experimental', default: 'Experimental' },
+    {
+      id: 'experimental',
+      label: 'settings.sections.experimental',
+      default: 'Experimental',
+    },
   ];
 
   let tabId = $state('general');
@@ -73,14 +85,23 @@
       const val = cfg[k];
       const def = CONFIG_DEFAULT[k];
       if (isString(def)) {
-        if (!isString(val)) { await modal.showAlert(`Value for ${key} must be a string`); return; }
+        if (!isString(val)) {
+          await modal.showAlert(`Value for ${key} must be a string`);
+          return;
+        }
       } else if (isNumeric(def)) {
         const n = Number(String(val).trim());
-        if (isNaN(n)) { await modal.showAlert(`Value for ${key} must be numeric`); return; }
+        if (isNaN(n)) {
+          await modal.showAlert(`Value for ${key} must be numeric`);
+          return;
+        }
         // @ts-expect-error safe cast
         cfg[k] = n;
       } else if (isBoolean(def)) {
-        if (!isBoolean(val)) { await modal.showAlert(`Value for ${key} must be boolean`); return; }
+        if (!isBoolean(val)) {
+          await modal.showAlert(`Value for ${key} must be boolean`);
+          return;
+        }
       }
     }
     app.saveConfig(cfg);
@@ -88,7 +109,9 @@
   }
 
   async function handleReset() {
-    if (await modal.showConfirm('Are you sure you want to reset all settings?')) {
+    if (
+      await modal.showConfirm('Are you sure you want to reset all settings?')
+    ) {
       localConfig = { ...CONFIG_DEFAULT } as Configuration;
     }
   }
@@ -132,7 +155,12 @@
   <!-- Tab content -->
   <div class="settings__content">
     {#if tabId === 'general'}
-      <GeneralTab config={localConfig} models={localModels} {onchange} onfetchmodels={fetchModels} />
+      <GeneralTab
+        config={localConfig}
+        models={localModels}
+        {onchange}
+        onfetchmodels={fetchModels}
+      />
     {:else if tabId === 'ui'}
       <UITab config={localConfig} {onchange} />
     {:else if tabId === 'voice'}
@@ -140,7 +168,16 @@
     {:else if tabId === 'conversations'}
       <ConversationsTab config={localConfig} {onchange} />
     {:else if tabId === 'presets'}
-      <PresetsTab config={localConfig} presets={app.presets} onsavepreset={handleSavePreset} onremovepreset={handleRemovePreset} onsaveconfig={async (c) => { app.saveConfig(c); handleClose(); }} />
+      <PresetsTab
+        config={localConfig}
+        presets={app.presets}
+        onsavepreset={handleSavePreset}
+        onremovepreset={handleRemovePreset}
+        onsaveconfig={async (c) => {
+          app.saveConfig(c);
+          handleClose();
+        }}
+      />
     {:else if tabId === 'import-export'}
       <ImportExportTab onclose={handleClose} />
     {:else if tabId === 'advanced'}
@@ -150,15 +187,26 @@
     {/if}
 
     <footer class="settings__footer">
-      <p>v{import.meta.env.PACKAGE_VERSION ?? ''} · {$_('settings.footer.storageNote', { default: 'All data stored locally.' })}</p>
+      <p>
+        v{import.meta.env.PACKAGE_VERSION ?? ''} · {$_(
+          'settings.footer.storageNote',
+          { default: 'All data stored locally.' }
+        )}
+      </p>
     </footer>
   </div>
 
   <!-- Action bar -->
   <div class="settings__actions">
-    <Button variant="neutral" onclick={handleSave}>{$_('settings.actionButtons.saveBtnLabel')}</Button>
-    <Button onclick={handleClose}>{$_('settings.actionButtons.cancelBtnLabel')}</Button>
-    <Button variant="ghost" onclick={handleReset}>{$_('settings.actionButtons.resetBtnLabel')}</Button>
+    <Button variant="neutral" onclick={handleSave}
+      >{$_('settings.actionButtons.saveBtnLabel')}</Button
+    >
+    <Button onclick={handleClose}
+      >{$_('settings.actionButtons.cancelBtnLabel')}</Button
+    >
+    <Button variant="ghost" onclick={handleReset}
+      >{$_('settings.actionButtons.resetBtnLabel')}</Button
+    >
   </div>
 </div>
 
@@ -197,7 +245,9 @@
     color: var(--color-text);
     border-radius: var(--radius-md);
   }
-  .settings__tab:hover { background: var(--color-surface-alt); }
+  .settings__tab:hover {
+    background: var(--color-surface-alt);
+  }
   .settings__tab.active {
     background: var(--color-surface-alt);
     @apply font-semibold;

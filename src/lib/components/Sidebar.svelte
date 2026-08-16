@@ -24,7 +24,9 @@
 
   const filteredConversations = $derived(
     searchTerm.trim()
-      ? conversations.filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      ? conversations.filter((c) =>
+          c.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
       : []
   );
 
@@ -60,7 +62,12 @@
 
 {#if open}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="sidebar__backdrop" onclick={onclose} onkeydown={() => {}} aria-hidden="true"></div>
+  <div
+    class="sidebar__backdrop"
+    onclick={onclose}
+    onkeydown={() => {}}
+    aria-hidden="true"
+  ></div>
 {/if}
 
 <nav
@@ -70,15 +77,27 @@
 >
   <!-- Header row -->
   <div class="sidebar__header">
-    <Button variant="ghost" size="icon-xl" class="xl:hidden" onclick={onclose}
-      aria-label={$_('sidebar.buttons.closeSideBar')}>
+    <Button
+      variant="ghost"
+      size="icon-xl"
+      class="xl:hidden"
+      onclick={onclose}
+      aria-label={$_('sidebar.buttons.closeSideBar')}
+    >
       <XIcon size={20} />
     </Button>
 
-    <span class="sidebar__app-name">{import.meta.env.VITE_APP_NAME ?? 'llama.ui'}</span>
+    <span class="sidebar__app-name"
+      >{import.meta.env.VITE_APP_NAME ?? 'llama.ui'}</span
+    >
 
-    <Button variant="ghost" size="icon-xl" onclick={handleNewChat}
-      title={$_('header.buttons.newConv')} aria-label={$_('header.ariaLabels.newConv')}>
+    <Button
+      variant="ghost"
+      size="icon-xl"
+      onclick={handleNewChat}
+      title={$_('header.buttons.newConv')}
+      aria-label={$_('header.ariaLabels.newConv')}
+    >
       <SquarePenIcon size={20} />
     </Button>
   </div>
@@ -91,11 +110,17 @@
       class="sidebar__search-input"
       placeholder={$_('sidebar.searchPlaceHolder')}
       bind:value={searchTerm}
-      onkeydown={(e) => { if (e.key === 'Escape') searchTerm = ''; }}
+      onkeydown={(e) => {
+        if (e.key === 'Escape') searchTerm = '';
+      }}
     />
     {#if isFiltered}
-      <Button variant="ghost" size="icon-md" onclick={() => (searchTerm = '')}
-        aria-label={$_('header.ariaLabels.clear')}>
+      <Button
+        variant="ghost"
+        size="icon-md"
+        onclick={() => (searchTerm = '')}
+        aria-label={$_('header.ariaLabels.clear')}
+      >
         <XIcon size={14} />
       </Button>
     {/if}
@@ -105,12 +130,21 @@
   <div class="sidebar__list">
     {#if !isFiltered}
       {#each groupedConv as group, idx (group.title)}
-        <ConversationGroup {group} {currentConvId} class={idx > 0 ? 'mt-6' : 'mt-3'} onitemselect={handleItemSelect} />
+        <ConversationGroup
+          {group}
+          {currentConvId}
+          class={idx > 0 ? 'mt-6' : 'mt-3'}
+          onitemselect={handleItemSelect}
+        />
       {/each}
     {:else}
       <ul role="menu" class="sidebar__filtered-list">
         {#each filteredConversations as conv (conv.id)}
-          <ConversationItem {conv} {currentConvId} onselect={handleItemSelect} />
+          <ConversationItem
+            {conv}
+            {currentConvId}
+            onselect={handleItemSelect}
+          />
         {/each}
       </ul>
     {/if}
@@ -118,7 +152,9 @@
 
   <!-- Footer -->
   <div class="sidebar__footer">
-    {$_('sidebar.storageNote', { default: 'All data stored locally in your browser.' })}
+    {$_('sidebar.storageNote', {
+      default: 'All data stored locally in your browser.',
+    })}
   </div>
 </nav>
 
@@ -141,10 +177,14 @@
     transition: transform 250ms ease;
   }
 
-  .sidebar.open { transform: translateX(0); }
+  .sidebar.open {
+    transform: translateX(0);
+  }
 
   @media (min-width: 1280px) {
-    .sidebar { transform: none; }
+    .sidebar {
+      transform: none;
+    }
   }
 
   .sidebar__header {

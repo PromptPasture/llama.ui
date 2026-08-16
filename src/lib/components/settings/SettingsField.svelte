@@ -10,7 +10,11 @@
 
   type FieldType = 'short' | 'long' | 'checkbox' | 'range';
 
-  interface RangeProps { min: number; max: number; step: number; }
+  interface RangeProps {
+    min: number;
+    max: number;
+    step: number;
+  }
 
   interface Props {
     type: FieldType;
@@ -21,10 +25,21 @@
     onchange: (value: string | number | boolean) => void;
   }
 
-  let { type, configKey, value, disabled = false, range, onchange }: Props = $props();
+  let {
+    type,
+    configKey,
+    value,
+    disabled = false,
+    range,
+    onchange,
+  }: Props = $props();
 
-  const label = $derived($_(`settings.parameters.${configKey}.label`, { default: configKey }));
-  const note = $derived($_(`settings.parameters.${configKey}.note`, { default: '' }));
+  const label = $derived(
+    $_(`settings.parameters.${configKey}.label`, { default: configKey })
+  );
+  const note = $derived(
+    $_(`settings.parameters.${configKey}.note`, { default: '' })
+  );
   const defaultVal = CONFIG_DEFAULT[configKey];
 </script>
 

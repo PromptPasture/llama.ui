@@ -1,4 +1,7 @@
-<script lang="ts" generics="T extends { value: string | number; label: string }">
+<script
+  lang="ts"
+  generics="T extends { value: string | number; label: string }"
+>
   import { _ } from 'svelte-i18n';
   import Dropdown from '../Dropdown.svelte';
   import type { Snippet } from 'svelte';
@@ -12,11 +15,24 @@
     onchange: (value: string | number) => void;
   }
 
-  let { configKey, value, options, filterable = false, renderOption, onchange }: Props = $props();
+  let {
+    configKey,
+    value,
+    options,
+    filterable = false,
+    renderOption,
+    onchange,
+  }: Props = $props();
 
-  const label = $derived($_(`settings.parameters.${configKey}.label`, { default: configKey }));
-  const note = $derived($_(`settings.parameters.${configKey}.note`, { default: '' }));
-  const selectedLabel = $derived(options.find((o) => o.value === value)?.label ?? String(value));
+  const label = $derived(
+    $_(`settings.parameters.${configKey}.label`, { default: configKey })
+  );
+  const note = $derived(
+    $_(`settings.parameters.${configKey}.note`, { default: '' })
+  );
+  const selectedLabel = $derived(
+    options.find((o) => o.value === value)?.label ?? String(value)
+  );
 </script>
 
 <div class="settings-dropdown">

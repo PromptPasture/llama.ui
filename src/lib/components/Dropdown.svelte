@@ -1,4 +1,7 @@
-<script lang="ts" generics="T extends { value: string | number; label: string }">
+<script
+  lang="ts"
+  generics="T extends { value: string | number; label: string }"
+>
   import type { Snippet } from 'svelte';
   import { _ } from 'svelte-i18n';
   import Button from './Button.svelte';
@@ -37,7 +40,9 @@
   const filteredOptions = $derived(
     !filterable || filter.trim() === ''
       ? options
-      : options.filter((o) => o.label.toLowerCase().includes(filter.trim().toLowerCase()))
+      : options.filter((o) =>
+          o.label.toLowerCase().includes(filter.trim().toLowerCase())
+        )
   );
 
   function select(option: T) {
@@ -55,7 +60,10 @@
 
 <div class="dropdown {className}">
   {#if isDisabled}
-    <div class="dropdown__trigger dropdown__trigger--static" aria-label={$_('dropdown.chooseEntity', { values: { entity } })}>
+    <div
+      class="dropdown__trigger dropdown__trigger--static"
+      aria-label={$_('dropdown.chooseEntity', { values: { entity } })}
+    >
       {@render currentValue()}
     </div>
   {:else}
@@ -69,7 +77,13 @@
     >
       {@render currentValue()}
       {#if !hideChevron}
-        <svg class="dropdown__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          class="dropdown__chevron"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
       {/if}
@@ -77,13 +91,23 @@
 
     {#if open}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="dropdown__overlay" onclick={() => (open = false)} onkeydown={() => {}}></div>
-      <div class="dropdown__panel" class:align-start={align === 'start'} role="listbox">
+      <div
+        class="dropdown__overlay"
+        onclick={() => (open = false)}
+        onkeydown={() => {}}
+      ></div>
+      <div
+        class="dropdown__panel"
+        class:align-start={align === 'start'}
+        role="listbox"
+      >
         {#if filterable}
           <input
             class="dropdown__filter"
             type="text"
-            placeholder={$_('dropdown.searchPlaceholder', { values: { entity } })}
+            placeholder={$_('dropdown.searchPlaceholder', {
+              values: { entity },
+            })}
             bind:value={filter}
             autofocus
           />
@@ -91,12 +115,17 @@
         {#if filteredOptions.length === 0}
           <div class="dropdown__empty">{$_('dropdown.noOptions')}</div>
         {:else}
-          <ul class="dropdown__list" class:dropdown__list--filterable={filterable}>
+          <ul
+            class="dropdown__list"
+            class:dropdown__list--filterable={filterable}
+          >
             {#each filteredOptions as option (option.value)}
               <li>
                 <Button
                   variant="ghost"
-                  class="dropdown__option {isSelected(option) ? 'dropdown__option--selected' : ''}"
+                  class="dropdown__option {isSelected(option)
+                    ? 'dropdown__option--selected'
+                    : ''}"
                   onclick={() => select(option)}
                   aria-selected={isSelected(option)}
                   role="option"

@@ -10,7 +10,12 @@
     onitemselect?: () => void;
   }
 
-  let { group, currentConvId, class: className = '', onitemselect }: Props = $props();
+  let {
+    group,
+    currentConvId,
+    class: className = '',
+    onitemselect,
+  }: Props = $props();
 </script>
 
 <div role="group" class={className}>

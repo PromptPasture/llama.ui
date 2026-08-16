@@ -1,7 +1,11 @@
 import { CONFIG_DEFAULT } from '$lib/config';
 import IndexedDB from '$lib/database/indexedDB';
 import LocalStorage from '$lib/database/localStorage';
-import type { Configuration, ConfigurationPreset, ExportJsonStructure } from '$lib/types';
+import type {
+  Configuration,
+  ConfigurationPreset,
+  ExportJsonStructure,
+} from '$lib/types';
 
 type ToastFn = (message: string) => void;
 
@@ -40,7 +44,11 @@ export const app = {
     state.config = config;
   },
 
-  async savePreset(name: string, config: Configuration, toast?: ToastFn): Promise<void> {
+  async savePreset(
+    name: string,
+    config: Configuration,
+    toast?: ToastFn
+  ): Promise<void> {
     await IndexedDB.savePreset(name, config);
     state.presets = await IndexedDB.getPresets();
     toast?.('Preset saved');
@@ -58,7 +66,10 @@ export const app = {
     document.documentElement.setAttribute('data-theme', theme);
   },
 
-  async importDB(data: string, toast?: { success: ToastFn; error: ToastFn }): Promise<void> {
+  async importDB(
+    data: string,
+    toast?: { success: ToastFn; error: ToastFn }
+  ): Promise<void> {
     try {
       await IndexedDB.importDB(JSON.parse(data));
       state.presets = await IndexedDB.getPresets();

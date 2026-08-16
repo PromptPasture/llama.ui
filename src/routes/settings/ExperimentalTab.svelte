@@ -5,15 +5,26 @@
 
   interface Props {
     config: Configuration;
-    onchange: (key: ConfigurationKey) => (value: string | number | boolean) => void;
+    onchange: (
+      key: ConfigurationKey
+    ) => (value: string | number | boolean) => void;
   }
 
   let { config, onchange }: Props = $props();
 </script>
 
 <section>
-  <div class="experimental-notice">{@html $_('settings.parameters.experimental.note', { default: '⚠ Experimental features may be unstable.' })}</div>
-  <SettingsField type="checkbox" configKey="pyIntepreterEnabled" value={!!config.pyIntepreterEnabled} onchange={onchange('pyIntepreterEnabled')} />
+  <div class="experimental-notice">
+    {@html $_('settings.parameters.experimental.note', {
+      default: '⚠ Experimental features may be unstable.',
+    })}
+  </div>
+  <SettingsField
+    type="checkbox"
+    configKey="pyIntepreterEnabled"
+    value={!!config.pyIntepreterEnabled}
+    onchange={onchange('pyIntepreterEnabled')}
+  />
 </section>
 
 <style>

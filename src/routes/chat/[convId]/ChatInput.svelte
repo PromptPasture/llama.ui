@@ -6,7 +6,10 @@
 
   interface Props {
     convId?: string;
-    onsend: (content: string, extra: MessageExtra[] | undefined) => Promise<boolean | void>;
+    onsend: (
+      content: string,
+      extra: MessageExtra[] | undefined
+    ) => Promise<boolean | void>;
   }
 
   let { convId, onsend }: Props = $props();
@@ -47,7 +50,10 @@
   });
 </script>
 
-<div class="chat-input" aria-label={$_('chatInput.ariaLabels.chatInput', { default: 'Chat input' })}>
+<div
+  class="chat-input"
+  aria-label={$_('chatInput.ariaLabels.chatInput', { default: 'Chat input' })}
+>
   <div class="chat-input__box">
     <textarea
       bind:this={textareaEl}
@@ -58,18 +64,25 @@
       dir="auto"
       {onkeydown}
       oninput={resize}
-      disabled={isPending}
-    ></textarea>
+      disabled={isPending}></textarea>
 
     <div class="chat-input__actions">
       {#if isPending}
-        <button type="button" class="chat-input__btn chat-input__btn--stop" onclick={stop}
-          aria-label="Stop generation">
+        <button
+          type="button"
+          class="chat-input__btn chat-input__btn--stop"
+          onclick={stop}
+          aria-label="Stop generation"
+        >
           <SquareIcon size={16} />
         </button>
       {:else}
-        <button type="button" class="chat-input__btn chat-input__btn--send" onclick={send}
-          aria-label={$_('chatInput.ariaLabels.send', { default: 'Send' })}>
+        <button
+          type="button"
+          class="chat-input__btn chat-input__btn--send"
+          onclick={send}
+          aria-label={$_('chatInput.ariaLabels.send', { default: 'Send' })}
+        >
           <ArrowUpIcon size={18} />
         </button>
       {/if}
@@ -123,5 +136,7 @@
     background: var(--color-accent);
     color: var(--color-accent-fg);
   }
-  .chat-input__btn--send:hover { background: var(--color-accent-hover); }
+  .chat-input__btn--send:hover {
+    background: var(--color-accent-hover);
+  }
 </style>

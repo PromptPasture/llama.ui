@@ -1,6 +1,10 @@
 import { getInferenceProvider } from '$lib/api/providers';
 import { CONFIG_DEFAULT, INFERENCE_PROVIDERS } from '$lib/config';
-import type { Configuration, InferenceApiModel, InferenceProvider } from '$lib/types';
+import type {
+  Configuration,
+  InferenceApiModel,
+  InferenceProvider,
+} from '$lib/types';
 import { deepEqual } from '$lib/utils/object-helpers';
 
 interface InferenceState {
@@ -40,7 +44,11 @@ export const inference = {
     options: { silent?: boolean } = {}
   ): Promise<InferenceApiModel[]> {
     if (!isProviderReady(config)) return [];
-    const provider = getInferenceProvider(config.provider, config.baseUrl, config.apiKey);
+    const provider = getInferenceProvider(
+      config.provider,
+      config.baseUrl,
+      config.apiKey
+    );
     try {
       return await provider.getModels();
     } catch (err) {
@@ -67,7 +75,8 @@ export const inference = {
     }
 
     if (config.model && state.models.length > 0) {
-      state.selectedModel = state.models.find((m) => m.id === config.model) ?? null;
+      state.selectedModel =
+        state.models.find((m) => m.id === config.model) ?? null;
     }
 
     _prevConfig = config;

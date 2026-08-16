@@ -24,19 +24,35 @@ export const modal = {
 
   showConfirm(message: string): Promise<boolean> {
     return new Promise((resolve) => {
-      open({ type: 'confirm', message, resolve: resolve as ModalEntry['resolve'] });
+      open({
+        type: 'confirm',
+        message,
+        resolve: resolve as ModalEntry['resolve'],
+      });
     });
   },
 
-  showPrompt(message: string, defaultValue?: string): Promise<string | undefined> {
+  showPrompt(
+    message: string,
+    defaultValue?: string
+  ): Promise<string | undefined> {
     return new Promise((resolve) => {
-      open({ type: 'prompt', message, defaultValue, resolve: resolve as ModalEntry['resolve'] });
+      open({
+        type: 'prompt',
+        message,
+        defaultValue,
+        resolve: resolve as ModalEntry['resolve'],
+      });
     });
   },
 
   showAlert(message: string): Promise<void> {
     return new Promise((resolve) => {
-      open({ type: 'alert', message, resolve: resolve as ModalEntry['resolve'] });
+      open({
+        type: 'alert',
+        message,
+        resolve: resolve as ModalEntry['resolve'],
+      });
     });
   },
 

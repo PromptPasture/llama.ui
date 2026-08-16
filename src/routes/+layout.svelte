@@ -32,10 +32,16 @@
   // Global keyboard hotkeys
   function onKeydown(e: KeyboardEvent) {
     const mod = e.ctrlKey || e.metaKey;
-    if (mod && e.key === 'n') { e.preventDefault(); goto('/'); }
-    else if (mod && e.key === ',') { e.preventDefault(); goto('/settings'); }
-    else if (mod && e.key === 'k') { e.preventDefault(); sidebarOpen = true; }
-    else if (e.key === 'Escape') sidebarOpen = false;
+    if (mod && e.key === 'n') {
+      e.preventDefault();
+      goto('/');
+    } else if (mod && e.key === ',') {
+      e.preventDefault();
+      goto('/settings');
+    } else if (mod && e.key === 'k') {
+      e.preventDefault();
+      sidebarOpen = true;
+    } else if (e.key === 'Escape') sidebarOpen = false;
   }
 </script>
 
@@ -47,24 +53,28 @@
 </svelte:head>
 
 {#if ready}
-<div class="app-shell">
-  <Sidebar open={sidebarOpen} onclose={() => (sidebarOpen = false)} />
+  <div class="app-shell">
+    <Sidebar open={sidebarOpen} onclose={() => (sidebarOpen = false)} />
 
-  <div class="app-shell__content">
-    <Header onsidebartoggle={() => (sidebarOpen = !sidebarOpen)} />
-    <main class="app-shell__main">
-      {@render children()}
-    </main>
+    <div class="app-shell__content">
+      <Header onsidebartoggle={() => (sidebarOpen = !sidebarOpen)} />
+      <main class="app-shell__main">
+        {@render children()}
+      </main>
+    </div>
   </div>
-</div>
 
-<ModalHost />
-<Toast />
+  <ModalHost />
+  <Toast />
 {/if}
 
 <style>
   @reference "tailwindcss";
-  :global(html), :global(body) { height: 100%; margin: 0; }
+  :global(html),
+  :global(body) {
+    height: 100%;
+    margin: 0;
+  }
 
   .app-shell {
     @apply flex h-screen overflow-hidden;

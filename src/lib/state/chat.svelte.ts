@@ -96,7 +96,8 @@ export const chat = {
       toast: ToastFn;
     }
   ): Promise<boolean> {
-    if (chat.isGenerating(convId) || !convId || !type || !role || !parent) return false;
+    if (chat.isGenerating(convId) || !convId || !type || !role || !parent)
+      return false;
 
     let currMsgId: number;
     if (content === null) {
@@ -105,7 +106,17 @@ export const chat = {
       currMsgId = Date.now();
       try {
         await IndexedDB.appendMsg(
-          { id: currMsgId, convId, type, role, content, extra, parent, children: [], timestamp: currMsgId },
+          {
+            id: currMsgId,
+            convId,
+            type,
+            role,
+            content,
+            extra,
+            parent,
+            children: [],
+            timestamp: currMsgId,
+          },
           parent
         );
       } catch {
@@ -117,7 +128,10 @@ export const chat = {
     onChunk(currMsgId);
 
     try {
-      await chat._generate({ convId, leafNodeId: currMsgId, system, onChunk }, deps);
+      await chat._generate(
+        { convId, leafNodeId: currMsgId, system, onChunk },
+        deps
+      );
       return true;
     } catch (error) {
       console.error('Message sending failed:', error);
@@ -149,9 +163,11 @@ export const chat = {
     if (chat.isGenerating(convId) || !deps.provider) return;
 
     const rawMessages = await IndexedDB.getMessages(convId);
-    const currMessages = IndexedDB.filterByLeafNodeId(rawMessages, leafNodeId, false).filter(
-      (m) => m.role !== 'system'
-    );
+    const currMessages = IndexedDB.filterByLeafNodeId(
+      rawMessages,
+      leafNodeId,
+      false
+    ).filter((m) => m.role !== 'system');
 
     const abortController = new AbortController();
     state.aborts[convId] = abortController;
@@ -226,9 +242,15 @@ export const chat = {
   ): Promise<void> {
     if (chat.isGenerating(msg.convId)) return;
     const now = Date.now();
-    await IndexedDB.appendMsg({ ...msg, id: now, timestamp: now, content: newContent }, msg.parent);
+    await IndexedDB.appendMsg(
+      { ...msg, id: now, timestamp: now, content: newContent },
+      msg.parent
+    );
     onChunk(now);
-    await chat._generate({ convId: msg.convId, leafNodeId: now, onChunk }, deps);
+    await chat._generate(
+      { convId: msg.convId, leafNodeId: now, onChunk },
+      deps
+    );
   },
 
   async branchMessage(

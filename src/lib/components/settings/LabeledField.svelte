@@ -9,8 +9,12 @@
 
   let { configKey, children }: Props = $props();
 
-  const label = $derived($_(`settings.parameters.${configKey}.label`, { default: configKey }));
-  const note = $derived($_(`settings.parameters.${configKey}.note`, { default: '' }));
+  const label = $derived(
+    $_(`settings.parameters.${configKey}.label`, { default: configKey })
+  );
+  const note = $derived(
+    $_(`settings.parameters.${configKey}.note`, { default: '' })
+  );
 </script>
 
 {@render children({ label, note })}

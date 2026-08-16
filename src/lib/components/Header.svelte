@@ -35,20 +35,35 @@
 <header class="header">
   <!-- Mobile row: sidebar toggle + title + new chat -->
   <div class="header__mobile-row">
-    <Button variant="ghost" size="icon-xl" onclick={onsidebartoggle}
-      aria-label="Open sidebar">
+    <Button
+      variant="ghost"
+      size="icon-xl"
+      onclick={onsidebartoggle}
+      aria-label="Open sidebar"
+    >
       <MenuIcon size={20} />
     </Button>
 
-    <button type="button" class="header__title-btn" onclick={() => {
-      if (showSettings) return;
-      if (currConv) goto(`/chat/${currConv.id}`); else goto('/');
-    }} aria-label={title}>
+    <button
+      type="button"
+      class="header__title-btn"
+      onclick={() => {
+        if (showSettings) return;
+        if (currConv) goto(`/chat/${currConv.id}`);
+        else goto('/');
+      }}
+      aria-label={title}
+    >
       {title}
     </button>
 
-    <Button variant="ghost" size="icon-xl" onclick={() => goto('/')}
-      title={$_('header.buttons.newConv')} aria-label={$_('header.ariaLabels.newConv')}>
+    <Button
+      variant="ghost"
+      size="icon-xl"
+      onclick={() => goto('/')}
+      title={$_('header.buttons.newConv')}
+      aria-label={$_('header.ariaLabels.newConv')}
+    >
       <SquarePenIcon size={20} />
     </Button>
   </div>
@@ -75,8 +90,13 @@
 
       <div style="flex:1"></div>
 
-      <Button variant="ghost" size="icon-xl" onclick={() => goto('/settings')}
-        title={$_('header.buttons.settings')} aria-label={$_('header.ariaLabels.settings')}>
+      <Button
+        variant="ghost"
+        size="icon-xl"
+        onclick={() => goto('/settings')}
+        title={$_('header.buttons.settings')}
+        aria-label={$_('header.ariaLabels.settings')}
+      >
         <CogIcon size={20} />
       </Button>
     </div>

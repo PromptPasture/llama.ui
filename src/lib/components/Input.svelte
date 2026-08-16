@@ -16,11 +16,15 @@
     ...rest
   }: Props = $props();
 
-  const resolvedType = type ?? (
-    variant === 'file' ? 'file' :
-    variant === 'toggle' ? 'checkbox' :
-    variant === 'range' ? 'range' : 'text'
-  );
+  const resolvedType =
+    type ??
+    (variant === 'file'
+      ? 'file'
+      : variant === 'toggle'
+        ? 'checkbox'
+        : variant === 'range'
+          ? 'range'
+          : 'text');
 
   // `bind:value` requires a static `type`, which this component resolves at
   // runtime, so the write-back is wired by hand. The caller's own `oninput`
@@ -74,12 +78,18 @@
   .input--toggle::after {
     content: '';
     position: absolute;
-    top: 2px; left: 2px;
-    width: 1rem; height: 1rem;
+    top: 2px;
+    left: 2px;
+    width: 1rem;
+    height: 1rem;
     border-radius: 50%;
     background: white;
     transition: transform 0.2s;
   }
-  .input--toggle:checked { background: var(--color-accent); }
-  .input--toggle:checked::after { transform: translateX(1.25rem); }
+  .input--toggle:checked {
+    background: var(--color-accent);
+  }
+  .input--toggle:checked::after {
+    transform: translateX(1.25rem);
+  }
 </style>

@@ -16,7 +16,10 @@ let _seq = 0;
 function add(message: string, level: ToastLevel, durationMs = 3500): void {
   const id = ++_seq;
   _store.update((list) => [...list, { id, message, level }]);
-  setTimeout(() => _store.update((list) => list.filter((t) => t.id !== id)), durationMs);
+  setTimeout(
+    () => _store.update((list) => list.filter((t) => t.id !== id)),
+    durationMs
+  );
 }
 
 export const toast = {

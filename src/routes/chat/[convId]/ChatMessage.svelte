@@ -1,8 +1,16 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
   import {
-    AtomIcon, BotIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon,
-    CopyIcon, GitMergeIcon, RefreshCwIcon, SquarePenIcon, Trash2Icon,
+    AtomIcon,
+    BotIcon,
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    CopyIcon,
+    GitMergeIcon,
+    RefreshCwIcon,
+    SquarePenIcon,
+    Trash2Icon,
   } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import IndexedDB from '$lib/database/indexedDB';
@@ -22,28 +30,40 @@
   interface Props {
     message: MessageDisplay;
     onregeneratefn: (msg: Message) => void;
-    onedituserfn: (msg: Message, content: string, extra: MessageExtra[]) => void;
+    onedituserfn: (
+      msg: Message,
+      content: string,
+      extra: MessageExtra[]
+    ) => void;
     oneditassistantfn: (msg: Message, content: string) => void;
     onchangesibling: (nodeId: Message['id']) => void;
   }
 
-  let { message, onregeneratefn, onedituserfn, oneditassistantfn, onchangesibling }: Props = $props();
+  let {
+    message,
+    onregeneratefn,
+    onedituserfn,
+    oneditassistantfn,
+    onchangesibling,
+  }: Props = $props();
 
-  const { msg, siblingCurrIdx, siblingLeafNodeIds, isPending } = $derived(message);
+  const { msg, siblingCurrIdx, siblingLeafNodeIds, isPending } =
+    $derived(message);
   const isUser = $derived(msg.role === 'user');
   const isAssistant = $derived(msg.role === 'assistant');
   const config = $derived(app.config);
 
   const { content, reasoning_content } = $derived.by(() => {
     if (msg.role !== 'assistant') return { content: msg.content };
-    if (msg.reasoning_content) return { content: msg.content, reasoning_content: msg.reasoning_content };
+    if (msg.reasoning_content)
+      return { content: msg.content, reasoning_content: msg.reasoning_content };
     return splitMessageContent(msg.content);
   });
 
   const renderAsMarkdown = $derived(
     (isUser && !config.showRawUserMessage) ||
-    (isAssistant && !config.showRawAssistantMessage) ||
-    (!isUser && !isAssistant)
+      (isAssistant && !config.showRawAssistantMessage) ||
+      (!isUser && !isAssistant)
   );
 
   const prevSibling = $derived(siblingLeafNodeIds[siblingCurrIdx - 1]);
@@ -62,7 +82,9 @@
     isEditing = true;
   }
 
-  function cancelEdit() { isEditing = false; }
+  function cancelEdit() {
+    isEditing = false;
+  }
 
   function submitUserEdit() {
     isEditing = false;
@@ -88,15 +110,26 @@
   }
 </script>
 
-<div class="msg mb-4" class:msg--user={isUser}
-  role="group" aria-label={isUser ? $_('chatScreen.ariaLabels.messageUserRole') : $_('chatScreen.ariaLabels.messageAssistantRole')}>
-
+<div
+  class="msg mb-4"
+  class:msg--user={isUser}
+  role="group"
+  aria-label={isUser
+    ? $_('chatScreen.ariaLabels.messageUserRole')
+    : $_('chatScreen.ariaLabels.messageAssistantRole')}
+>
   <!-- Bubble -->
-  <div class="msg__bubble" class:msg__bubble--user={isUser} class:msg__bubble--assistant={isAssistant}>
+  <div
+    class="msg__bubble"
+    class:msg__bubble--user={isUser}
+    class:msg__bubble--assistant={isAssistant}
+  >
     <!-- Metadata -->
     <div class="msg__meta">
       {#if isUser}
-        <span class="msg__sender">{config.initials || $_('chatScreen.labels.user')}</span>
+        <span class="msg__sender"
+          >{config.initials || $_('chatScreen.labels.user')}</span
+        >
       {/if}
       {#if isAssistant && msg.model}
         <span class="msg__sender">{msg.model}</span>
@@ -106,22 +139,36 @@
 
     <!-- Edit mode -->
     {#if isEditing}
-      <Textarea value={editContent} oninput={(e) => (editContent = (e.target as HTMLTextAreaElement).value)} autoresize />
+      <Textarea
+        value={editContent}
+        oninput={(e) => (editContent = (e.target as HTMLTextAreaElement).value)}
+        autoresize
+      />
       <div class="msg__edit-actions">
-        <Button variant="ghost" onclick={cancelEdit}>{$_('chatScreen.labels.cancel')}</Button>
+        <Button variant="ghost" onclick={cancelEdit}
+          >{$_('chatScreen.labels.cancel')}</Button
+        >
         {#if isUser}
-          <Button onclick={submitUserEdit} disabled={!editContent}>{$_('chatScreen.labels.send')}</Button>
+          <Button onclick={submitUserEdit} disabled={!editContent}
+            >{$_('chatScreen.labels.send')}</Button
+          >
         {:else}
-          <Button onclick={submitAssistantEdit} disabled={!editContent}>{$_('chatScreen.labels.save')}</Button>
+          <Button onclick={submitAssistantEdit} disabled={!editContent}
+            >{$_('chatScreen.labels.save')}</Button
+          >
         {/if}
       </div>
 
-    <!-- Content -->
+      <!-- Content -->
     {:else if content || reasoning_content}
       <div dir="auto" tabindex="0">
         {#if reasoning_content}
           <div class="msg__reasoning">
-            <button type="button" class="msg__reasoning-toggle" onclick={() => (thinkingOpen = !thinkingOpen)}>
+            <button
+              type="button"
+              class="msg__reasoning-toggle"
+              onclick={() => (thinkingOpen = !thinkingOpen)}
+            >
               {#if isThinking}
                 <AtomIcon size={16} class="animate-spin" />
                 {$_('chatScreen.labels.thinking')}
@@ -129,7 +176,9 @@
                 <BotIcon size={16} />
                 {$_('chatScreen.labels.reasoning')}
               {/if}
-              {#if thinkingOpen}<ChevronDownIcon size={14} />{:else}<ChevronRightIcon size={14} />{/if}
+              {#if thinkingOpen}<ChevronDownIcon
+                  size={14}
+                />{:else}<ChevronRightIcon size={14} />{/if}
             </button>
             {#if thinkingOpen}
               <div class="msg__reasoning-body">
@@ -157,46 +206,79 @@
   <!-- Actions -->
   {#if msg.content !== null && showActions}
     <div class="msg__actions" class:msg__actions--user={isUser}>
-
       <!-- Sibling navigation -->
       {#if siblingLeafNodeIds && siblingLeafNodeIds.length > 1}
         <div class="msg__siblings" role="navigation">
-          <Button variant="ghost" size="icon" onclick={() => prevSibling && onchangesibling(prevSibling)}
-            disabled={!prevSibling} aria-label={$_('chatScreen.ariaLabels.switchToPrevious')}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onclick={() => prevSibling && onchangesibling(prevSibling)}
+            disabled={!prevSibling}
+            aria-label={$_('chatScreen.ariaLabels.switchToPrevious')}
+          >
             <ChevronLeftIcon size={14} />
           </Button>
           <span>{siblingCurrIdx + 1} / {siblingLeafNodeIds.length}</span>
-          <Button variant="ghost" size="icon" onclick={() => nextSibling && onchangesibling(nextSibling)}
-            disabled={!nextSibling} aria-label={$_('chatScreen.ariaLabels.switchToNext')}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onclick={() => nextSibling && onchangesibling(nextSibling)}
+            disabled={!nextSibling}
+            aria-label={$_('chatScreen.ariaLabels.switchToNext')}
+          >
             <ChevronRightIcon size={14} />
           </Button>
         </div>
       {/if}
 
       {#if isAssistant}
-        <Button variant="ghost" size="icon" onclick={() => onregeneratefn(msg as Message)}
-          disabled={!msg.content} aria-label={$_('chatScreen.ariaLabels.regenerateResponse')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onclick={() => onregeneratefn(msg as Message)}
+          disabled={!msg.content}
+          aria-label={$_('chatScreen.ariaLabels.regenerateResponse')}
+        >
           <RefreshCwIcon size={14} />
         </Button>
       {/if}
 
-      <Button variant="ghost" size="icon" onclick={startEdit} disabled={!msg.content}
-        aria-label={$_('chatScreen.ariaLabels.editMessage')}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onclick={startEdit}
+        disabled={!msg.content}
+        aria-label={$_('chatScreen.ariaLabels.editMessage')}
+      >
         <SquarePenIcon size={14} />
       </Button>
 
-      <Button variant="ghost" size="icon" onclick={() => copyStr(msg.content ?? '')}
-        aria-label={$_('chatScreen.ariaLabels.copyContent')}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onclick={() => copyStr(msg.content ?? '')}
+        aria-label={$_('chatScreen.ariaLabels.copyContent')}
+      >
         <CopyIcon size={14} />
       </Button>
 
-      <Button variant="ghost" size="icon" onclick={handleDelete} disabled={!msg.content}
-        aria-label={$_('chatScreen.ariaLabels.deleteMessage')}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onclick={handleDelete}
+        disabled={!msg.content}
+        aria-label={$_('chatScreen.ariaLabels.deleteMessage')}
+      >
         <Trash2Icon size={14} />
       </Button>
 
-      <Button variant="ghost" size="icon" onclick={handleBranch} disabled={!msg.content}
-        aria-label={$_('chatScreen.ariaLabels.branchChatAfterMessage')}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onclick={handleBranch}
+        disabled={!msg.content}
+        aria-label={$_('chatScreen.ariaLabels.branchChatAfterMessage')}
+      >
         <GitMergeIcon size={14} />
       </Button>
     </div>

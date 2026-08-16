@@ -2,7 +2,11 @@
   import { _ } from 'svelte-i18n';
   import { RefreshCwIcon } from 'lucide-svelte';
   import { INFERENCE_PROVIDERS } from '$lib/config';
-  import type { Configuration, ConfigurationKey, InferenceApiModel } from '$lib/types';
+  import type {
+    Configuration,
+    ConfigurationKey,
+    InferenceApiModel,
+  } from '$lib/types';
   import Button from '$lib/components/Button.svelte';
   import SettingsField from '$lib/components/settings/SettingsField.svelte';
   import SettingsDropdownField from '$lib/components/settings/SettingsDropdownField.svelte';
@@ -10,22 +14,30 @@
   interface Props {
     config: Configuration;
     models: InferenceApiModel[];
-    onchange: (key: ConfigurationKey) => (value: string | number | boolean) => void;
+    onchange: (
+      key: ConfigurationKey
+    ) => (value: string | number | boolean) => void;
     onfetchmodels: () => Promise<void>;
   }
 
   let { config, models, onchange, onfetchmodels }: Props = $props();
 
-  const providerOptions = Object.entries(INFERENCE_PROVIDERS).map(([key, val]) => ({
-    value: key,
-    label: val.name,
-  }));
+  const providerOptions = Object.entries(INFERENCE_PROVIDERS).map(
+    ([key, val]) => ({
+      value: key,
+      label: val.name,
+    })
+  );
 
-  const modelOptions = $derived(models.map((m) => ({ value: m.id, label: m.name })));
+  const modelOptions = $derived(
+    models.map((m) => ({ value: m.id, label: m.name }))
+  );
 </script>
 
 <section>
-  <h4 class="section-heading section-heading--first">{$_('settings.sections.inferenceProvider')}</h4>
+  <h4 class="section-heading section-heading--first">
+    {$_('settings.sections.inferenceProvider')}
+  </h4>
 
   <SettingsDropdownField
     configKey="provider"
@@ -78,6 +90,10 @@
     @apply font-semibold m-0 mb-3;
     font-size: 0.9375rem;
   }
-  .section-heading--first { margin-top: 0; }
-  .spacer { height: 1rem; }
+  .section-heading--first {
+    margin-top: 0;
+  }
+  .spacer {
+    height: 1rem;
+  }
 </style>

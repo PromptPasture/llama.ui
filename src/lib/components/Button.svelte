@@ -11,7 +11,13 @@
     children?: Snippet;
   }
 
-  let { variant = 'default', size = 'default', class: className = '', children, ...rest }: Props = $props();
+  let {
+    variant = 'default',
+    size = 'default',
+    class: className = '',
+    children,
+    ...rest
+  }: Props = $props();
 </script>
 
 <button
@@ -34,26 +40,34 @@
     background: var(--color-accent);
     color: var(--color-accent-fg);
   }
-  .btn--default:hover { background: var(--color-accent-hover); }
+  .btn--default:hover {
+    background: var(--color-accent-hover);
+  }
 
   .btn--neutral {
     border-color: var(--color-border);
     background: var(--color-surface-alt);
     color: var(--color-text);
   }
-  .btn--neutral:hover { background: var(--color-border); }
+  .btn--neutral:hover {
+    background: var(--color-border);
+  }
 
   .btn--ghost {
     background: transparent;
     color: var(--color-text);
   }
-  .btn--ghost:hover { background: var(--color-surface-alt); }
+  .btn--ghost:hover {
+    background: var(--color-surface-alt);
+  }
 
   .btn--danger {
     background: var(--color-danger);
     color: var(--color-danger-fg);
   }
-  .btn--danger:hover { opacity: 0.85; }
+  .btn--danger:hover {
+    opacity: 0.85;
+  }
 
   .btn--menu-item {
     @apply items-start justify-start font-normal w-full;
@@ -61,10 +75,15 @@
     color: var(--color-text);
     border-radius: var(--radius-sm);
   }
-  .btn--menu-item:hover { background: var(--color-surface-alt); }
+  .btn--menu-item:hover {
+    background: var(--color-surface-alt);
+  }
 
-  .btn--size-default {}
-  .btn--size-small { @apply px-2 py-1 text-xs; }
+  .btn--size-default {
+  }
+  .btn--size-small {
+    @apply px-2 py-1 text-xs;
+  }
   .btn--size-icon {
     @apply w-8 h-8 p-0;
     border-radius: var(--radius-md);

@@ -1,6 +1,11 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { CirclePlayIcon, SaveIcon, Trash2Icon, PencilIcon } from 'lucide-svelte';
+  import {
+    CirclePlayIcon,
+    SaveIcon,
+    Trash2Icon,
+    PencilIcon,
+  } from 'lucide-svelte';
   import { CONFIG_DEFAULT } from '$lib/config';
   import { modal } from '$lib/state/modal.svelte';
   import { toast } from '$lib/components/toast.js';
@@ -16,40 +21,75 @@
     onsaveconfig: (config: Configuration) => Promise<void>;
   }
 
-  let { config, presets, onsavepreset, onremovepreset, onsaveconfig }: Props = $props();
+  let { config, presets, onsavepreset, onremovepreset, onsaveconfig }: Props =
+    $props();
 
   async function handleSave() {
-    const name = ((await modal.showPrompt($_('settings.presetManager.modals.enterNewPresetName'))) ?? '').trim();
+    const name = (
+      (await modal.showPrompt(
+        $_('settings.presetManager.modals.enterNewPresetName')
+      )) ?? ''
+    ).trim();
     if (!name) return;
     const existing = presets.find((p) => p.name === name);
-    if (!existing || await modal.showConfirm($_('settings.presetManager.modals.presetAlreadyExists', { values: { presetName: name } }))) {
+    if (
+      !existing ||
+      (await modal.showConfirm(
+        $_('settings.presetManager.modals.presetAlreadyExists', {
+          values: { presetName: name },
+        })
+      ))
+    ) {
       await onsavepreset(name, config);
       toast.success($_('state.preset.saved', { default: 'Preset saved' }));
     }
   }
 
   async function handleRename(preset: ConfigurationPreset) {
-    const newName = ((await modal.showPrompt($_('settings.presetManager.modals.enterNewName'))) ?? '').trim();
+    const newName = (
+      (await modal.showPrompt(
+        $_('settings.presetManager.modals.enterNewName')
+      )) ?? ''
+    ).trim();
     if (!newName) return;
     await onremovepreset(preset.name);
-    await onsavepreset(newName, Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config));
+    await onsavepreset(
+      newName,
+      Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config)
+    );
   }
 
   async function handleLoad(preset: ConfigurationPreset) {
-    if (await modal.showConfirm($_('settings.presetManager.modals.loadPresetConfirm', { values: { presetName: preset.name } }))) {
-      await onsaveconfig(Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config));
+    if (
+      await modal.showConfirm(
+        $_('settings.presetManager.modals.loadPresetConfirm', {
+          values: { presetName: preset.name },
+        })
+      )
+    ) {
+      await onsaveconfig(
+        Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config)
+      );
     }
   }
 
   async function handleDelete(preset: ConfigurationPreset) {
-    if (await modal.showConfirm($_('settings.presetManager.modals.deletePresetConfirm', { values: { presetName: preset.name } }))) {
+    if (
+      await modal.showConfirm(
+        $_('settings.presetManager.modals.deletePresetConfirm', {
+          values: { presetName: preset.name },
+        })
+      )
+    ) {
       await onremovepreset(preset.name);
     }
   }
 </script>
 
 <section>
-  <h4 class="section-heading section-heading--first">{$_('settings.presetManager.newPreset')}</h4>
+  <h4 class="section-heading section-heading--first">
+    {$_('settings.presetManager.newPreset')}
+  </h4>
   <Button variant="neutral" onclick={handleSave}>
     <SaveIcon size={16} />
     {$_('settings.presetManager.buttons.save')}
@@ -65,16 +105,34 @@
         <div class="preset-card">
           <div class="preset-card__info">
             <strong>{preset.name}</strong>
-            <span class="preset-card__date">{$_('settings.presetManager.labels.created')} {dateFormatter.format(preset.createdAt)}</span>
+            <span class="preset-card__date"
+              >{$_('settings.presetManager.labels.created')}
+              {dateFormatter.format(preset.createdAt)}</span
+            >
           </div>
           <div class="preset-card__actions">
-            <Button variant="ghost" size="icon-xl" onclick={() => handleLoad(preset)} aria-label={$_('settings.presetManager.buttons.load')}>
+            <Button
+              variant="ghost"
+              size="icon-xl"
+              onclick={() => handleLoad(preset)}
+              aria-label={$_('settings.presetManager.buttons.load')}
+            >
               <CirclePlayIcon size={18} />
             </Button>
-            <Button variant="ghost" size="icon" onclick={() => handleRename(preset)} aria-label={$_('settings.presetManager.buttons.rename')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onclick={() => handleRename(preset)}
+              aria-label={$_('settings.presetManager.buttons.rename')}
+            >
               <PencilIcon size={14} />
             </Button>
-            <Button variant="ghost" size="icon" onclick={() => handleDelete(preset)} aria-label={$_('settings.presetManager.buttons.delete')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onclick={() => handleDelete(preset)}
+              aria-label={$_('settings.presetManager.buttons.delete')}
+            >
               <Trash2Icon size={14} />
             </Button>
           </div>
@@ -90,7 +148,9 @@
     @apply font-semibold mt-4 mb-3;
     font-size: 0.9375rem;
   }
-  .section-heading--first { margin-top: 0; }
+  .section-heading--first {
+    margin-top: 0;
+  }
 
   .presets__empty {
     @apply text-xs;

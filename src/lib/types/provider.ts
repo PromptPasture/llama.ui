@@ -194,6 +194,4 @@ export interface ChatCompletionProvider {
  * @extends {ChatCompletionProvider}
  */
 export interface InferenceProvider
-  extends LLMProvider,
-    ModelProvider,
-    ChatCompletionProvider {}
+  extends LLMProvider, ModelProvider, ChatCompletionProvider {}

@@ -21,9 +21,14 @@
     }
   }
 
-  const samplePrompts = $derived(getUniqueRandomElements(getSamplePrompts(), SAMPLE_COUNT));
+  const samplePrompts = $derived(
+    getUniqueRandomElements(getSamplePrompts(), SAMPLE_COUNT)
+  );
 
-  async function handleSend(content: string, extra: MessageExtra[] | undefined): Promise<boolean | void> {
+  async function handleSend(
+    content: string,
+    extra: MessageExtra[] | undefined
+  ): Promise<boolean | void> {
     const conv = await IndexedDB.createConversation(content.substring(0, 256));
     await goto(`/chat/${conv.id}`);
     return chat.sendMessage(
@@ -110,5 +115,7 @@
     border-radius: var(--radius-lg);
     color: var(--color-text);
   }
-  .welcome__prompt-btn:hover { background: var(--color-border); }
+  .welcome__prompt-btn:hover {
+    background: var(--color-border);
+  }
 </style>

@@ -12,7 +12,10 @@
   let { onclose }: Props = $props();
 
   async function handleExport() {
-    const data = await app.exportDB(undefined, { success: toast.success, error: toast.error });
+    const data = await app.exportDB(undefined, {
+      success: toast.success,
+      error: toast.error,
+    });
     downloadAsFile([JSON.stringify(data, null, 2)], 'llama-ui-database.json');
   }
 
@@ -26,10 +29,14 @@
 </script>
 
 <section>
-  <h4 class="section-heading">{$_('settings.importExport.chatsSectionTitle')}</h4>
+  <h4 class="section-heading">
+    {$_('settings.importExport.chatsSectionTitle')}
+  </h4>
 
   <div class="import-export__actions">
-    <Button onclick={handleExport}>{$_('settings.importExport.exportBtnLabel')}</Button>
+    <Button onclick={handleExport}
+      >{$_('settings.importExport.exportBtnLabel')}</Button
+    >
 
     <label class="import-label" role="button" tabindex="0">
       {$_('settings.importExport.importBtnLabel')}
@@ -55,5 +62,7 @@
     background: var(--color-accent);
     color: var(--color-accent-fg);
   }
-  .import-label:hover { background: var(--color-accent-hover); }
+  .import-label:hover {
+    background: var(--color-accent-hover);
+  }
 </style>

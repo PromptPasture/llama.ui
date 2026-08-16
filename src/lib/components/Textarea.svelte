@@ -35,8 +35,7 @@
   class="textarea textarea--{variant} {className}"
   oninput={resize}
   dir="auto"
-  {...rest}
-></textarea>
+  {...rest}></textarea>
 
 <style>
   @reference "tailwindcss";

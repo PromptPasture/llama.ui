@@ -29,8 +29,8 @@
   bind:this={dialogEl}
   class="dialog"
   aria-labelledby="dialog-title"
-  onkeydown={onkeydown}
-  onclose={onclose}
+  {onkeydown}
+  {onclose}
 >
   <div class="dialog__body">
     <h3 id="dialog-title" class="dialog__title">{title}</h3>
@@ -58,13 +58,23 @@
     box-shadow: var(--shadow-lg);
   }
 
-  .dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+  .dialog::backdrop {
+    background: rgb(0 0 0 / 0.5);
+  }
 
-  .dialog__body { @apply p-6; }
+  .dialog__body {
+    @apply p-6;
+  }
 
-  .dialog__title { @apply m-0 mb-4 text-lg font-semibold; }
+  .dialog__title {
+    @apply m-0 mb-4 text-lg font-semibold;
+  }
 
-  .dialog__content { @apply mb-4; }
+  .dialog__content {
+    @apply mb-4;
+  }
 
-  .dialog__actions { @apply flex justify-end gap-2; }
+  .dialog__actions {
+    @apply flex justify-end gap-2;
+  }
 </style>

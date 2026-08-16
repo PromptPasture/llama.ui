@@ -27,7 +27,9 @@
 
   interface Props {
     config: Configuration;
-    onchange: (key: ConfigurationKey) => (value: string | number | boolean) => void;
+    onchange: (
+      key: ConfigurationKey
+    ) => (value: string | number | boolean) => void;
   }
 
   let { config, onchange }: Props = $props();
@@ -38,13 +40,21 @@
 <section>
   <h4 class="section-heading">{$_('settings.sections.userInterface')}</h4>
 
-  <SettingsField type="short" configKey="initials" value={String(config.initials)} onchange={onchange('initials')} />
+  <SettingsField
+    type="short"
+    configKey="initials"
+    value={String(config.initials)}
+    onchange={onchange('initials')}
+  />
 
   <SettingsDropdownField
     configKey="language"
     value={currentLocale}
     options={SUPPORTED_LANGUAGES}
-    onchange={(v) => { locale.set(String(v)); document.documentElement.setAttribute('lang', String(v)); }}
+    onchange={(v) => {
+      locale.set(String(v));
+      document.documentElement.setAttribute('lang', String(v));
+    }}
   />
 
   <SettingsDropdownField
@@ -54,8 +64,18 @@
     onchange={(v) => app.switchTheme(String(v))}
   />
 
-  <SettingsField type="checkbox" configKey="showRawUserMessage" value={!!config.showRawUserMessage} onchange={onchange('showRawUserMessage')} />
-  <SettingsField type="checkbox" configKey="showRawAssistantMessage" value={!!config.showRawAssistantMessage} onchange={onchange('showRawAssistantMessage')} />
+  <SettingsField
+    type="checkbox"
+    configKey="showRawUserMessage"
+    value={!!config.showRawUserMessage}
+    onchange={onchange('showRawUserMessage')}
+  />
+  <SettingsField
+    type="checkbox"
+    configKey="showRawAssistantMessage"
+    value={!!config.showRawAssistantMessage}
+    onchange={onchange('showRawAssistantMessage')}
+  />
 </section>
 
 <style>
