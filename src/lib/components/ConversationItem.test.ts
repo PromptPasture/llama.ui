@@ -11,12 +11,16 @@ const mocks = vi.hoisted(() => ({
   isGenerating: vi.fn(() => false),
   success: vi.fn(),
   error: vi.fn(),
+  showPrompt: vi.fn(),
+  updateConversationName: vi.fn(),
+  exportDB: vi.fn(),
+  downloadAsFile: vi.fn(),
 }));
 
 vi.mock('$app/navigation', () => ({ goto: mocks.goto }));
 vi.mock('$app/paths', () => ({ resolve: (p: string) => p }));
 vi.mock('$lib/state/modal.svelte', () => ({
-  modal: { showConfirm: mocks.showConfirm, showPrompt: vi.fn() },
+  modal: { showConfirm: mocks.showConfirm, showPrompt: mocks.showPrompt },
 }));
 vi.mock('$lib/state/chat.svelte', () => ({
   chat: { isGenerating: mocks.isGenerating },
@@ -24,9 +28,13 @@ vi.mock('$lib/state/chat.svelte', () => ({
 vi.mock('$lib/database/indexedDB', () => ({
   default: {
     deleteConversation: mocks.deleteConversation,
-    updateConversationName: vi.fn(),
-    exportDB: vi.fn(),
+    updateConversationName: mocks.updateConversationName,
+    exportDB: mocks.exportDB,
   },
+}));
+
+vi.mock('$lib/utils/downloadAsFile', () => ({
+  downloadAsFile: mocks.downloadAsFile,
 }));
 vi.mock('$lib/components/toast.js', () => ({
   toast: { success: mocks.success, error: mocks.error },
@@ -54,6 +62,8 @@ beforeEach(() => {
   mocks.isGenerating.mockReturnValue(false);
   mocks.deleteConversation.mockResolvedValue(undefined);
   mocks.showConfirm.mockResolvedValue(true);
+  mocks.updateConversationName.mockResolvedValue(undefined);
+  mocks.exportDB.mockResolvedValue([]);
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -115,6 +125,78 @@ describe('deleting a conversation', () => {
     await deleteFrom('conv-1');
 
     expect(mocks.goto).not.toHaveBeenCalled();
+  });
+});
+
+describe('renaming a conversation', () => {
+  async function renameTo(name: string | undefined) {
+    mocks.showPrompt.mockResolvedValue(name);
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv, currentConvId: 'conv-1' } });
+
+    await user.click(screen.getByRole('button', { name: 'Show more options' }));
+    await user.click(screen.getByRole('button', { name: /Rename/ }));
+  }
+
+  it('stores the trimmed name', async () => {
+    await renameTo('  A better name  ');
+
+    expect(mocks.updateConversationName).toHaveBeenCalledWith(
+      'conv-1',
+      'A better name'
+    );
+  });
+
+  it('does nothing when the prompt is dismissed', async () => {
+    await renameTo(undefined);
+
+    expect(mocks.updateConversationName).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when the new name is only whitespace', async () => {
+    await renameTo('   ');
+
+    expect(mocks.updateConversationName).not.toHaveBeenCalled();
+  });
+
+  it('reports a rename that failed', async () => {
+    mocks.updateConversationName.mockRejectedValue(new Error('storage full'));
+
+    await renameTo('A better name');
+
+    // The write was not awaited, so the old name stayed in the list with
+    // nothing said about why.
+    expect(mocks.error).toHaveBeenCalled();
+  });
+});
+
+describe('downloading a conversation', () => {
+  async function download() {
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv, currentConvId: 'conv-1' } });
+
+    await user.click(screen.getByRole('button', { name: 'Show more options' }));
+    await user.click(screen.getByRole('button', { name: /Download/ }));
+  }
+
+  it('writes out the exported conversation', async () => {
+    mocks.exportDB.mockResolvedValue([{ table: 'conversations', rows: [] }]);
+
+    await download();
+
+    expect(mocks.downloadAsFile).toHaveBeenCalledWith(
+      [expect.stringContaining('conversations')],
+      'conversation_conv-1.json'
+    );
+  });
+
+  it('reports an export that failed instead of doing nothing', async () => {
+    mocks.exportDB.mockRejectedValue(new Error('unreadable'));
+
+    await download();
+
+    expect(mocks.downloadAsFile).not.toHaveBeenCalled();
+    expect(mocks.error).toHaveBeenCalled();
   });
 });
 

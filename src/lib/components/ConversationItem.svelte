@@ -42,8 +42,16 @@
       $_('sidebar.actions.newName'),
       conv.name
     );
-    if (newName?.trim())
-      IndexedDB.updateConversationName(conv.id, newName.trim());
+    if (!newName?.trim()) return;
+
+    try {
+      // Not awaiting left a failed rename unreported: the old name stayed in
+      // the list with nothing to say why.
+      await IndexedDB.updateConversationName(conv.id, newName.trim());
+    } catch (error) {
+      console.error('Conversation rename failed:', error);
+      toast.error($_('sidebar.errors.renameFailed'));
+    }
   }
 
   async function handleDownload() {
@@ -52,11 +60,17 @@
       toast.error($_('sidebar.errors.downloadOnGenerate'));
       return;
     }
-    const data = await IndexedDB.exportDB(conv.id);
-    downloadAsFile(
-      [JSON.stringify(data, null, 2)],
-      `conversation_${conv.id}.json`
-    );
+    try {
+      const data = await IndexedDB.exportDB(conv.id);
+      downloadAsFile(
+        [JSON.stringify(data, null, 2)],
+        `conversation_${conv.id}.json`
+      );
+    } catch (error) {
+      // Without this the menu simply closed and no file ever arrived.
+      console.error('Conversation download failed:', error);
+      toast.error($_('sidebar.errors.downloadFailed'));
+    }
   }
 
   async function handleDelete() {
