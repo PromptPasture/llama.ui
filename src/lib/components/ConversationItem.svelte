@@ -65,11 +65,22 @@
       toast.error($_('sidebar.errors.deleteOnGenerate'));
       return;
     }
-    if (await modal.showConfirm($_('sidebar.actions.deleteConfirm'))) {
-      toast.success($_('sidebar.actions.deleteSuccess'));
+    if (!(await modal.showConfirm($_('sidebar.actions.deleteConfirm')))) return;
+
+    try {
       await IndexedDB.deleteConversation(conv.id);
-      goto(resolve('/'));
+    } catch (error) {
+      // Reporting success before the delete had happened meant a failure
+      // looked exactly like a success, with the conversation still listed.
+      console.error('Conversation delete failed:', error);
+      toast.error($_('sidebar.errors.deleteFailed'));
+      return;
     }
+
+    toast.success($_('sidebar.actions.deleteSuccess'));
+    // Deleting some other conversation from the sidebar should not take the
+    // reader out of the one they are reading.
+    if (isCurrent) goto(resolve('/'));
   }
 </script>
 
