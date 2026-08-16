@@ -1,7 +1,15 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { init, register, waitLocale } from 'svelte-i18n';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import type { Conversation } from '$lib/types';
 
 const mocks = vi.hoisted(() => ({
@@ -61,6 +69,53 @@ async function renderSidebar(props: Record<string, unknown> = {}) {
   await screen.findByText('Recipe for bread');
   return { ...result, onclose };
 }
+
+describe('Sidebar month headings', () => {
+  // A fixed March, so the heading does not depend on when the suite runs.
+  // Several months read the same in English and German — April, August,
+  // September, November — and picking one of those by accident would make
+  // this pass whatever the code did.
+  const WHEN = new Date(2020, 2, 15);
+  const ancient = [
+    {
+      id: 'old',
+      name: 'An old thread',
+      lastModified: WHEN.getTime(),
+      currNode: -1,
+    } as Conversation,
+  ];
+  const monthName = (loc: string) =>
+    WHEN.toLocaleString(loc, { month: 'long' });
+
+  it('is testing two months that really are spelled differently', () => {
+    expect(monthName('de')).not.toBe(monthName('en'));
+  });
+
+  afterEach(async () => {
+    locale.set('en');
+    await waitLocale('en');
+  });
+
+  it('names the month in English when that is the language', async () => {
+    mocks.getAllConversations.mockResolvedValue(ancient);
+    render(Sidebar, { props: { open: true, onclose: vi.fn() } });
+
+    expect(await screen.findByText(new RegExp(monthName('en')))).toBeVisible();
+  });
+
+  it('names the month in the language the app is set to', async () => {
+    register('de', () => import('../i18n/de.json'));
+    locale.set('de');
+    await waitLocale('de');
+    mocks.getAllConversations.mockResolvedValue(ancient);
+
+    render(Sidebar, { props: { open: true, onclose: vi.fn() } });
+
+    // The heading is built by the grouper rather than looked up by key, so it
+    // used to stay English however the interface was set.
+    expect(await screen.findByText(new RegExp(monthName('de')))).toBeVisible();
+  });
+});
 
 describe('Sidebar conversation list', () => {
   it('lists the stored conversations', async () => {

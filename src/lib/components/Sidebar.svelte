@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n';
+  import { _, locale } from 'svelte-i18n';
   import SearchIcon from 'lucide-svelte/icons/search';
   import SquarePenIcon from 'lucide-svelte/icons/square-pen';
   import XIcon from 'lucide-svelte/icons/x';
@@ -36,7 +36,9 @@
   const isFiltered = $derived(searchTerm.trim().length > 0);
 
   const groupedConv = $derived(
-    isFiltered ? [] : groupConversationsByDate(conversations, 'en')
+    // Month headings past the last thirty days are produced by the grouper
+    // rather than translated from a key, so it needs the app's language.
+    isFiltered ? [] : groupConversationsByDate(conversations, $locale ?? 'en')
   );
 
   async function loadConversations() {
