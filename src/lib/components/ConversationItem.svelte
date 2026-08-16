@@ -11,6 +11,7 @@
   import { modal } from '$lib/state/modal.svelte';
   import { toast } from '$lib/components/toast.js';
   import { downloadAsFile } from '$lib/utils/downloadAsFile';
+  import { splitAround } from '$lib/utils/excerpt';
   import type { Conversation } from '$lib/types';
   import Button from './Button.svelte';
 
@@ -19,10 +20,20 @@
     currentConvId?: string;
     /** Why this conversation came up in a search, when it was not the name. */
     excerpt?: string;
+    /** What was searched for, so it can be marked within the excerpt. */
+    searchTerm?: string;
     onselect?: () => void;
   }
 
-  let { conv, currentConvId, excerpt, onselect }: Props = $props();
+  let {
+    conv,
+    currentConvId,
+    excerpt,
+    searchTerm = '',
+    onselect,
+  }: Props = $props();
+
+  const quoted = $derived(splitAround(excerpt ?? '', searchTerm));
 
   const isCurrent = $derived(currentConvId === conv.id);
   const isPending = $derived(chat.isGenerating(conv.id));
@@ -118,7 +129,10 @@
   >
     <span class="conv-item__name">{conv.name}</span>
     {#if excerpt}
-      <span class="conv-item__excerpt">{excerpt}</span>
+      <span class="conv-item__excerpt">
+        {quoted.before}<mark class="conv-item__hit">{quoted.match}</mark
+        >{quoted.after}
+      </span>
     {/if}
   </button>
 
@@ -186,6 +200,12 @@
 
   .conv-item__name {
     @apply block overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  .conv-item__hit {
+    @apply font-semibold;
+    background: transparent;
+    color: var(--color-accent);
   }
 
   /* One line: the fragment is already trimmed to the words around the match. */

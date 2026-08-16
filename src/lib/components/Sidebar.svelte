@@ -180,6 +180,7 @@
           <ConversationItem
             conv={match.conv}
             excerpt={match.excerpt}
+            searchTerm={searchInputs.term}
             {currentConvId}
             onselect={handleItemSelect}
           />

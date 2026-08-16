@@ -34,3 +34,33 @@ export function excerptAround(
     (from > 0 ? '…' : '') + flat.slice(from, to) + (to < flat.length ? '…' : '')
   );
 }
+
+/** An excerpt split into the part that matched and the text around it. */
+export interface SplitExcerpt {
+  before: string;
+  match: string;
+  after: string;
+}
+
+/**
+ * Splits an excerpt around the term that was searched for, so the match can be
+ * marked in the middle of it.
+ *
+ * The match is taken from the text rather than the term, so it keeps the
+ * capitalisation it was written with.
+ *
+ * @param text - The excerpt
+ * @param term - The term that was searched for
+ * @returns The three parts; `match` is empty when the term is not present
+ */
+export function splitAround(text: string, term: string): SplitExcerpt {
+  const needle = term.trim().toLowerCase();
+  const at = needle ? text.toLowerCase().indexOf(needle) : -1;
+  if (at === -1) return { before: text, match: '', after: '' };
+
+  return {
+    before: text.slice(0, at),
+    match: text.slice(at, at + needle.length),
+    after: text.slice(at + needle.length),
+  };
+}

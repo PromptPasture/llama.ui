@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { excerptAround } from './excerpt';
+import { excerptAround, splitAround } from './excerpt';
 
 describe('showing why a conversation matched', () => {
   it('returns the surrounding words', () => {
@@ -46,5 +46,39 @@ describe('showing why a conversation matched', () => {
 
   it('says nothing for a blank term', () => {
     expect(excerptAround('some text', '   ')).toBe('');
+  });
+});
+
+describe('marking the match inside an excerpt', () => {
+  it('splits the text into the match and what surrounds it', () => {
+    expect(splitAround('add the yeast now', 'yeast')).toEqual({
+      before: 'add the ',
+      match: 'yeast',
+      after: ' now',
+    });
+  });
+
+  it('keeps the capitalisation the text used', () => {
+    // Not the capitalisation that was typed into the search box.
+    expect(splitAround('The Needle here', 'needle').match).toBe('Needle');
+  });
+
+  it('marks the first occurrence only', () => {
+    const { before, after } = splitAround('yeast and more yeast', 'yeast');
+
+    expect(before).toBe('');
+    expect(after).toBe(' and more yeast');
+  });
+
+  it('leaves the text whole when the term is not in it', () => {
+    expect(splitAround('nothing here', 'yeast')).toEqual({
+      before: 'nothing here',
+      match: '',
+      after: '',
+    });
+  });
+
+  it('leaves it whole for a blank term', () => {
+    expect(splitAround('nothing here', '  ').match).toBe('');
   });
 });

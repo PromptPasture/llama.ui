@@ -309,9 +309,26 @@ describe('Sidebar showing why a conversation matched', () => {
 
     // The name is the opening message trimmed, so a match found deeper in a
     // conversation is otherwise a result with no visible reason for being one.
-    expect(
-      await screen.findByText('…and then add the yeast…')
-    ).toBeInTheDocument();
+    const item = await screen.findByRole('menuitem', {
+      name: CONVERSATIONS[0].name,
+    });
+    expect(item.textContent).toContain('…and then add the yeast…');
+  });
+
+  it('marks the words that matched', async () => {
+    const user = userEvent.setup();
+    mocks.searchConversations.mockResolvedValue([
+      { conv: CONVERSATIONS[0], excerpt: '…and then add the yeast…' },
+    ]);
+    const { container } = await renderSidebar();
+
+    await user.type(search(), 'yeast');
+
+    await vi.waitFor(() => {
+      // Otherwise the reader has to find the term themselves, in a fragment
+      // chosen precisely because it contains it.
+      expect(container.querySelector('mark')?.textContent).toBe('yeast');
+    });
   });
 
   it('shows nothing extra when the name is what matched', async () => {
