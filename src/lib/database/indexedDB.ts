@@ -37,6 +37,28 @@ const onConversationChangedHandlers: [
  * Dispatches a custom event indicating a conversation has changed.
  * @param convId The ID of the conversation that changed.
  */
+/**
+ * The most recent id handed out, so that two allocations in the same
+ * millisecond cannot repeat.
+ */
+let lastIssuedId = 0;
+
+/**
+ * Issues an id for a conversation or message.
+ *
+ * Ids are timestamps, and both stores key on them uniquely, so anything minted
+ * twice within the same millisecond collided and failed the write. Keeping a
+ * high-water mark preserves the ordering the timestamps give while making a
+ * repeat impossible.
+ *
+ * @returns A millisecond timestamp, never one already issued this session.
+ */
+function nextId(): number {
+  const now = Date.now();
+  lastIssuedId = now > lastIssuedId ? now : lastIssuedId + 1;
+  return lastIssuedId;
+}
+
 const dispatchConversationChange = (convId: string) => {
   event.dispatchEvent(
     new CustomEvent<string>('conversationChange', { detail: convId })
@@ -155,10 +177,10 @@ export default class IndexedDB {
    */
   static async createConversation(name: string): Promise<Conversation> {
     const now = Date.now();
-    const msgId = now;
+    const msgId = nextId();
 
     const conv: Conversation = {
-      id: `conv-${now}`,
+      id: `conv-${msgId}`,
       lastModified: now,
       currNode: msgId,
       name,
@@ -209,13 +231,12 @@ export default class IndexedDB {
     // Create mapping from old message IDs to new message IDs
     const msgIdMap = new Map<Message['id'], Message['id']>();
     const now = Date.now();
-    let currentId = now;
     for (const msg of currNodes) {
-      msgIdMap.set(msg.id, currentId++);
+      msgIdMap.set(msg.id, nextId());
     }
 
     // Create new conversation with fork source information
-    const branchConvId = `conv-${now}`;
+    const branchConvId = `conv-${nextId()}`;
     const branchConv: Conversation = {
       id: branchConvId,
       lastModified: now,
