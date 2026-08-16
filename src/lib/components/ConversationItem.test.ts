@@ -246,3 +246,50 @@ describe('how a conversation is presented to a screen reader', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('reaching the conversation actions from the keyboard', () => {
+  const openMenu = async () => {
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv } });
+    await user.click(screen.getByRole('button', { name: 'Show more options' }));
+    return user;
+  };
+
+  it('puts the cursor on the first action when the list opens', async () => {
+    await openMenu();
+
+    // Otherwise the list is on screen and the keyboard is still on the button
+    // that opened it, several tab stops away from anything in it.
+    expect(screen.getByRole('button', { name: /Rename/ })).toHaveFocus();
+  });
+
+  it('closes on Escape', async () => {
+    const user = await openMenu();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('button', { name: /Rename/ })).toBeNull();
+  });
+
+  it('hands the cursor back to the button that opened it', async () => {
+    const user = await openMenu();
+
+    await user.keyboard('{Escape}');
+
+    // The element holding focus has just been removed; without this the
+    // keyboard falls back to the document and loses its place in the sidebar.
+    expect(
+      screen.getByRole('button', { name: 'Show more options' })
+    ).toHaveFocus();
+  });
+
+  it('does not let Escape through to close the whole sidebar as well', async () => {
+    const user = await openMenu();
+    const escapes: KeyboardEvent[] = [];
+    window.addEventListener('keydown', (e) => escapes.push(e));
+
+    await user.keyboard('{Escape}');
+
+    expect(escapes).toHaveLength(0);
+  });
+});

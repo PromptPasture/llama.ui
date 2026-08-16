@@ -39,6 +39,34 @@
   const isPending = $derived(chat.isGenerating(conv.id));
 
   let menuOpen = $state(false);
+  let wrapEl: HTMLDivElement | undefined = $state();
+  let dropdownEl: HTMLUListElement | undefined = $state();
+
+  /** The button that opens the actions, so focus can be handed back to it. */
+  const trigger = () =>
+    wrapEl?.querySelector<HTMLButtonElement>(':scope > button');
+
+  function closeMenu() {
+    menuOpen = false;
+    // Focus is inside the list that is about to disappear; without this it
+    // falls back to the document and the keyboard loses its place entirely.
+    trigger()?.focus();
+  }
+
+  function onMenuKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Escape') return;
+    // The layout closes the whole sidebar on Escape. Closing the list that is
+    // actually open is the narrower action, and the one meant here.
+    event.stopPropagation();
+    closeMenu();
+  }
+
+  // Only on the way open, so tabbing between the actions is not undone.
+  let wasOpen = false;
+  $effect(() => {
+    if (menuOpen && !wasOpen) dropdownEl?.querySelector('button')?.focus();
+    wasOpen = menuOpen;
+  });
 
   function handleSelect() {
     onselect?.();
@@ -134,7 +162,12 @@
     {/if}
   </button>
 
-  <div class="conv-item__menu-wrap">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    bind:this={wrapEl}
+    class="conv-item__menu-wrap"
+    onkeydown={onMenuKeydown}
+  >
     <Button
       variant="ghost"
       size="icon"
@@ -156,6 +189,7 @@
            arrow-key navigation and typeahead; tabbing between buttons is what
            this actually offers, and a button is what each of these is. -->
       <ul
+        bind:this={dropdownEl}
         class="conv-item__dropdown"
         aria-label={$_('sidebar.ariaLabels.dropdown')}
       >
