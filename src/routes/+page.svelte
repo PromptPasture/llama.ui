@@ -53,7 +53,9 @@
     }
     let conv;
     try {
-      conv = await IndexedDB.createConversation(toConversationName(content));
+      conv = await IndexedDB.createConversation(
+        toConversationName(content, extra)
+      );
     } catch (error) {
       // The box has already been emptied by this point; reporting the send as
       // refused puts the message back rather than losing what was typed.

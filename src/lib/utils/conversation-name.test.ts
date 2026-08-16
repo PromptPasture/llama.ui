@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { toConversationName } from './conversation-name';
+import type { MessageExtra } from '$lib/types';
 
 describe('naming a conversation after its first message', () => {
   it('keeps a short message as it is', () => {
@@ -58,5 +59,43 @@ describe('naming a conversation after its first message', () => {
 
   it('has nothing to say about an empty message', () => {
     expect(toConversationName('')).toBe('');
+  });
+});
+
+describe('naming a conversation started with an attachment', () => {
+  const file = (name: string): MessageExtra => ({
+    type: 'textFile',
+    name,
+    content: 'the contents',
+  });
+
+  it('uses the message when there is one', () => {
+    expect(
+      toConversationName('what is wrong here?', [file('server.log')])
+    ).toBe('what is wrong here?');
+  });
+
+  it('falls back to what was attached', () => {
+    // A message can be nothing but an attachment; named after that message it
+    // would sit in the sidebar as a blank line, and read aloud as nothing.
+    expect(toConversationName('', [file('server.log')])).toBe('server.log');
+  });
+
+  it('takes the first of several', () => {
+    expect(
+      toConversationName('', [file('first.log'), file('second.log')])
+    ).toBe('first.log');
+  });
+
+  it('shortens a long file name too', () => {
+    const name = toConversationName('', [
+      file(`${'a-very-long-file-name'.repeat(5)}.log`),
+    ]);
+
+    expect(name.length).toBeLessThanOrEqual(61);
+  });
+
+  it('has nothing to say with neither', () => {
+    expect(toConversationName('', [])).toBe('');
   });
 });

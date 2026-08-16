@@ -143,6 +143,26 @@ describe('what a new conversation is called', () => {
     );
   });
 
+  it('is named after the attachment when there is no message', async () => {
+    mocks.provider = { id: 'llama.cpp' };
+    const user = userEvent.setup();
+    const { container } = render(HomePage);
+    const picker =
+      container.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!picker) throw new Error('the box has no file picker');
+    await user.upload(
+      picker,
+      new File(['a long log'], 'server.log', { type: 'text/plain' })
+    );
+
+    await user.type(screen.getByRole('textbox'), '{Enter}');
+
+    // A conversation can be started by a screenshot or a pasted log alone.
+    // Named after the text there is nothing to name it with, and it sits in
+    // the sidebar as a blank line that reads aloud as nothing.
+    expect(mocks.createConversation).toHaveBeenCalledWith('server.log');
+  });
+
   it('is not named after a paragraph of it', async () => {
     mocks.provider = { id: 'llama.cpp' };
     const long =
