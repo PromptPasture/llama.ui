@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "Inferenz-Anbieter: {message}.",
   "state.chat.branchedName": "{name} - Verzweigt",
   "state.chat.errors.conversationNotFound": "Aktuelle Unterhaltung nicht gefunden",
+  "state.chat.errors.cannotReadConversation": "Diese Unterhaltung konnte nicht gelesen werden.",
   "state.chat.errors.messagesNotFound": "Aktuelle Nachrichten nicht gefunden",
   "state.chat.errors.unknownError": "Unbekannter Fehler",
   "state.chat.errors.unknownErrorDuringGeneration": "Unbekannter Fehler während der Generierung",

@@ -112,7 +112,9 @@ export const app = {
    */
   switchLanguage(language: string): void {
     LocalStorage.setLanguage(language);
-    locale.set(language);
+    // Loading the catalogue is asynchronous; the choice is already stored, so
+    // there is nothing to do but let it arrive.
+    void locale.set(language);
     applyLocaleToDocument(language);
   },
 

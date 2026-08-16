@@ -13,7 +13,7 @@ const { default: Header } = await import('./Header.svelte');
 beforeAll(async () => {
   register('en', () => import('../i18n/en.json'));
   register('ru', () => import('../i18n/ru.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 

@@ -39,7 +39,7 @@ const { toast } = await import('$lib/components/toast');
 // initial locale from navigator.language and is not deterministic here.
 beforeAll(async () => {
   register('en', () => import('../i18n/en.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 
@@ -103,7 +103,7 @@ describe('Sidebar month headings', () => {
   });
 
   afterEach(async () => {
-    locale.set('en');
+    void locale.set('en');
     await waitLocale('en');
   });
 
@@ -116,7 +116,7 @@ describe('Sidebar month headings', () => {
 
   it('names the month in the language the app is set to', async () => {
     register('de', () => import('../i18n/de.json'));
-    locale.set('de');
+    void locale.set('de');
     await waitLocale('de');
     mocks.getAllConversations.mockResolvedValue(ancient);
 

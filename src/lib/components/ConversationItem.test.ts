@@ -52,7 +52,7 @@ const { default: ConversationItem } = await import('./ConversationItem.svelte');
 // initial locale from navigator.language and is not deterministic here.
 beforeAll(async () => {
   register('en', () => import('../i18n/en.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 

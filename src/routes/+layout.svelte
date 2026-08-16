@@ -61,7 +61,7 @@
   // Re-initialize inference when config changes
   $effect(() => {
     if (!ready) return;
-    inference.initialize(app.config).then(() => {
+    void inference.initialize(app.config).then(() => {
       // Written back rather than only held in memory, so the picker in the
       // header agrees with what messages are actually being sent to.
       const adopt = inference.modelToAdopt(app.config);
@@ -74,10 +74,10 @@
     const mod = e.ctrlKey || e.metaKey;
     if (mod && e.key === 'n') {
       e.preventDefault();
-      goto(resolve('/'));
+      void goto(resolve('/'));
     } else if (mod && e.key === ',') {
       e.preventDefault();
-      goto(resolve('/settings'));
+      void goto(resolve('/settings'));
     } else if (mod && e.key === 'k') {
       e.preventDefault();
       sidebarOpen = true;

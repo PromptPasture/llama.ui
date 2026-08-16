@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "추론 제공자: {message}.",
   "state.chat.branchedName": "{name} - 분기",
   "state.chat.errors.conversationNotFound": "현재 대화를 찾을 수 없습니다.",
+  "state.chat.errors.cannotReadConversation": "이 대화를 읽을 수 없습니다.",
   "state.chat.errors.messagesNotFound": "현재 메시지를 찾을 수 없습니다.",
   "state.chat.errors.unknownError": "알 수 없는 오류",
   "state.chat.errors.unknownErrorDuringGeneration": "생성 중 알 수 없는 오류",

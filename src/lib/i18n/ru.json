@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "Провайдер вывода: {message}.",
   "state.chat.branchedName": "{name} — ветка",
   "state.chat.errors.conversationNotFound": "Текущая беседа не найдена",
+  "state.chat.errors.cannotReadConversation": "Не удалось прочитать этот разговор.",
   "state.chat.errors.messagesNotFound": "Текущие сообщения не найдены",
   "state.chat.errors.unknownError": "Неизвестная ошибка",
   "state.chat.errors.unknownErrorDuringGeneration": "Неизвестная ошибка во время генерации",

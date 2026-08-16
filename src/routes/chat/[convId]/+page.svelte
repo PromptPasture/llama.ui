@@ -49,14 +49,24 @@
     const id = convId;
     if (!id) return;
     currNodeId = -1;
-    chat.loadConversation(id).then((found) => {
-      // A deleted conversation or a stale link would otherwise render as an
-      // empty chat that looks perfectly normal, until sending a message failed.
-      if (!found && id === convId) {
-        toast.error(t('state.chat.errors.conversationNotFound'));
-        goto(resolve('/'));
-      }
-    });
+    chat
+      .loadConversation(id)
+      .then((found) => {
+        // A deleted conversation or a stale link would otherwise render as an
+        // empty chat that looks perfectly normal, until sending a message
+        // failed.
+        if (!found && id === convId) {
+          toast.error(t('state.chat.errors.conversationNotFound'));
+          void goto(resolve('/'));
+        }
+      })
+      .catch((error: unknown) => {
+        // Storage can be unavailable outright. Left unsaid, the conversation
+        // appears to have gone — the same lie the sidebar takes care not to
+        // tell.
+        console.error('Reading the conversation failed:', error);
+        toast.error(t('state.chat.errors.cannotReadConversation'));
+      });
     following = true;
     requestAnimationFrame(() => {
       msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
@@ -146,7 +156,8 @@
     // is what wants answering.
     const answering = msg.role === 'user' ? msg.id : (msg.parent as number);
     currNodeId = answering;
-    chat.sendMessage(
+    // Reports its own failures and never rejects.
+    void chat.sendMessage(
       {
         convId,
         type: msg.type,
@@ -167,7 +178,8 @@
     extra: MessageExtra[]
   ) {
     currNodeId = msg.id;
-    chat.sendMessage(
+    // Reports its own failures and never rejects.
+    void chat.sendMessage(
       {
         convId,
         type: msg.type,
@@ -184,7 +196,7 @@
 
   function handleEditAssistant(msg: Message, content: string) {
     currNodeId = msg.id;
-    chat.replaceMessage({ msg, newContent: content, onChunk }, deps);
+    void chat.replaceMessage({ msg, newContent: content, onChunk }, deps);
   }
 </script>
 

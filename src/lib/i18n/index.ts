@@ -49,14 +49,14 @@ export function applyLocaleToDocument(locale: string): void {
 
 export function initI18n(): void {
   if (!browser) {
-    init({ fallbackLocale: 'en', initialLocale: 'en' });
+    void init({ fallbackLocale: 'en', initialLocale: 'en' });
     return;
   }
 
   // A language chosen in the settings outranks the browser's own, which is
   // only the starting guess for someone who has never chosen one.
   const chosen = LocalStorage.getLanguage() ?? window.navigator.language;
-  init({ fallbackLocale: 'en', initialLocale: chosen });
+  void init({ fallbackLocale: 'en', initialLocale: chosen });
   // Screen readers and hyphenation read the language, and the layout follows
   // the direction. app.html can only hard-code one of each.
   applyLocaleToDocument(chosen);

@@ -53,8 +53,9 @@
       class="header__title-btn"
       onclick={() => {
         if (showSettings) return;
-        if (currConv) goto(resolve('/chat/[convId]', { convId: currConv.id }));
-        else goto(resolve('/'));
+        if (currConv)
+          void goto(resolve('/chat/[convId]', { convId: currConv.id }));
+        else void goto(resolve('/'));
       }}
       aria-label={title}
     >

@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "推理提供者: {message}。",
   "state.chat.branchedName": "{name} - 分支",
   "state.chat.errors.conversationNotFound": "未找到当前对话",
+  "state.chat.errors.cannotReadConversation": "无法读取此对话。",
   "state.chat.errors.messagesNotFound": "未找到当前消息",
   "state.chat.errors.unknownError": "未知错误",
   "state.chat.errors.unknownErrorDuringGeneration": "生成期间发生未知错误",

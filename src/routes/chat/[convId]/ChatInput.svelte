@@ -134,7 +134,8 @@
     const composing = e.isComposing || e.keyCode === 229;
     if (e.key === 'Enter' && !e.shiftKey && !composing) {
       e.preventDefault();
-      send();
+      // Reports its own failures through onsend and never rejects.
+      void send();
     }
   }
 

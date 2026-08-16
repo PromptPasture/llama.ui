@@ -74,7 +74,7 @@
 
   function handleSelect() {
     onselect?.();
-    goto(resolve('/chat/[convId]', { convId: conv.id }));
+    void goto(resolve('/chat/[convId]', { convId: conv.id }));
   }
 
   async function handleRename() {
@@ -165,7 +165,7 @@
     toast.success($_('sidebar.actions.deleteSuccess'));
     // Deleting some other conversation from the sidebar should not take the
     // reader out of the one they are reading.
-    if (isCurrent) goto(resolve('/'));
+    if (isCurrent) void goto(resolve('/'));
   }
 </script>
 

@@ -6,7 +6,7 @@ import { formatDateTime, formatTime } from './formatting';
 const WHEN = new Date(2024, 2, 14, 15, 30);
 
 afterEach(() => {
-  locale.set(null);
+  void locale.set(null);
 });
 
 describe('following the language the app is set to', () => {
@@ -25,7 +25,7 @@ describe('following the language the app is set to', () => {
   });
 
   it('takes the app locale when none is passed', () => {
-    locale.set('de');
+    void locale.set('de');
 
     // The interface speaking one language while timestamps follow the
     // operating system reads as a mistake.
@@ -33,11 +33,11 @@ describe('following the language the app is set to', () => {
   });
 
   it('changes with the app locale rather than staying as first built', () => {
-    locale.set('de');
+    void locale.set('de');
     const asGerman = formatTime(WHEN);
 
     // Japanese also writes 15:30, so compare against one that differs.
-    locale.set('en-US');
+    void locale.set('en-US');
     const asAmerican = formatTime(WHEN);
 
     expect(asGerman).toBe('15:30');

@@ -48,7 +48,7 @@ const { forgetAllAttachments } = await import('$lib/utils/attachments');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 

@@ -9,7 +9,7 @@ import SettingsTabs from './SettingsTabs.svelte';
 beforeAll(async () => {
   register('en', () => import('../../lib/i18n/en.json'));
   register('ru', () => import('$lib/i18n/ru.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 

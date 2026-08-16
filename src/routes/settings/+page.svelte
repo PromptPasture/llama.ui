@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { _ } from 'svelte-i18n';
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -62,6 +63,11 @@
   }
 
   let _fetchTimer: ReturnType<typeof setTimeout>;
+
+  // Leaving the settings while a keystroke's fetch is still pending would
+  // otherwise send it a second later, from a screen that is no longer there.
+  onDestroy(() => clearTimeout(_fetchTimer));
+
   function debouncedFetch(config: Configuration) {
     clearTimeout(_fetchTimer);
     _fetchTimer = setTimeout(async () => {
@@ -184,7 +190,7 @@
     // cameFrom is a pathname SvelteKit itself reported for a completed
     // navigation, so it already carries the base path that resolve() adds.
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    goto(cameFrom ?? resolve('/'));
+    void goto(cameFrom ?? resolve('/'));
   }
 
   async function handleClose() {
@@ -212,11 +218,11 @@
     // cancel() only counts while this callback is still running, so the
     // navigation has to be stopped first and restarted once the answer is in.
     nav.cancel();
-    confirmDiscard().then((discard) => {
+    void confirmDiscard().then((discard) => {
       if (!discard) return;
       leaving = true;
       // eslint-disable-next-line svelte/no-navigation-without-resolve
-      goto(target);
+      void goto(target);
     });
   });
 

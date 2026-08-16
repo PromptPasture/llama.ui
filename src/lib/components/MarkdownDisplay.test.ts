@@ -14,13 +14,13 @@ const { toast } = await import('$lib/components/toast');
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
   register('de', () => import('$lib/i18n/de.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 
 beforeEach(async () => {
   mocks.copyStr.mockClear();
-  locale.set('en');
+  void locale.set('en');
   await waitLocale('en');
 });
 
@@ -93,7 +93,7 @@ describe('a message without code', () => {
 
 describe('the wording on the copy button', () => {
   it('follows the language the reader has chosen', async () => {
-    locale.set('de');
+    void locale.set('de');
     await waitLocale('de');
 
     render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
@@ -109,7 +109,7 @@ describe('the wording on the copy button', () => {
     render(MarkdownDisplay, { props: { content: '```js\nx\n```' } });
     expect(screen.getByRole('button', { name: 'Copy' })).toBeInTheDocument();
 
-    locale.set('de');
+    void locale.set('de');
     await waitLocale('de');
 
     // The markup is derived from the locale as well as the content, so a
@@ -121,7 +121,7 @@ describe('the wording on the copy button', () => {
 
   it('goes back to the button wording after saying it has copied', async () => {
     // In German, so that restoring a hardcoded 'Copy' would show.
-    locale.set('de');
+    void locale.set('de');
     await waitLocale('de');
     vi.useFakeTimers();
     try {

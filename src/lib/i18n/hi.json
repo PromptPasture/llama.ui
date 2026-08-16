@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "अनुमान प्रदाता: {message}।",
   "state.chat.branchedName": "{name} - शाखा",
   "state.chat.errors.conversationNotFound": "वर्तमान बातचीत नहीं मिली",
+  "state.chat.errors.cannotReadConversation": "यह बातचीत नहीं पढ़ी जा सकी।",
   "state.chat.errors.messagesNotFound": "वर्तमान संदेश नहीं मिले",
   "state.chat.errors.unknownError": "अज्ञात त्रुटि",
   "state.chat.errors.unknownErrorDuringGeneration": "जनरेशन के दौरान अज्ञात त्रुटि",

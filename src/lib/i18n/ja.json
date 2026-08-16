@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "推論プロバイダー: {message}。",
   "state.chat.branchedName": "{name} - 分岐",
   "state.chat.errors.conversationNotFound": "現在の会話が見つかりません",
+  "state.chat.errors.cannotReadConversation": "この会話を読み込めませんでした。",
   "state.chat.errors.messagesNotFound": "現在のメッセージが見つかりません",
   "state.chat.errors.unknownError": "不明なエラー",
   "state.chat.errors.unknownErrorDuringGeneration": "生成中に不明なエラーが発生しました",

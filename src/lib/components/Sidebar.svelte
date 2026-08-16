@@ -129,11 +129,12 @@
   }
 
   function handleConversationChanged() {
-    loadConversations();
+    // Reports its own failures and never rejects.
+    void loadConversations();
   }
 
   $effect(() => {
-    loadConversations();
+    void loadConversations();
     IndexedDB.onConversationChanged(handleConversationChanged);
     return () => IndexedDB.offConversationChanged(handleConversationChanged);
   });
@@ -143,7 +144,7 @@
   }
 
   function handleNewChat() {
-    goto(resolve('/'));
+    void goto(resolve('/'));
     onclose?.();
   }
 </script>

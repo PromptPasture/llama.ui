@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "Fornitore di inferenza: {message}.",
   "state.chat.branchedName": "{name} - Ramificato",
   "state.chat.errors.conversationNotFound": "Conversazione attuale non trovata",
+  "state.chat.errors.cannotReadConversation": "Impossibile leggere questa conversazione.",
   "state.chat.errors.messagesNotFound": "Messaggi attuali non trovati",
   "state.chat.errors.unknownError": "Errore sconosciuto",
   "state.chat.errors.unknownErrorDuringGeneration": "Errore sconosciuto durante la generazione",

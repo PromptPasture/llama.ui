@@ -42,7 +42,7 @@ const { toast } = await import('$lib/components/toast');
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
   register('ru', () => import('$lib/i18n/ru.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 
@@ -394,6 +394,9 @@ describe('while the models are being fetched', () => {
     const button = screen.getByRole('button', { name: 'Fetch Models' });
 
     await userEvent.click(button);
+    // The attribute lands when Svelte next flushes, which two programmatic
+    // clicks in a row can outrun — a real pair of presses cannot.
+    await vi.waitFor(() => expect(button).toBeDisabled());
     await userEvent.click(button);
 
     expect(hanging.spy).toHaveBeenCalledTimes(1);
@@ -430,6 +433,31 @@ describe('while the models are being fetched', () => {
     expect(button).not.toBeDisabled();
     failure.mockRestore();
     shown.mockRestore();
+  });
+});
+
+describe('leaving while a keystroke is still being followed up', () => {
+  it('does not fetch from a screen that has gone', async () => {
+    vi.useFakeTimers();
+    try {
+      const spy = vi.spyOn(inference, 'fetchModels').mockResolvedValue([]);
+      const { unmount } = render(SettingsPage);
+      arriveFrom('/chat/1');
+      const url = screen.getByLabelText('Base URL', { exact: false });
+      url.focus();
+      // Typing here schedules a fetch a second later, to keep the model list
+      // in step with the address being entered.
+      url.dispatchEvent(new Event('input', { bubbles: true }));
+      spy.mockClear();
+
+      unmount();
+      await vi.advanceTimersByTimeAsync(2000);
+
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

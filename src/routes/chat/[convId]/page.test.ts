@@ -32,11 +32,12 @@ vi.mock('$lib/state/tts.svelte', () => ({
 }));
 
 const { default: ChatPage } = await import('./+page.svelte');
+const { toast } = await import('$lib/components/toast');
 const { forgetAllAttachments } = await import('$lib/utils/attachments');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
   // jsdom has no layout and no scrolling; the page only ever asks to scroll.
   Element.prototype.scrollTo = vi.fn();
@@ -281,5 +282,21 @@ describe('asking again for a reply that never came', () => {
       expect.objectContaining({ parent: 5, content: null }),
       expect.anything()
     );
+  });
+});
+
+describe('a conversation that cannot be read', () => {
+  it('says so rather than showing an empty one', async () => {
+    mocks.loadConversation.mockRejectedValue(new Error('storage blocked'));
+    const failed = vi.spyOn(toast, 'error').mockImplementation(() => {});
+
+    render(ChatPage, { props: { data: {}, params: { convId: 'c1' } } });
+
+    // Storage can be unavailable outright. Left unsaid, the conversation
+    // appears to have gone — the same lie the sidebar takes care not to tell.
+    await vi.waitFor(() =>
+      expect(failed).toHaveBeenCalledWith('Could not read this conversation.')
+    );
+    failed.mockRestore();
   });
 });

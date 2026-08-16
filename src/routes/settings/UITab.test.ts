@@ -11,7 +11,7 @@ beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
   register('de', () => import('$lib/i18n/de.json'));
   register('ru', () => import('$lib/i18n/ru.json'));
-  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  void init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
 

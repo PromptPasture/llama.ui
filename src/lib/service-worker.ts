@@ -21,7 +21,7 @@ export function startServiceWorker(
 ): void {
   const update = registerSW({
     onNeedRefresh: async () => {
-      if (await confirmUpdate()) update(true);
+      if (await confirmUpdate()) void update(true);
     },
   });
 }

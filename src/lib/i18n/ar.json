@@ -303,6 +303,7 @@
   "state.inference.errors.providerError": "مزود الاستدلال: {message}.",
   "state.chat.branchedName": "{name} - متفرع",
   "state.chat.errors.conversationNotFound": "لم يتم العثور على المحادثة الحالية",
+  "state.chat.errors.cannotReadConversation": "تعذّرت قراءة هذه المحادثة.",
   "state.chat.errors.messagesNotFound": "لم يتم العثور على الرسائل الحالية",
   "state.chat.errors.unknownError": "خطأ غير معروف",
   "state.chat.errors.unknownErrorDuringGeneration": "خطأ غير معروف أثناء الإنشاء",
