@@ -19,11 +19,12 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
 2. **Conversation Management**:
    - IndexedDB storage for conversations
    - Branching conversation support (edit messages while preserving history)
+   - Search by title or by anything said inside a conversation
    - Import/export functionality
 
 3. **Rich UI Components**:
    - Markdown rendering with KaTeX math support
-   - Theme customization (light/dark)
+   - Theme customization: light, dark, or follow the system
    - Responsive design for mobile and desktop
 
 4. **Advanced Features**:
@@ -31,6 +32,7 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
    - Streaming responses with Server-Sent Events
    - Customizable generation parameters
    - Performance metrics display
+   - Replies read aloud, using the browser's own speech synthesis
 
 5. **Privacy Focused**: All data is stored locally in your browser - no cloud required!
 
@@ -182,7 +184,9 @@ so model metadata is fetched without requiring manual input.
 | `src/lib/state/chat.svelte.ts` | Conversation, streaming, branching |
 | `src/lib/state/inference.svelte.ts` | Provider, model list |
 | `src/lib/state/modal.svelte.ts` | Confirm / prompt / alert dialogs |
-| `src/lib/api/` | 11 AI provider implementations |
+| `src/lib/state/tts.svelte.ts` | Reading a reply aloud |
+| `src/lib/api/` | Provider implementations, and the factory that picks one |
+| `src/lib/services/` | Turning a chat completion stream into message updates |
 | `src/lib/database/` | IndexedDB (Dexie) + localStorage |
 | `src/lib/components/` | Shared UI component library |
 | `src/routes/` | SvelteKit pages and layouts |
