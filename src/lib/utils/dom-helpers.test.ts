@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { copyStr } from './dom-helpers';
+import { copyStr, isAtBottom } from './dom-helpers';
 
 const textareas = () => document.querySelectorAll('textarea');
 
@@ -78,5 +78,41 @@ describe('copying without one', () => {
     for (let i = 0; i < 25; i++) copyStr(`copy ${i}`);
 
     expect(textareas()).toHaveLength(0);
+  });
+});
+
+describe('deciding whether a conversation is showing its end', () => {
+  const at = (scrollTop: number, scrollHeight = 2000, clientHeight = 600) => ({
+    scrollTop,
+    scrollHeight,
+    clientHeight,
+  });
+
+  it('is at the end when scrolled all the way down', () => {
+    expect(isAtBottom(at(1400))).toBe(true);
+  });
+
+  it('forgives stopping a few pixels short', () => {
+    // A trackpad that under-shoots, or a rounding difference at some zoom
+    // levels, should not read as having scrolled away.
+    expect(isAtBottom(at(1380))).toBe(true);
+  });
+
+  it('is not at the end once the reader has scrolled up to read', () => {
+    expect(isAtBottom(at(400))).toBe(false);
+  });
+
+  it('is not at the end one screen above it', () => {
+    expect(isAtBottom(at(800))).toBe(false);
+  });
+
+  it('treats a conversation shorter than the window as being at its end', () => {
+    // Nothing to scroll, so a reply should still scroll itself into view.
+    expect(isAtBottom(at(0, 300, 600))).toBe(true);
+  });
+
+  it('accepts a tolerance of its own', () => {
+    expect(isAtBottom(at(1000), 400)).toBe(true);
+    expect(isAtBottom(at(1000), 300)).toBe(false);
   });
 });

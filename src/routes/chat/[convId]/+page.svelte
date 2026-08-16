@@ -7,6 +7,7 @@
   import { tts } from '$lib/state/tts.svelte';
   import { toast } from '$lib/components/toast.js';
   import { t } from '$lib/i18n/translate';
+  import { isAtBottom } from '$lib/utils/dom-helpers';
   import { getListMessageDisplay } from '$lib/utils/message-hierarchy';
   import type { Message, MessageExtra } from '$lib/types';
   import type { PageProps } from './$types';
@@ -19,6 +20,20 @@
   const convId = $derived(params.convId);
 
   let msgListEl: HTMLDivElement;
+
+  /**
+   * Whether the reply should keep scrolling itself into view.
+   *
+   * Recorded when the reader scrolls rather than measured when a chunk lands:
+   * by the time the effect runs, the new text is already in the list, so
+   * someone who was at the bottom a moment ago now measures as being above it.
+   */
+  let following = $state(true);
+
+  function onListScroll() {
+    if (msgListEl) following = isAtBottom(msgListEl);
+  }
+
   let currNodeId = $state(-1);
 
   $effect(() => {
@@ -33,6 +48,7 @@
         goto(resolve('/'));
       }
     });
+    following = true;
     requestAnimationFrame(() => {
       msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
     });
@@ -63,9 +79,11 @@
     };
   });
 
-  // Auto-scroll when pending message updates
+  // Follow the reply as it streams, unless the reader has scrolled away to
+  // read something earlier — being dragged back on every chunk makes the rest
+  // of the conversation unreadable until the reply ends.
   $effect(() => {
-    if (pendingMsg) {
+    if (pendingMsg && following) {
       requestAnimationFrame(() => {
         msgListEl?.scrollTo({ top: msgListEl.scrollHeight });
       });
@@ -88,6 +106,9 @@
     content: string,
     extra: MessageExtra[] | undefined
   ): Promise<boolean | void> {
+    // Sending is a request to be shown the answer, so it re-engages following
+    // even if the reader had scrolled away to check something first.
+    following = true;
     return chat.sendMessage(
       {
         convId,
@@ -152,7 +173,7 @@
 </svelte:head>
 
 <div class="chat-page">
-  <div bind:this={msgListEl} class="chat-page__scroll">
+  <div bind:this={msgListEl} class="chat-page__scroll" onscroll={onListScroll}>
     <div class="chat-page__messages">
       {#each displayMessages as message (message.msg.id)}
         <ChatMessage
