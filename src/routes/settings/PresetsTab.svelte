@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n';
+  import { _, locale } from 'svelte-i18n';
   import CirclePlayIcon from 'lucide-svelte/icons/circle-play';
   import SaveIcon from 'lucide-svelte/icons/save';
   import Trash2Icon from 'lucide-svelte/icons/trash-2';
@@ -7,7 +7,7 @@
   import { CONFIG_DEFAULT } from '$lib/config';
   import { modal } from '$lib/state/modal.svelte';
   import { toast } from '$lib/components/toast.js';
-  import { dateFormatter } from '$lib/utils/formatting';
+  import { formatDateTime } from '$lib/utils/formatting';
   import type { Configuration, ConfigurationPreset } from '$lib/types';
   import Button from '$lib/components/Button.svelte';
 
@@ -105,7 +105,7 @@
             <strong>{preset.name}</strong>
             <span class="preset-card__date"
               >{$_('settings.presetManager.labels.created')}
-              {dateFormatter.format(preset.createdAt)}</span
+              {formatDateTime(preset.createdAt, $locale)}</span
             >
           </div>
           <div class="preset-card__actions">

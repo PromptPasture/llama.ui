@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n';
+  import { _, locale } from 'svelte-i18n';
   import AtomIcon from 'lucide-svelte/icons/atom';
   import BotIcon from 'lucide-svelte/icons/bot';
   import ChevronDownIcon from 'lucide-svelte/icons/chevron-down';
@@ -22,7 +22,7 @@
   import Textarea from '$lib/components/Textarea.svelte';
   import { copyStr } from '$lib/utils/dom-helpers';
   import { splitMessageContent } from '$lib/utils/message-parser';
-  import { timeFormatter } from '$lib/utils/formatting';
+  import { formatTime } from '$lib/utils/formatting';
   import type { Message, MessageDisplay, MessageExtra } from '$lib/types';
 
   interface Props {
@@ -135,7 +135,7 @@
       {#if isAssistant && msg.model}
         <span class="msg__sender">{msg.model}</span>
       {/if}
-      <span class="msg__timestamp">{timeFormatter.format(msg.timestamp)}</span>
+      <span class="msg__timestamp">{formatTime(msg.timestamp, $locale)}</span>
     </div>
 
     <!-- Edit mode -->
