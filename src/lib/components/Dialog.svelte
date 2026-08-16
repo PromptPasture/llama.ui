@@ -19,16 +19,17 @@
     else dialogEl.close();
   });
 
-  function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') onclose?.();
-  }
+  // Escape is handled by the dialog element itself: it closes and emits
+  // `close`, which is already wired below. Handling the key here as well
+  // called onclose twice for a single dismissal, and the second call landed
+  // after the awaiting caller had resumed — long enough for it to dismiss a
+  // modal that had only just opened.
 </script>
 
 <dialog
   bind:this={dialogEl}
   class="dialog"
   aria-labelledby="dialog-title"
-  {onkeydown}
   {onclose}
 >
   <div class="dialog__body">
