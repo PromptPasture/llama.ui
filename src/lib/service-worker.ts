@@ -20,8 +20,12 @@ export function startServiceWorker(
   confirmUpdate: () => Promise<boolean>
 ): void {
   const update = registerSW({
-    onNeedRefresh: async () => {
-      if (await confirmUpdate()) void update(true);
+    onNeedRefresh: () => {
+      // Not an async callback: registerSW wants one that returns nothing, and
+      // a rejection from the dialog would have gone nowhere.
+      void confirmUpdate().then((confirmed) => {
+        if (confirmed) void update(true);
+      });
     },
   });
 }

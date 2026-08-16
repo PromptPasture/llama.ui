@@ -1,3 +1,4 @@
+import { tick } from 'svelte';
 import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
@@ -102,7 +103,8 @@ describe('getting back to the latest message', () => {
     const { scroller } = await renderChat();
 
     measuresAsScrolledUp(scroller);
-    await scroller.dispatchEvent(new Event('scroll'));
+    scroller.dispatchEvent(new Event('scroll'));
+    await tick();
 
     // Scrolling up stops the reply pulling the view down, and scrolling all
     // the way back was the only way to return to it.
@@ -112,7 +114,8 @@ describe('getting back to the latest message', () => {
   it('scrolls to the end of the conversation when pressed', async () => {
     const { scroller } = await renderChat();
     measuresAsScrolledUp(scroller);
-    await scroller.dispatchEvent(new Event('scroll'));
+    scroller.dispatchEvent(new Event('scroll'));
+    await tick();
     // Opening the conversation scrolls to the end too; only the press counts.
     vi.mocked(scroller.scrollTo).mockClear();
 
@@ -126,7 +129,8 @@ describe('getting back to the latest message', () => {
   it('takes itself out of the way once it has been used', async () => {
     const { scroller } = await renderChat();
     measuresAsScrolledUp(scroller);
-    await scroller.dispatchEvent(new Event('scroll'));
+    scroller.dispatchEvent(new Event('scroll'));
+    await tick();
 
     await pressJump();
 
@@ -142,7 +146,8 @@ describe('leaving the conversation', () => {
       props: { data: {}, params: { convId: 'c1' } },
     });
 
-    await unmount();
+    unmount();
+    await tick();
 
     // Speech outlives the page otherwise, and carries on reading a
     // conversation the reader has already left.
@@ -286,6 +291,22 @@ describe('asking again for a reply that never came', () => {
 });
 
 describe('a conversation that cannot be read', () => {
+  it('says so when it becomes unreadable after it was opened', async () => {
+    const failed = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    await renderChat('c1');
+
+    // What the database calls when a later read fails — another tab writing
+    // to a conversation whose storage has since gone away.
+    const report = mocks.loadConversation.mock.calls[0]?.[1] as (
+      error: unknown
+    ) => void;
+    expect(report).toBeTypeOf('function');
+    report(new Error('storage blocked'));
+
+    expect(failed).toHaveBeenCalledWith('Could not read this conversation.');
+    failed.mockRestore();
+  });
+
   it('says so rather than showing an empty one', async () => {
     mocks.loadConversation.mockRejectedValue(new Error('storage blocked'));
     const failed = vi.spyOn(toast, 'error').mockImplementation(() => {});

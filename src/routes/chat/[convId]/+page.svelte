@@ -39,6 +39,16 @@
     msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
   }
 
+  /**
+   * Storage can be unavailable outright, and can become so after the
+   * conversation is open. Left unsaid, it appears to have gone — the same lie
+   * the sidebar takes care not to tell.
+   */
+  function reportUnreadable(error: unknown) {
+    console.error('Reading the conversation failed:', error);
+    toast.error(t('state.chat.errors.cannotReadConversation'));
+  }
+
   function onListScroll() {
     if (msgListEl) following = isAtBottom(msgListEl);
   }
@@ -50,7 +60,7 @@
     if (!id) return;
     currNodeId = -1;
     chat
-      .loadConversation(id)
+      .loadConversation(id, reportUnreadable)
       .then((found) => {
         // A deleted conversation or a stale link would otherwise render as an
         // empty chat that looks perfectly normal, until sending a message
@@ -60,13 +70,7 @@
           void goto(resolve('/'));
         }
       })
-      .catch((error: unknown) => {
-        // Storage can be unavailable outright. Left unsaid, the conversation
-        // appears to have gone — the same lie the sidebar takes care not to
-        // tell.
-        console.error('Reading the conversation failed:', error);
-        toast.error(t('state.chat.errors.cannotReadConversation'));
-      });
+      .catch(reportUnreadable);
     following = true;
     requestAnimationFrame(() => {
       msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
@@ -117,7 +121,9 @@
     config: app.config,
     provider: inference.provider,
     selectedModel: inference.selectedModel,
-    navigate: (id: string) => goto(resolve('/chat/[convId]', { convId: id })),
+    navigate: (id: string) => {
+      void goto(resolve('/chat/[convId]', { convId: id }));
+    },
     toast: toast.error,
   });
 

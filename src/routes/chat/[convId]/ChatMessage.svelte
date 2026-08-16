@@ -178,7 +178,9 @@
 
   async function handleBranch() {
     await chat.branchMessage(msg as Message, {
-      navigate: (id) => goto(resolve('/chat/[convId]', { convId: id })),
+      navigate: (id) => {
+        void goto(resolve('/chat/[convId]', { convId: id }));
+      },
       toast: toast.error,
     });
   }

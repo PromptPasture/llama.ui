@@ -79,7 +79,9 @@
         config: app.config,
         provider: inference.provider,
         selectedModel: inference.selectedModel,
-        navigate: (id) => goto(resolve('/chat/[convId]', { convId: id })),
+        navigate: (id) => {
+          void goto(resolve('/chat/[convId]', { convId: id }));
+        },
         toast: toast.error,
       }
     );

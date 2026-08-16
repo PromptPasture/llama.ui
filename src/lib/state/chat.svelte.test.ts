@@ -34,6 +34,7 @@ beforeAll(async () => {
 // default, whichever earlier test last called mockResolvedValue decides.
 beforeEach(() => {
   mocks.getOneConversation.mockResolvedValue({ id: 'conv-1', currNode: -1 });
+  mocks.getMessages.mockResolvedValue([]);
 });
 
 function deps(overrides: Record<string, unknown> = {}) {
@@ -462,5 +463,49 @@ describe('branching a conversation', () => {
 
     await locale.set('en');
     await waitLocale();
+  });
+});
+
+describe('a conversation that changes underneath the reader', () => {
+  /** What IndexedDB calls when another tab, or this one, writes to it. */
+  function announceChange(convId: string) {
+    const listener = mocks.onConversationChanged.mock.calls.at(-1)?.[0] as (
+      id: string
+    ) => void;
+    if (!listener) throw new Error('nothing is listening for changes');
+    return listener(convId);
+  }
+
+  it('reads it again', async () => {
+    await chat.loadConversation('conv-1');
+    mocks.getMessages.mockResolvedValue([{ id: 1 }]);
+
+    announceChange('conv-1');
+
+    // The database drops whatever the listener returns, so there is nothing
+    // to await but the result of it having run.
+    await vi.waitFor(() => expect(chat.viewingChat?.messages).toHaveLength(1));
+  });
+
+  it('says so when reading it again fails', async () => {
+    const complain = vi.fn();
+    await chat.loadConversation('conv-1', complain);
+    mocks.getMessages.mockRejectedValue(new Error('storage blocked'));
+
+    announceChange('conv-1');
+
+    // The reader is looking at a conversation that has moved on without
+    // them, and nothing said a word.
+    await vi.waitFor(() => expect(complain).toHaveBeenCalled());
+  });
+
+  it('leaves other conversations alone', async () => {
+    await chat.loadConversation('conv-1');
+    mocks.getMessages.mockClear();
+
+    announceChange('conv-2');
+    await Promise.resolve();
+
+    expect(mocks.getMessages).not.toHaveBeenCalled();
   });
 });

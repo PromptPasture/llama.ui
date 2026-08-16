@@ -70,9 +70,12 @@
 
   function debouncedFetch(config: Configuration) {
     clearTimeout(_fetchTimer);
-    _fetchTimer = setTimeout(async () => {
-      const models = await inference.fetchModels(config, { silent: true });
-      localModels = models;
+    _fetchTimer = setTimeout(() => {
+      // Silent: a failure at every keystroke is noise, and it answers an
+      // empty list rather than rejecting.
+      void inference.fetchModels(config, { silent: true }).then((models) => {
+        localModels = models;
+      });
     }, 1000);
   }
 

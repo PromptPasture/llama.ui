@@ -120,12 +120,29 @@ export const chat = {
 
   /** @returns whether the conversation exists. */
   /** @returns whether the conversation exists. */
-  async loadConversation(convId: string): Promise<boolean> {
+  /**
+   * Opens a conversation and keeps it in step with the database.
+   *
+   * @param convId - The conversation to read
+   * @param onError - Told when a later read fails. Storage can become
+   *   unavailable at any point, and a reader left looking at a conversation
+   *   that has moved on without them should hear about it.
+   * @returns Whether the conversation was there to read
+   */
+  async loadConversation(
+    convId: string,
+    onError?: (error: unknown) => void
+  ): Promise<boolean> {
     detachViewingListener();
     const found = await loadViewingChat(convId);
 
-    viewingListener = async (changedConvId: string) => {
-      if (changedConvId === convId) await loadViewingChat(changedConvId);
+    // Not an async listener: the database calls it and drops the result, so
+    // a rejection would have gone nowhere.
+    viewingListener = (changedConvId: string) => {
+      if (changedConvId !== convId) return;
+      void loadViewingChat(changedConvId).catch((error: unknown) => {
+        onError?.(error);
+      });
     };
     IndexedDB.onConversationChanged(viewingListener);
     return found;
