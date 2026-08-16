@@ -1,0 +1,105 @@
+import { render, screen } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { init, register, waitLocale } from 'svelte-i18n';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mocks = vi.hoisted(() => ({
+  goto: vi.fn(),
+  createConversation: vi.fn(),
+  sendMessage: vi.fn().mockResolvedValue(true),
+  isGenerating: vi.fn(() => false),
+  stopGenerating: vi.fn(),
+  error: vi.fn(),
+  provider: null as unknown,
+}));
+
+vi.mock('$app/navigation', () => ({ goto: mocks.goto }));
+vi.mock('$app/paths', () => ({ resolve: (p: string) => p }));
+vi.mock('$lib/database/indexedDB', () => ({
+  default: { createConversation: mocks.createConversation },
+}));
+vi.mock('$lib/state/chat.svelte', () => ({
+  chat: {
+    sendMessage: mocks.sendMessage,
+    isGenerating: mocks.isGenerating,
+    stopGenerating: mocks.stopGenerating,
+  },
+}));
+vi.mock('$lib/state/inference.svelte', () => ({
+  inference: {
+    get provider() {
+      return mocks.provider;
+    },
+    get selectedModel() {
+      return null;
+    },
+  },
+}));
+vi.mock('$lib/components/toast.js', () => ({
+  toast: { error: mocks.error, success: vi.fn(), info: vi.fn() },
+}));
+
+const { default: HomePage } = await import('./+page.svelte');
+
+beforeAll(async () => {
+  register('en', () => import('$lib/i18n/en.json'));
+  init({ fallbackLocale: 'en', initialLocale: 'en' });
+  await waitLocale('en');
+});
+
+beforeEach(() => {
+  mocks.goto.mockClear();
+  mocks.createConversation.mockClear().mockResolvedValue({
+    id: 'conv-1',
+    currNode: -1,
+  });
+  mocks.sendMessage.mockClear();
+  mocks.error.mockClear();
+  mocks.provider = null;
+});
+
+async function typeAndSend(text: string) {
+  const user = userEvent.setup();
+  render(HomePage);
+  const box = screen.getByRole('textbox');
+  await user.type(box, `${text}{Enter}`);
+  return box;
+}
+
+describe('sending the first message with nothing configured', () => {
+  it('does not start a conversation', async () => {
+    await typeAndSend('hello');
+
+    // The conversation was being created, and navigated to, before anything
+    // checked whether it could be answered — leaving a new visitor in an empty
+    // conversation they did not ask for.
+    expect(mocks.createConversation).not.toHaveBeenCalled();
+    expect(mocks.goto).not.toHaveBeenCalled();
+  });
+
+  it('says why', async () => {
+    await typeAndSend('hello');
+
+    expect(mocks.error).toHaveBeenCalled();
+  });
+
+  it('keeps what was typed', async () => {
+    const box = await typeAndSend('hello');
+
+    // There is nothing to retype once the provider is set up, if the box has
+    // been emptied.
+    expect(box).toHaveValue('hello');
+  });
+});
+
+describe('sending the first message once a provider is set up', () => {
+  it('starts a conversation and goes to it', async () => {
+    mocks.provider = { id: 'llama.cpp' };
+
+    await typeAndSend('hello');
+
+    expect(mocks.createConversation).toHaveBeenCalledWith('hello');
+    expect(mocks.goto).toHaveBeenCalledWith('/chat/[convId]');
+    expect(mocks.sendMessage).toHaveBeenCalled();
+  });
+});

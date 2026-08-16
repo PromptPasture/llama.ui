@@ -30,6 +30,13 @@
     content: string,
     extra: MessageExtra[] | undefined
   ): Promise<boolean | void> {
+    // Before the conversation exists: nothing can be sent yet, and creating it
+    // anyway leaves a new visitor looking at an empty conversation they did
+    // not ask for, named after a message that was never answered.
+    if (!inference.provider) {
+      toast.error($_('toast.noModelsPopup.description'));
+      return false;
+    }
     const conv = await IndexedDB.createConversation(content.substring(0, 256));
     await goto(resolve('/chat/[convId]', { convId: conv.id }));
     return chat.sendMessage(

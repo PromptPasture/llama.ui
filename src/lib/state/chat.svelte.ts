@@ -122,6 +122,15 @@ export const chat = {
     if (chat.isGenerating(convId) || !convId || !type || !role || !parent)
       return false;
 
+    // Checked before the message is stored, unlike a request that fails: that
+    // one was sent and belongs in the conversation, where it can be tried
+    // again. This one was never attempted, so storing it would leave a message
+    // sitting unanswered with nothing to ask again.
+    if (!deps.provider) {
+      deps.toast(t('toast.noModelsPopup.description'));
+      return false;
+    }
+
     let currMsgId: number;
     if (content === null) {
       currMsgId = parent as number;

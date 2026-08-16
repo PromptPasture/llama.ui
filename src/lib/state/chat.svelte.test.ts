@@ -191,3 +191,52 @@ describe('generating with nothing configured', () => {
     expect(d.toast).toHaveBeenCalledWith(expect.stringContaining('Settings'));
   });
 });
+
+describe('sending with nothing configured to send to', () => {
+  const send = (over: Record<string, unknown> = {}) =>
+    chat.sendMessage(
+      {
+        convId: 'conv-1',
+        type: 'text',
+        role: 'user',
+        parent: -1,
+        content: 'hello',
+        extra: undefined,
+        onChunk: () => {},
+      },
+      deps(over)
+    );
+
+  it('says why nothing happened', async () => {
+    const d = deps();
+    await chat.sendMessage(
+      {
+        convId: 'conv-1',
+        type: 'text',
+        role: 'user',
+        parent: -1,
+        content: 'hello',
+        extra: undefined,
+        onChunk: () => {},
+      },
+      d
+    );
+
+    expect(d.toast).toHaveBeenCalled();
+  });
+
+  it('reports the send as refused, so the box keeps the message', async () => {
+    expect(await send()).toBe(false);
+  });
+
+  it('does not store the message', async () => {
+    mocks.appendMsg.mockClear();
+
+    await send();
+
+    // A request that fails was still sent, and belongs in the conversation
+    // where it can be tried again. This one was never attempted: stored, it
+    // would sit there unanswered with nothing able to ask again.
+    expect(mocks.appendMsg).not.toHaveBeenCalled();
+  });
+});
