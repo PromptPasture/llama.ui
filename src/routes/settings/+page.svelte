@@ -70,7 +70,12 @@
     }, 1000);
   }
 
+  /** Whether the models are being fetched right now. An unreachable server
+   * takes about thirty seconds to say so. */
+  let fetchingModels = $state(false);
+
   async function fetchModels() {
+    fetchingModels = true;
     try {
       localModels = await inference.fetchModels(localConfig);
     } catch (error) {
@@ -82,6 +87,10 @@
           values: { message: (error as Error).message },
         })
       );
+    } finally {
+      // Including after a failure: the one button whose job is to find out
+      // what is wrong would otherwise be pressable exactly once.
+      fetchingModels = false;
     }
   }
 
@@ -241,6 +250,7 @@
         models={localModels}
         {onchange}
         onfetchmodels={fetchModels}
+        {fetchingModels}
       />
     {:else if tabId === 'ui'}
       <UITab config={localConfig} {onchange} />

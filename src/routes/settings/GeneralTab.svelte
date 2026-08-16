@@ -18,9 +18,17 @@
       key: ConfigurationKey
     ) => (value: string | number | boolean) => void;
     onfetchmodels: () => Promise<void>;
+    /** Whether a fetch is already under way. */
+    fetchingModels?: boolean;
   }
 
-  let { config, models, onchange, onfetchmodels }: Props = $props();
+  let {
+    config,
+    models,
+    onchange,
+    onfetchmodels,
+    fetchingModels = false,
+  }: Props = $props();
 
   const providerOptions = Object.entries(INFERENCE_PROVIDERS).map(
     ([key, val]) => ({
@@ -69,8 +77,13 @@
     onchange={onchange('model')}
   />
 
-  <Button variant="neutral" onclick={onfetchmodels}>
-    <RefreshCwIcon size={14} />
+  <Button
+    variant="neutral"
+    onclick={onfetchmodels}
+    disabled={fetchingModels}
+    aria-busy={fetchingModels}
+  >
+    <RefreshCwIcon size={14} class={fetchingModels ? 'animate-spin' : ''} />
     {$_('settings.actionButtons.fetchModels')}
   </Button>
 

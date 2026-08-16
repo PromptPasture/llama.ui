@@ -358,6 +358,81 @@ describe('finding out whether the settings work', () => {
   });
 });
 
+describe('while the models are being fetched', () => {
+  /** A fetch that has not answered yet, as an unreachable server looks for
+   * the thirty seconds before it times out. */
+  function fetchThatHangs() {
+    let finish: (models: never[]) => void = () => {};
+    const settled = new Promise<never[]>((resolve) => (finish = resolve));
+    const spy = vi
+      .spyOn(inference, 'fetchModels')
+      .mockReturnValue(settled as unknown as Promise<never[]>);
+    return { finish: () => finish([]), spy };
+  }
+
+  it('says the button is working', async () => {
+    const hanging = fetchThatHangs();
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    const button = screen.getByRole('button', { name: 'Fetch Models' });
+
+    await userEvent.click(button);
+
+    // The wait is longest exactly when something is wrong, and the button
+    // looked no different from one that had done nothing.
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    // Being disabled is what actually stops a second fetch starting.
+    expect(button).toBeDisabled();
+    hanging.finish();
+    hanging.spy.mockRestore();
+  });
+
+  it('refuses to be pressed twice over', async () => {
+    const hanging = fetchThatHangs();
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    const button = screen.getByRole('button', { name: 'Fetch Models' });
+
+    await userEvent.click(button);
+    await userEvent.click(button);
+
+    expect(hanging.spy).toHaveBeenCalledTimes(1);
+    hanging.finish();
+    hanging.spy.mockRestore();
+  });
+
+  it('is ready again once the models arrive', async () => {
+    const ok = vi.spyOn(inference, 'fetchModels').mockResolvedValue([]);
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    const button = screen.getByRole('button', { name: 'Fetch Models' });
+
+    await userEvent.click(button);
+
+    expect(button).toHaveAttribute('aria-busy', 'false');
+    expect(button).not.toBeDisabled();
+    ok.mockRestore();
+  });
+
+  it('is ready again after a failure', async () => {
+    const failure = vi
+      .spyOn(inference, 'fetchModels')
+      .mockRejectedValue(new Error('nothing there'));
+    const shown = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    const button = screen.getByRole('button', { name: 'Fetch Models' });
+
+    await userEvent.click(button);
+
+    // Otherwise the one button whose job is to find out what is wrong can be
+    // pressed exactly once.
+    expect(button).not.toBeDisabled();
+    failure.mockRestore();
+    shown.mockRestore();
+  });
+});
+
 describe('the wording of the settings questions', () => {
   afterEach(async () => {
     await locale.set('en');
