@@ -310,3 +310,15 @@ describe('the message box remembering what was typed', () => {
     expect(textarea).toHaveValue('a question');
   });
 });
+
+describe('the message box being announced', () => {
+  it('says what it is for', () => {
+    renderInput();
+
+    // The label used to sit on the wrapping div, which has no role and so is
+    // not exposed at all: the box was left with only its placeholder.
+    expect(
+      screen.getByRole('textbox', { name: 'Chat input' })
+    ).toBeInTheDocument();
+  });
+});

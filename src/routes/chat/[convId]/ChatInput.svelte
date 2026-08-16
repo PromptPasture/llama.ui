@@ -100,15 +100,15 @@
   });
 </script>
 
-<div
-  class="chat-input"
-  aria-label={$_('chatInput.ariaLabels.chatInput', { default: 'Chat input' })}
->
+<div class="chat-input">
   <div class="chat-input__box">
     <textarea
       bind:this={textareaEl}
       bind:value
       class="chat-input__textarea"
+      aria-label={$_('chatInput.ariaLabels.chatInput', {
+        default: 'Chat input',
+      })}
       placeholder={$_('chatInput.placeholder', { default: 'Type a message…' })}
       rows={1}
       dir="auto"

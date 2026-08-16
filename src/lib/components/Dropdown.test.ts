@@ -145,17 +145,6 @@ describe('Dropdown filtering', () => {
   });
 });
 
-describe('Dropdown with too few options to choose from', () => {
-  it('is not interactive when there is only one option', () => {
-    render(DropdownHarness, { props: { options: [OPTIONS[0]] } });
-
-    expect(
-      screen.queryByRole('button', { name: 'Choose Model' })
-    ).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Choose Model')).toBeInTheDocument();
-  });
-});
-
 describe('Dropdown structure', () => {
   it('offers its options as buttons', async () => {
     const user = userEvent.setup();
@@ -335,5 +324,48 @@ describe('Dropdown Escape', () => {
     // the list without shutting the panel it sits in.
     expect(watcher.heard).toHaveLength(0);
     watcher.stop();
+  });
+});
+
+describe('a dropdown with nothing to choose between', () => {
+  it('still says what the value is for', () => {
+    render(DropdownHarness, {
+      props: { options: [{ value: 'a', label: 'Alpha' }] },
+    });
+
+    // Otherwise the value is announced on its own — "llama-3.2-3b" somewhere
+    // in the header, with nothing to say it is the model.
+    expect(
+      screen.getByRole('button', { name: 'Choose Model' })
+    ).toBeInTheDocument();
+  });
+
+  it('says it cannot be used', () => {
+    render(DropdownHarness, {
+      props: { options: [{ value: 'a', label: 'Alpha' }] },
+    });
+
+    expect(screen.getByRole('button', { name: 'Choose Model' })).toBeDisabled();
+  });
+
+  it('shows the value it has', () => {
+    render(DropdownHarness, {
+      props: { options: [{ value: 'a', label: 'Alpha' }] },
+    });
+
+    expect(screen.getByText('Current')).toBeInTheDocument();
+  });
+
+  it('opens nothing when pressed', async () => {
+    const user = userEvent.setup();
+    render(DropdownHarness, {
+      props: { options: [{ value: 'a', label: 'Alpha' }] },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Choose Model' }));
+
+    // There is only the one option: a list of it would be a list of what is
+    // already on screen.
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 });

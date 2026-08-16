@@ -130,12 +130,16 @@
 
 <div class="dropdown {className}">
   {#if isDisabled}
-    <div
+    <!-- A button rather than a div: the label needs a role to attach to, and
+         being disabled is itself worth announcing. -->
+    <button
+      type="button"
       class="dropdown__trigger dropdown__trigger--static"
+      disabled
       aria-label={$_('dropdown.chooseEntity', { values: { entity } })}
     >
       {@render currentValue()}
-    </div>
+    </button>
   {:else}
     <button
       bind:this={triggerEl}
@@ -232,7 +236,7 @@
   }
 
   .dropdown__trigger--static {
-    @apply truncate;
+    @apply truncate cursor-default;
   }
 
   .dropdown__chevron {
