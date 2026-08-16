@@ -18,6 +18,18 @@
 
   let el: HTMLTextAreaElement;
 
+  /**
+   * Puts the cursor at the end of what is already written.
+   *
+   * A caller that opens an editor needs this: the box appears with the text in
+   * it, and without being asked the cursor stays wherever it was, so the first
+   * thing to do is click into a box that is already on screen.
+   */
+  export function focusEnd(): void {
+    el?.focus();
+    el?.setSelectionRange(el.value.length, el.value.length);
+  }
+
   function resize() {
     if (!autoresize || !el) return;
     el.style.height = 'auto';

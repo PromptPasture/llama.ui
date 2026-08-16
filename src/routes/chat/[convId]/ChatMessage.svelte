@@ -71,6 +71,24 @@
   // so this is too, however many messages are on screen.
   const reasoningId = $derived(`reasoning-${msg.id}`);
 
+  let editEl: ReturnType<typeof Textarea> | undefined = $state();
+
+  // Only on the way in, so a keystroke that re-renders does not send the
+  // cursor back to the end of the text mid-edit.
+  let wasEditing = false;
+  $effect(() => {
+    if (isEditing && !wasEditing) editEl?.focusEnd();
+    wasEditing = isEditing;
+  });
+
+  function onEditKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Escape') return;
+    // The layout closes the sidebar on Escape as well; abandoning the edit is
+    // the nearer action and the one meant here.
+    event.stopPropagation();
+    cancelEdit();
+  }
+
   const renderAsMarkdown = $derived(
     (isUser && !config.showRawUserMessage) ||
       (isAssistant && !config.showRawAssistantMessage) ||
@@ -159,8 +177,10 @@
     <!-- Edit mode -->
     {#if isEditing}
       <Textarea
+        bind:this={editEl}
         value={editContent}
         oninput={(e) => (editContent = (e.target as HTMLTextAreaElement).value)}
+        onkeydown={onEditKeydown}
         autoresize
       />
       <div class="msg__edit-actions">

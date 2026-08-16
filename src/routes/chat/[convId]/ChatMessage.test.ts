@@ -500,3 +500,62 @@ describe('ChatMessage icons that point along the line of text', () => {
     expect(marked).toBe(1);
   });
 });
+
+describe('ChatMessage editing from the keyboard', () => {
+  /** What the layout listens on to close the sidebar. */
+  function watchWindow() {
+    const heard: KeyboardEvent[] = [];
+    const listener = (e: Event) => heard.push(e as KeyboardEvent);
+    window.addEventListener('keydown', listener);
+    return {
+      heard,
+      stop: () => window.removeEventListener('keydown', listener),
+    };
+  }
+
+  async function startEditing() {
+    const user = userEvent.setup();
+    renderMessage();
+    await user.click(screen.getByRole('button', { name: 'Edit message' }));
+    return user;
+  }
+
+  it('puts the cursor in the editor, at the end of the text', async () => {
+    await startEditing();
+
+    const box = screen.getByRole('textbox') as HTMLTextAreaElement;
+    // Without this the box appears with the text in it and the cursor stays on
+    // a button that is no longer there.
+    expect(box).toHaveFocus();
+    expect(box.selectionStart).toBe(box.value.length);
+  });
+
+  it('abandons the edit on Escape', async () => {
+    const user = await startEditing();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('textbox')).toBeNull();
+  });
+
+  it('leaves the message as it was', async () => {
+    const user = await startEditing();
+    await user.type(screen.getByRole('textbox'), ' and more');
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.getByText('the reply')).toBeInTheDocument();
+  });
+
+  it('does not also close the sidebar', async () => {
+    const user = await startEditing();
+    const watcher = watchWindow();
+
+    await user.keyboard('{Escape}');
+
+    // The layout closes the sidebar on the same key; one press should abandon
+    // the edit without taking the sidebar with it.
+    expect(watcher.heard).toHaveLength(0);
+    watcher.stop();
+  });
+});
