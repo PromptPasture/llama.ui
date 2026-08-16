@@ -636,3 +636,94 @@ describe('dropping a file on the message box', () => {
     expect(event.defaultPrevented).toBe(false);
   });
 });
+
+describe('attaching a picture', () => {
+  const png = (name = 'shot.png') =>
+    new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0])], name, {
+      type: 'image/png',
+    });
+
+  /** Reading a picture goes through FileReader, which reports back later. */
+  const attachedNamed = (name: string) =>
+    vi.waitFor(() => expect(screen.getByText(name)).toBeInTheDocument());
+
+  it('takes it rather than refusing it as binary', async () => {
+    const user = userEvent.setup();
+    const failed = vi.spyOn(toast, 'error');
+    const { filePicker } = renderInput();
+
+    await user.upload(filePicker, png());
+
+    await attachedNamed('shot.png');
+    expect(failed).not.toHaveBeenCalled();
+    failed.mockRestore();
+  });
+
+  it('shows it, rather than only naming it', async () => {
+    const user = userEvent.setup();
+    const { container, filePicker } = renderInput();
+
+    await user.upload(filePicker, png());
+
+    // Which picture was attached is not something a file name answers. The
+    // thumbnail is decorative, so it is found by sight rather than by name.
+    await attachedNamed('shot.png');
+    const thumbnail = container.querySelector('img');
+    expect(thumbnail?.getAttribute('src')).toMatch(/^data:image\/png;base64,/);
+  });
+
+  it('sends it as a picture', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea, filePicker } = renderInput();
+    await user.upload(filePicker, png());
+    await attachedNamed('shot.png');
+
+    await user.type(textarea, 'what is this?{Enter}');
+
+    expect(onsend).toHaveBeenCalledWith('what is this?', [
+      expect.objectContaining({ type: 'imageFile', name: 'shot.png' }),
+    ]);
+  });
+
+  it('reads an SVG as text instead', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea, filePicker } = renderInput();
+    const svg = new File(['<svg><rect /></svg>'], 'chart.svg', {
+      type: 'image/svg+xml',
+    });
+    await user.upload(filePicker, svg);
+    await attachedNamed('chart.svg');
+
+    await user.type(textarea, 'what does this draw?{Enter}');
+
+    // Most vision models cannot decode an SVG data URL; the markup says what
+    // it draws.
+    expect(onsend).toHaveBeenCalledWith('what does this draw?', [
+      { type: 'textFile', name: 'chart.svg', content: '<svg><rect /></svg>' },
+    ]);
+  });
+
+  it('takes one pasted from the clipboard', async () => {
+    const { container, textarea } = renderInput();
+    const event = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clipboardData', {
+      value: { files: [png()], getData: () => '' },
+    });
+
+    textarea.dispatchEvent(event);
+
+    // Pasting a screenshot is how most people would put one in a message.
+    await attachedNamed('shot.png');
+    expect(container.querySelector('img')).not.toBeNull();
+  });
+
+  it('leaves a plain text paste alone', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+
+    await user.click(textarea);
+    await user.paste('a short quote');
+
+    expect(textarea).toHaveValue('a short quote');
+  });
+});

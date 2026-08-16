@@ -673,20 +673,48 @@ describe('a message that carried an attachment', () => {
     expect(screen.queryByRole('list', { name: 'Attachments' })).toBeNull();
   });
 
-  it('leaves out an attachment it cannot show as text', () => {
+  it('shows a picture that was attached', () => {
     renderMessage(
       display({
         msg: message({
           role: 'user',
           content: 'what is this?',
           extra: [
-            { type: 'imageFile', name: 'photo.png', base64Url: 'data:,' },
+            {
+              type: 'imageFile',
+              name: 'photo.png',
+              base64Url: 'data:image/png;base64,AAAA',
+            },
           ],
         }),
       })
     );
 
-    // Stored the same way, but there is nothing to show it with yet.
+    // A picture folded away behind its file name says nothing about what was
+    // asked; it is the question.
+    const image = screen.getByRole('img', { name: 'photo.png' });
+    expect(image).toHaveAttribute('src', 'data:image/png;base64,AAAA');
+  });
+
+  it('leaves out an attachment it cannot show at all', () => {
+    renderMessage(
+      display({
+        msg: message({
+          role: 'user',
+          content: 'what is this?',
+          extra: [
+            {
+              type: 'audioFile',
+              name: 'clip.mp3',
+              base64Data: 'AAAA',
+              mimeType: 'audio/mp3',
+            },
+          ],
+        }),
+      })
+    );
+
+    // Stored the same way, but there is nothing to play it with yet.
     expect(screen.queryByRole('list', { name: 'Attachments' })).toBeNull();
   });
 });

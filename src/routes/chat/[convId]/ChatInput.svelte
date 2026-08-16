@@ -16,6 +16,7 @@
     looksBinary,
     MAX_FILE_BYTES,
   } from '$lib/utils/text-file';
+  import { isImageType, readAsDataUrl } from '$lib/utils/image-file';
   import type { MessageExtra } from '$lib/types';
 
   interface Props {
@@ -120,6 +121,14 @@
   }
 
   function onPaste(e: ClipboardEvent) {
+    const files = [...(e.clipboardData?.files ?? [])];
+    if (files.length > 0) {
+      // A screenshot goes to the clipboard as a file, and pasting one is how
+      // most people would expect to put a picture in a message.
+      e.preventDefault();
+      void attachFiles(files);
+      return;
+    }
     const text = e.clipboardData?.getData('text/plain') ?? '';
     if (!isLongPaste(text, app.config.pasteLongTextToFileLen)) return;
     // Otherwise the box fills with thousands of lines and the writer has to
@@ -160,6 +169,14 @@
         continue;
       }
       try {
+        if (isImageType(file.type)) {
+          attach({
+            type: 'imageFile',
+            name: file.name,
+            base64Url: await readAsDataUrl(file),
+          });
+          continue;
+        }
         const bytes = new Uint8Array(await file.arrayBuffer());
         if (looksBinary(bytes)) {
           toast.error($_('fileUpload.errors.fileIsBinary'));
@@ -241,7 +258,17 @@
     >
       {#each attached as item (item.id)}
         <li class="chat-input__attachment">
-          <FileTextIcon size={14} />
+          {#if item.extra.type === 'imageFile'}
+            <!-- Decorative: the name is spelled out alongside it, and a
+                 reader hearing it twice learns nothing the second time. -->
+            <img
+              class="chat-input__thumbnail"
+              src={item.extra.base64Url}
+              alt=""
+            />
+          {:else}
+            <FileTextIcon size={14} />
+          {/if}
           <span class="chat-input__attachment-name">{item.extra.name}</span>
           <button
             type="button"
@@ -358,6 +385,10 @@
     @apply flex items-center gap-1.5 max-w-full ps-2 pe-1 py-1 rounded-md text-sm;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
+  }
+
+  .chat-input__thumbnail {
+    @apply w-8 h-8 rounded object-cover shrink-0;
   }
 
   .chat-input__attachment-name {

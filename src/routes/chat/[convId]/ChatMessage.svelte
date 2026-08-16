@@ -55,15 +55,13 @@
   const isUser = $derived(msg.role === 'user');
 
   /**
-   * The text that was attached to the message.
+   * What was attached to the message.
    *
-   * Images and audio are stored the same way but have nothing to show as
-   * text, and are left out until there is something to show them with.
+   * Audio is stored the same way but has nothing to show yet, and is left out
+   * until there is something to play it with.
    */
   const attachments = $derived(
-    (msg.extra ?? []).filter(
-      (e) => e.type === 'textFile' || e.type === 'context'
-    )
+    (msg.extra ?? []).filter((e) => e.type !== 'audioFile')
   );
   const isAssistant = $derived(msg.role === 'assistant');
   const config = $derived(app.config);
@@ -271,10 +269,18 @@
           >
             {#each attachments as item (item.name)}
               <li>
-                <details class="msg__attachment">
-                  <summary class="msg__attachment-name">{item.name}</summary>
-                  <pre class="msg__attachment-content">{item.content}</pre>
-                </details>
+                {#if item.type === 'imageFile'}
+                  <img
+                    class="msg__attachment-image"
+                    src={item.base64Url}
+                    alt={item.name}
+                  />
+                {:else}
+                  <details class="msg__attachment">
+                    <summary class="msg__attachment-name">{item.name}</summary>
+                    <pre class="msg__attachment-content">{item.content}</pre>
+                  </details>
+                {/if}
               </li>
             {/each}
           </ul>
@@ -488,6 +494,12 @@
   .msg__attachment {
     @apply rounded-md text-sm;
     background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .msg__attachment-image {
+    @apply rounded-md max-w-full;
+    max-height: 20rem;
     border: 1px solid var(--color-border);
   }
 
