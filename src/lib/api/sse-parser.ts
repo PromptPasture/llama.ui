@@ -15,14 +15,22 @@ export async function* processSSEStream<T = SSEData>(
   const decoder = new TextDecoder();
   let buffer = '';
 
+  // Kept only until the first event arrives. A server that ignores the request
+  // to stream answers with one ordinary completion and no events at all, which
+  // read as an empty reply: the message appeared, said nothing and vanished.
+  let whole = '';
+  let sawEvent = false;
+
   try {
     while (true) {
       const { done, value } = await reader.read();
 
       // decode() with no argument flushes any partial multi-byte character.
-      buffer += done
+      const text = done
         ? decoder.decode()
         : decoder.decode(value, { stream: true });
+      buffer += text;
+      if (!sawEvent) whole += text;
 
       // Split buffer into lines
       const lines = buffer.split('\n');
@@ -44,6 +52,8 @@ export async function* processSSEStream<T = SSEData>(
             }
             try {
               const parsedData = JSON.parse(sseMessage.value) as T;
+              sawEvent = true;
+              whole = '';
               yield parsedData;
             } catch (error) {
               console.warn(
@@ -66,6 +76,19 @@ export async function* processSSEStream<T = SSEData>(
       }
 
       if (done) break;
+    }
+
+    // Nothing arrived as an event. If the body is a completion in its own
+    // right, hand it over as a single chunk rather than reporting silence.
+    if (!sawEvent && whole.trim()) {
+      try {
+        yield JSON.parse(whole) as T;
+      } catch {
+        console.warn(
+          'Response was neither a stream nor JSON:',
+          whole.slice(0, 200)
+        );
+      }
     }
   } finally {
     reader.releaseLock();

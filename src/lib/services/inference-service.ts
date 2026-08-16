@@ -53,17 +53,23 @@ export const generateChatStream = async ({
       continue;
     }
 
-    const choice = chunk.choices[0];
-    if (!choice?.delta) {
+    // A server that ignored the request to stream answers with the finished
+    // message rather than a delta of it; the parser hands that over as a
+    // single chunk, and it says the same things in the same fields.
+    const choice = chunk.choices[0] as (typeof chunk.choices)[0] & {
+      message?: { content?: string; reasoning_content?: string };
+    };
+    const part = choice?.delta ?? choice?.message;
+    if (!part) {
       // The type says delta is always present, but this is whatever the
       // configured server sent. Some emit a terminal chunk carrying only
       // finish_reason; throwing here would discard the reply streamed so far.
       continue;
     }
 
-    const addedContent = choice.delta.content;
+    const addedContent = part.content;
     const addedReasoning =
-      choice.delta.reasoning_content || choice.delta.reasoning;
+      part.reasoning_content || (part as { reasoning?: string }).reasoning;
 
     const update: Partial<PendingMessage> = {};
 

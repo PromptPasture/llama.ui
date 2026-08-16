@@ -89,3 +89,37 @@ describe('surviving chunk shapes the types do not promise', () => {
     ).rejects.toThrow('context length exceeded');
   });
 });
+
+describe('a reply that arrived whole rather than in pieces', () => {
+  it('is read from the finished message', async () => {
+    // A server that ignores the request to stream answers this way. Read only
+    // as a delta, it said nothing at all.
+    const { last } = await run([
+      {
+        choices: [
+          { message: { role: 'assistant', content: 'the whole answer' } },
+        ],
+      },
+    ]);
+
+    expect(last.content).toBe('the whole answer');
+  });
+
+  it('reads its reasoning too', async () => {
+    const { last } = await run([
+      {
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              content: 'answer',
+              reasoning_content: 'thinking',
+            },
+          },
+        ],
+      },
+    ]);
+
+    expect(last.reasoning_content).toBe('thinking');
+  });
+});

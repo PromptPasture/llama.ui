@@ -101,3 +101,38 @@ describe('reading a stream with bad content', () => {
     ).rejects.toThrow(/body is empty/);
   });
 });
+
+describe('a response that was not streamed at all', () => {
+  const completion = {
+    id: 'x',
+    choices: [{ message: { role: 'assistant', content: 'the answer' } }],
+  };
+
+  it('hands the body over as a single chunk', async () => {
+    const chunks = await collect([JSON.stringify(completion)]);
+
+    // A server may ignore the request to stream and answer with one ordinary
+    // completion. Read as events there are none, and the reply said nothing.
+    expect(chunks).toEqual([completion]);
+  });
+
+  it('says nothing for an empty body', async () => {
+    expect(await collect([''])).toEqual([]);
+  });
+
+  it('says nothing for a body that is neither events nor JSON', async () => {
+    expect(await collect(['<html>gateway error</html>'])).toEqual([]);
+  });
+
+  // Pins the outcome rather than the guard that produces it: a body that
+  // arrived as events is not valid JSON as a whole, so it would fail to parse
+  // even without the flag that stops it being tried. The flag is there to stop
+  // a long reply being held in memory twice over.
+  it('does not repeat a body that did arrive as events', async () => {
+    const chunks = await collect([
+      'data: {"n":1}\n\ndata: {"n":2}\n\ndata: [DONE]\n\n',
+    ]);
+
+    expect(chunks).toEqual([{ n: 1 }, { n: 2 }]);
+  });
+});
