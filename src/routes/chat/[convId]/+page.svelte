@@ -4,6 +4,7 @@
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
   import { inference } from '$lib/state/inference.svelte';
+  import { tts } from '$lib/state/tts.svelte';
   import { toast } from '$lib/components/toast.js';
   import { t } from '$lib/i18n/translate';
   import { getListMessageDisplay } from '$lib/utils/message-hierarchy';
@@ -35,7 +36,12 @@
     requestAnimationFrame(() => {
       msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
     });
-    return () => chat.unloadConversation();
+    return () => {
+      chat.unloadConversation();
+      // Speech outlives the page it came from otherwise, and keeps reading a
+      // conversation the reader has already left.
+      tts.stop();
+    };
   });
 
   const displayMessages = $derived(

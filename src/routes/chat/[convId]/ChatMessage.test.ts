@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Message, MessageDisplay } from '$lib/types';
 
 const mocks = vi.hoisted(() => ({
@@ -269,6 +269,77 @@ describe('ChatMessage actions', () => {
     renderMessage(display({ isPending: true }));
     expect(
       screen.queryByRole('button', { name: 'Copy content' })
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('ChatMessage read aloud', () => {
+  let spoken: { text: string }[] = [];
+
+  /** jsdom implements neither half of the Web Speech API. */
+  function withSpeech() {
+    spoken = [];
+    vi.stubGlobal(
+      'SpeechSynthesisUtterance',
+      class {
+        pitch = 1;
+        rate = 1;
+        volume = 1;
+        voice = null;
+        constructor(public text: string) {}
+      }
+    );
+    vi.stubGlobal('speechSynthesis', {
+      speak: (u: { text: string }) => spoken.push(u),
+      cancel: () => {},
+      getVoices: () => [],
+    });
+  }
+
+  afterEach(async () => {
+    const { tts } = await import('$lib/state/tts.svelte');
+    tts.stop();
+    vi.unstubAllGlobals();
+  });
+
+  it('reads the reply when asked', async () => {
+    withSpeech();
+    const user = userEvent.setup();
+    renderMessage();
+
+    await user.click(screen.getByRole('button', { name: 'Play message' }));
+
+    expect(spoken.map((u) => u.text)).toEqual(['the reply']);
+  });
+
+  it('offers to stop once it is reading', async () => {
+    withSpeech();
+    const user = userEvent.setup();
+    renderMessage();
+
+    await user.click(screen.getByRole('button', { name: 'Play message' }));
+
+    expect(
+      await screen.findByRole('button', { name: 'Stop message' })
+    ).toBeInTheDocument();
+  });
+
+  it('does not offer to read a message the user wrote', () => {
+    withSpeech();
+    renderMessage(display({ msg: message({ role: 'user' }) }));
+
+    expect(
+      screen.queryByRole('button', { name: 'Play message' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('stays out of the way where the browser cannot speak', () => {
+    // No stub: jsdom has no speechSynthesis, standing in for a browser
+    // without the Web Speech API.
+    renderMessage();
+
+    expect(
+      screen.queryByRole('button', { name: 'Play message' })
     ).not.toBeInTheDocument();
   });
 });

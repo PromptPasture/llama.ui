@@ -12,7 +12,6 @@
 
   let { config, onchange }: Props = $props();
 
-  // TTS is out of scope for this migration (dropped feature)
   const supported =
     typeof window !== 'undefined' && 'speechSynthesis' in window;
 </script>

@@ -9,13 +9,16 @@
   import GitMergeIcon from 'lucide-svelte/icons/git-merge';
   import RefreshCwIcon from 'lucide-svelte/icons/refresh-cw';
   import SquarePenIcon from 'lucide-svelte/icons/square-pen';
+  import SquareIcon from 'lucide-svelte/icons/square';
   import Trash2Icon from 'lucide-svelte/icons/trash-2';
+  import Volume2Icon from 'lucide-svelte/icons/volume-2';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import IndexedDB from '$lib/database/indexedDB';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
   import { modal } from '$lib/state/modal.svelte';
+  import { tts } from '$lib/state/tts.svelte';
   import { toast } from '$lib/components/toast.js';
   import MarkdownDisplay from '$lib/components/MarkdownDisplay.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -232,6 +235,31 @@
             <ChevronRightIcon size={14} />
           </Button>
         </div>
+      {/if}
+
+      {#if isAssistant && tts.supported}
+        {@const speaking = tts.isSpeaking(msg.id)}
+        <Button
+          variant="ghost"
+          size="icon"
+          onclick={() =>
+            speaking
+              ? tts.stop()
+              : tts.speak(msg.id, msg.content ?? '', app.config)}
+          disabled={!msg.content}
+          title={speaking
+            ? $_('chatScreen.titles.stop')
+            : $_('chatScreen.titles.play')}
+          aria-label={speaking
+            ? $_('chatScreen.ariaLabels.stopMessage')
+            : $_('chatScreen.ariaLabels.playMessage')}
+        >
+          {#if speaking}
+            <SquareIcon size={14} />
+          {:else}
+            <Volume2Icon size={14} />
+          {/if}
+        </Button>
       {/if}
 
       {#if isAssistant}
