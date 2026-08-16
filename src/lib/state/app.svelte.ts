@@ -38,6 +38,14 @@ export const app = {
     state.presets = await IndexedDB.getPresets();
     const savedTheme = LocalStorage.getTheme();
     app.switchTheme(savedTheme);
+
+    // The configuration is read once and written back whole — the model
+    // picker saves the entire object. A second tab that had loaded the older
+    // configuration would therefore undo whatever the first had changed, so
+    // adopt what another tab writes. The event only fires in other tabs.
+    window.addEventListener('storage', (event: StorageEvent) => {
+      if (event.key === 'config') state.config = LocalStorage.getConfig();
+    });
   },
 
   saveConfig(config: Configuration): void {
