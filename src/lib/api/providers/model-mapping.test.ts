@@ -121,3 +121,61 @@ describe('whether a provider is sent the generation options', () => {
     ).toBe(true);
   });
 });
+
+describe('a server that lists the same model twice', () => {
+  const listing = (models: unknown[]) =>
+    vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ data: models, models }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+  it('lists it once', async () => {
+    const { BaseOpenAIProvider } = await import('./BaseOpenAIProvider');
+    vi.stubGlobal(
+      'fetch',
+      listing([{ id: 'same' }, { id: 'same' }, { id: 'other' }])
+    );
+
+    const models = await BaseOpenAIProvider.new('http://x', 'k').getModels();
+
+    // The picker keys its entries by id; two under one key and it renders
+    // nothing at all, so a repeated id took the whole list away.
+    expect(models.map((m) => m.id).sort()).toEqual(['other', 'same']);
+  });
+
+  it('keeps the first of them, with whatever it said', async () => {
+    const { BaseOpenAIProvider } = await import('./BaseOpenAIProvider');
+    vi.stubGlobal(
+      'fetch',
+      listing([
+        { id: 'same', name: 'First' },
+        { id: 'same', name: 'Second' },
+      ])
+    );
+
+    const models = await BaseOpenAIProvider.new('http://x', 'k').getModels();
+
+    expect(models).toHaveLength(1);
+    expect(models[0].name).toBe('First');
+  });
+
+  it('still holds for Mistral, which used to do this for itself', async () => {
+    const { MistralProvider } = await import('./MistralProvider');
+    vi.stubGlobal(
+      'fetch',
+      listing([
+        { id: 'mistral-small', capabilities: { completion_chat: true } },
+        { id: 'mistral-small', capabilities: { completion_chat: true } },
+      ])
+    );
+
+    const models = await MistralProvider.new(
+      'https://api.mistral.ai',
+      'k'
+    ).getModels();
+
+    expect(models).toHaveLength(1);
+  });
+});

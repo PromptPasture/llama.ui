@@ -394,9 +394,16 @@ export class BaseOpenAIProvider
   protected jsonToModels(data: unknown[]): InferenceApiModel[] {
     const res: InferenceApiModel[] = [];
     if (data && Array.isArray(data)) {
-      data.forEach((m) => {
-        res.push(this.jsonToModel(m));
-      });
+      // Listed once each. A server that repeats an id — Mistral has been seen
+      // to — gave the picker two entries under the same name, and a list keyed
+      // by it cannot be rendered at all, so the picker showed nothing.
+      const seen = new Set<string>();
+      for (const m of data) {
+        const model = this.jsonToModel(m);
+        if (seen.has(model.id)) continue;
+        seen.add(model.id);
+        res.push(model);
+      }
       res.sort(this.compareModels);
     }
     return res;

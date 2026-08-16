@@ -33,14 +33,6 @@ export class MistralProvider extends CloudOpenAIProvider {
   }
 
   /** @inheritdoc */
-  protected jsonToModels(data: unknown[]): InferenceApiModel[] {
-    const res = super.jsonToModels(data);
-    return res.filter(
-      (obj, index, self) => index === self.findIndex((t) => t.id === obj.id)
-    );
-  }
-
-  /** @inheritdoc */
   protected jsonToModel(m: unknown): InferenceApiModel {
     const model = m as MistralModel;
 
