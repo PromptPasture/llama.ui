@@ -67,6 +67,10 @@
   // showed it, which left the setting asking for it doing nothing.
   const performance = $derived(describeTimings(msg.timings));
 
+  // Ties the toggle to what it opens. Message ids are unique across the store,
+  // so this is too, however many messages are on screen.
+  const reasoningId = $derived(`reasoning-${msg.id}`);
+
   const renderAsMarkdown = $derived(
     (isUser && !config.showRawUserMessage) ||
       (isAssistant && !config.showRawAssistantMessage) ||
@@ -183,6 +187,8 @@
               type="button"
               class="msg__reasoning-toggle"
               onclick={() => (thinkingOpen = !thinkingOpen)}
+              aria-expanded={thinkingOpen}
+              aria-controls={reasoningId}
             >
               {#if isThinking}
                 <AtomIcon size={16} class="animate-spin" />
@@ -196,7 +202,12 @@
                 />{:else}<ChevronRightIcon size={14} />{/if}
             </button>
             {#if thinkingOpen}
-              <div class="msg__reasoning-body">
+              <div
+                id={reasoningId}
+                class="msg__reasoning-body"
+                role="region"
+                aria-label={$_('chatScreen.ariaLabels.thoughtContent')}
+              >
                 {#if config.showRawAssistantMessage}
                   <pre>{reasoning_content}</pre>
                 {:else}
@@ -223,7 +234,16 @@
     <div class="msg__actions" class:msg__actions--user={isUser}>
       <!-- Sibling navigation -->
       {#if siblingLeafNodeIds && siblingLeafNodeIds.length > 1}
-        <div class="msg__siblings" role="navigation">
+        <div
+          class="msg__siblings"
+          role="navigation"
+          aria-label={$_('chatScreen.ariaLabels.siblingLeafs', {
+            values: {
+              current: siblingCurrIdx + 1,
+              total: siblingLeafNodeIds.length,
+            },
+          })}
+        >
           <Button
             variant="ghost"
             size="icon"

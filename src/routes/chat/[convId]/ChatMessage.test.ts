@@ -406,3 +406,58 @@ describe('ChatMessage performance figures', () => {
     expect(screen.queryByText(/tokens/)).toBeNull();
   });
 });
+
+describe('ChatMessage announcing itself', () => {
+  it('says which version of a message is being shown', () => {
+    renderMessage(
+      display({ siblingLeafNodeIds: [1, 2, 3], siblingCurrIdx: 1 })
+    );
+
+    // The counter reads '2 / 3' on the page, which on its own says nothing
+    // about what is two of three.
+    expect(
+      screen.getByRole('navigation', { name: 'Message version 2 of 3' })
+    ).toBeInTheDocument();
+  });
+
+  it('says the reasoning is folded away, and that it can be opened', async () => {
+    renderMessage(
+      display({ msg: message({ reasoning_content: 'weighing it up' }) })
+    );
+
+    const toggle = screen.getByRole('button', { name: /Reasoning/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('says so when it has been opened', async () => {
+    const user = userEvent.setup();
+    renderMessage(
+      display({ msg: message({ reasoning_content: 'weighing it up' }) })
+    );
+
+    await user.click(screen.getByRole('button', { name: /Reasoning/ }));
+
+    expect(screen.getByRole('button', { name: /Reasoning/ })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+  });
+
+  it('names what the toggle opens, and ties the two together', async () => {
+    const user = userEvent.setup();
+    renderMessage(
+      display({ msg: message({ reasoning_content: 'weighing it up' }) })
+    );
+
+    await user.click(screen.getByRole('button', { name: /Reasoning/ }));
+
+    const region = screen.getByRole('region', {
+      name: 'Thought process content',
+    });
+    expect(region).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Reasoning/ })).toHaveAttribute(
+      'aria-controls',
+      region.id
+    );
+  });
+});
