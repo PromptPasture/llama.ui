@@ -67,6 +67,27 @@ function usagesIn(file: string): Usage[] {
 const usages = sourceFiles(SRC).flatMap(usagesIn);
 const catalogue = new Set(Object.keys(en));
 
+describe('locale catalogues', () => {
+  const locales = fs
+    .readdirSync(__dirname)
+    .filter((f) => f.endsWith('.json') && f !== 'en.json');
+
+  it('finds the locale files', () => {
+    expect(locales.length).toBeGreaterThan(5);
+  });
+
+  it.each(locales)('%s defines no key that en.json lacks', (file: string) => {
+    const loc = JSON.parse(fs.readFileSync(path.join(__dirname, file), 'utf8'));
+    // A key absent from en.json can never be read: either it is a typo, or
+    // the English entry was renamed and this one was left behind. Arabic and
+    // Korean once carried their sample prompts under "state.samplePrompts",
+    // so both fell back to English.
+    const orphans = Object.keys(loc).filter((k) => !catalogue.has(k));
+
+    expect(orphans).toEqual([]);
+  });
+});
+
 describe('translation keys', () => {
   it('finds translation usages to check', () => {
     expect(usages.length).toBeGreaterThan(50);

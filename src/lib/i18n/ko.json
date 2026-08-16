@@ -276,7 +276,7 @@
   "state.chat.errors.cannotSaveMessage": "메시지를 저장할 수 없습니다.",
   "state.chat.errors.failedToGetResponse": "AI로부터 응답을 받는 데 실패했습니다.",
   "state.chat.errors.failedToBranchConversation": "대화 분기에 실패했습니다.",
-  "state.samplePrompts": [
+  "samplePrompts": [
     "오늘의 재미있는 사실을 알려줘.",
     "농담 하나 해줘.",
     "흥미로운 과학 사실 세 가지를 알려줘.",

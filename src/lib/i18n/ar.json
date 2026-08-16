@@ -276,7 +276,7 @@
   "state.chat.errors.cannotSaveMessage": "لا يمكن حفظ الرسالة.",
   "state.chat.errors.failedToGetResponse": "فشل في الحصول على استجابة من الذكاء الاصطناعي.",
   "state.chat.errors.failedToBranchConversation": "فشل في تفريع المحادثة.",
-  "state.samplePrompts": [
+  "samplePrompts": [
     "أخبرني بحقيقة ممتعة لهذا اليوم.",
     "أخبرني بنكتة.",
     "أعطني ثلاث حقائق علمية مثيرة للاهتمام.",
