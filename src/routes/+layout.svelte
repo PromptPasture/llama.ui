@@ -6,6 +6,9 @@
   import { app } from '$lib/state/app.svelte';
   import { inference } from '$lib/state/inference.svelte';
   import { initI18n } from '$lib/i18n/index.js';
+  import { modal } from '$lib/state/modal.svelte';
+  import { startServiceWorker } from '$lib/service-worker';
+  import { t } from '$lib/i18n/translate';
   import Header from '$lib/components/Header.svelte';
   import Sidebar from '$lib/components/Sidebar.svelte';
   import ModalHost from '$lib/components/ModalHost.svelte';
@@ -23,6 +26,10 @@
     await waitLocale();
     await app.init();
     ready = true;
+
+    startServiceWorker(() =>
+      modal.showConfirm(t('toast.newVersion.description'))
+    );
   });
 
   // Re-initialize inference when config changes
