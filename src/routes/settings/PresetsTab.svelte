@@ -43,18 +43,39 @@
     }
   }
 
+  /** A preset over the current defaults, so a key added since still has one. */
+  const withDefaults = (preset: ConfigurationPreset) =>
+    Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config);
+
   async function handleRename(preset: ConfigurationPreset) {
     const newName = (
       (await modal.showPrompt(
-        $_('settings.presetManager.modals.enterNewName')
+        $_('settings.presetManager.modals.enterNewName'),
+        // Seeded with the name being changed, so a small correction does not
+        // mean typing the whole thing again.
+        preset.name
       )) ?? ''
     ).trim();
-    if (!newName) return;
+    if (!newName || newName === preset.name) return;
+
+    // Another preset already answers to this name, and saving over it without
+    // asking would lose it. Saving a new preset asks the same question.
+    const clash = presets.find((p) => p.name === newName);
+    if (
+      clash &&
+      !(await modal.showConfirm(
+        $_('settings.presetManager.modals.presetAlreadyExists', {
+          values: { presetName: newName },
+        })
+      ))
+    ) {
+      return;
+    }
+
+    // Saved under the new name before the old one goes: the other order leaves
+    // nothing at all behind if the save fails.
+    await onsavepreset(newName, withDefaults(preset));
     await onremovepreset(preset.name);
-    await onsavepreset(
-      newName,
-      Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config)
-    );
   }
 
   async function handleLoad(preset: ConfigurationPreset) {
@@ -65,9 +86,7 @@
         })
       )
     ) {
-      await onsaveconfig(
-        Object.assign(JSON.parse(JSON.stringify(CONFIG_DEFAULT)), preset.config)
-      );
+      await onsaveconfig(withDefaults(preset));
     }
   }
 
