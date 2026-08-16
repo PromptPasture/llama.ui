@@ -82,11 +82,23 @@
   });
 
   function onEditKeydown(event: KeyboardEvent) {
-    if (event.key !== 'Escape') return;
-    // The layout closes the sidebar on Escape as well; abandoning the edit is
-    // the nearer action and the one meant here.
-    event.stopPropagation();
-    cancelEdit();
+    if (event.key === 'Escape') {
+      // The layout closes the sidebar on Escape as well; abandoning the edit
+      // is the nearer action and the one meant here.
+      event.stopPropagation();
+      cancelEdit();
+      return;
+    }
+
+    // Enter alone belongs to the text, which may run to several lines. Held
+    // with a modifier it means "done", as it does in every other box that
+    // takes more than one line.
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      if (!editContent) return;
+      event.preventDefault();
+      if (isUser) submitUserEdit();
+      else submitAssistantEdit();
+    }
   }
 
   const renderAsMarkdown = $derived(

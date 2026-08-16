@@ -559,3 +559,60 @@ describe('ChatMessage editing from the keyboard', () => {
     watcher.stop();
   });
 });
+
+describe('ChatMessage saving an edit from the keyboard', () => {
+  async function editTo(text: string, which = display()) {
+    const user = userEvent.setup();
+    const handlers = renderMessage(which);
+    await user.click(screen.getByRole('button', { name: 'Edit message' }));
+    const box = screen.getByRole('textbox');
+    await user.clear(box);
+    if (text) await user.type(box, text);
+    return { user, ...handlers };
+  }
+
+  it('saves a reply with Control and Enter', async () => {
+    const { user, oneditassistantfn } = await editTo('a better answer');
+
+    await user.keyboard('{Control>}{Enter}{/Control}');
+
+    expect(oneditassistantfn).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 2 }),
+      'a better answer'
+    );
+  });
+
+  it('sends an edited question the same way', async () => {
+    const { user, onedituserfn } = await editTo(
+      'a better question',
+      display({ msg: message({ role: 'user' }) })
+    );
+
+    await user.keyboard('{Meta>}{Enter}{/Meta}');
+
+    expect(onedituserfn).toHaveBeenCalledWith(
+      expect.objectContaining({ role: 'user' }),
+      'a better question',
+      []
+    );
+  });
+
+  it('leaves Enter on its own to the text', async () => {
+    const { user, oneditassistantfn } = await editTo('first line');
+
+    await user.keyboard('{Enter}second line');
+
+    // The box takes more than one line; Enter has to make one.
+    expect(oneditassistantfn).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox')).toHaveValue('first line\nsecond line');
+  });
+
+  it('saves nothing when the box has been emptied', async () => {
+    const { user, oneditassistantfn } = await editTo('');
+
+    await user.keyboard('{Control>}{Enter}{/Control}');
+
+    // The Save button is disabled in this state; the shortcut agrees with it.
+    expect(oneditassistantfn).not.toHaveBeenCalled();
+  });
+});
