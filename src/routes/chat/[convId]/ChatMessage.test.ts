@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Message, MessageDisplay } from '$lib/types';
+import type { Message, MessageDisplay, PendingMessage } from '$lib/types';
 
 const mocks = vi.hoisted(() => ({
   showConfirm: vi.fn().mockResolvedValue(false),
@@ -43,6 +43,17 @@ function message(overrides: Partial<Message> = {}): Message {
     content: 'the reply',
     parent: 1,
     children: [],
+    ...overrides,
+  };
+}
+
+/** A reply on its way: its content arrives a piece at a time, and is null
+ * until the first of it does. */
+function pending(overrides: Partial<PendingMessage> = {}): PendingMessage {
+  return {
+    ...message({ role: 'assistant' }),
+    content: null,
+    reasoning_content: null,
     ...overrides,
   };
 }
@@ -716,5 +727,47 @@ describe('a message that carried an attachment', () => {
 
     // Stored the same way, but there is nothing to play it with yet.
     expect(screen.queryByRole('list', { name: 'Attachments' })).toBeNull();
+  });
+});
+
+describe('waiting for a reply to begin', () => {
+  it('says something is happening', () => {
+    renderMessage(display({ msg: pending(), isPending: true }));
+
+    // A local server loading a model into memory can take half a minute, and
+    // the bubble showed a timestamp and nothing else for all of it.
+    expect(screen.getByRole('status')).toHaveTextContent('Thinking');
+  });
+
+  it('stops saying so once the reply starts arriving', () => {
+    renderMessage(
+      display({
+        msg: pending({ content: 'the first words' }),
+        isPending: true,
+      })
+    );
+
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByText('the first words')).toBeInTheDocument();
+  });
+
+  it('leaves it to the reasoning section when there is one', () => {
+    renderMessage(
+      display({
+        msg: pending({ reasoning_content: 'let me work through this' }),
+        isPending: true,
+      })
+    );
+
+    // That section has a spinner of its own, and two of them would be two
+    // claims about the same thing.
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('says nothing on a message that is simply empty', () => {
+    renderMessage(display({ msg: pending() }));
+
+    // Not pending: nothing is on its way, so nothing is happening.
+    expect(screen.queryByRole('status')).toBeNull();
   });
 });

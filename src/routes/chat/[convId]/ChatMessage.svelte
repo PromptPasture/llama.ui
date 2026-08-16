@@ -294,6 +294,14 @@
           {/if}
         {/if}
       </div>
+    {:else if isPending}
+      <!-- Nothing has arrived yet. A local server loading a model into memory
+           can take half a minute, and the bubble showed a timestamp and
+           nothing else for all of it. -->
+      <div class="msg__waiting" role="status">
+        <AtomIcon size={16} class="animate-spin" />
+        {$_('chatScreen.labels.thinking')}
+      </div>
     {/if}
   </div>
 
@@ -484,6 +492,11 @@
   .msg__reasoning-body {
     @apply ps-4 mb-3 text-sm;
     border-left: 2px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .msg__waiting {
+    @apply flex items-center gap-2 text-sm;
     color: var(--color-text-muted);
   }
 
