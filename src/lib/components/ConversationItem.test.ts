@@ -171,9 +171,11 @@ describe('renaming a conversation', () => {
 });
 
 describe('downloading a conversation', () => {
-  async function download() {
+  async function download(which: Conversation = conv) {
     const user = userEvent.setup();
-    render(ConversationItem, { props: { conv, currentConvId: 'conv-1' } });
+    render(ConversationItem, {
+      props: { conv: which, currentConvId: 'conv-1' },
+    });
 
     await user.click(screen.getByRole('button', { name: 'Show more options' }));
     await user.click(screen.getByRole('button', { name: /Download/ }));
@@ -184,10 +186,29 @@ describe('downloading a conversation', () => {
 
     await download();
 
+    // Named after the conversation, not after its id, which is a timestamp.
     expect(mocks.downloadAsFile).toHaveBeenCalledWith(
       [expect.stringContaining('conversations')],
-      'conversation_conv-1.json'
+      'A conversation.json'
     );
+  });
+
+  it('names the file after the conversation, whatever is in the name', async () => {
+    mocks.exportDB.mockResolvedValue([]);
+
+    await download({ ...conv, name: 'Notes: draft/final <v2>' });
+
+    expect(mocks.downloadAsFile.mock.calls[0][1]).toBe(
+      'Notes draft final v2.json'
+    );
+  });
+
+  it('falls back to the id when the name leaves nothing usable', async () => {
+    mocks.exportDB.mockResolvedValue([]);
+
+    await download({ ...conv, name: '///' });
+
+    expect(mocks.downloadAsFile.mock.calls[0][1]).toBe('conv-1.json');
   });
 
   it('reports an export that failed instead of doing nothing', async () => {

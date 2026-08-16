@@ -11,6 +11,7 @@
   import { modal } from '$lib/state/modal.svelte';
   import { toast } from '$lib/components/toast.js';
   import { downloadAsFile } from '$lib/utils/downloadAsFile';
+  import { toFileName } from '$lib/utils/filename';
   import { splitAround } from '$lib/utils/excerpt';
   import type { Conversation } from '$lib/types';
   import Button from './Button.svelte';
@@ -103,9 +104,11 @@
     }
     try {
       const data = await IndexedDB.exportDB(conv.id);
+      // Named after the conversation rather than its id, which is a
+      // timestamp: three downloads in a folder could not be told apart.
       downloadAsFile(
         [JSON.stringify(data, null, 2)],
-        `conversation_${conv.id}.json`
+        `${toFileName(conv.name, conv.id)}.json`
       );
     } catch (error) {
       // Without this the menu simply closed and no file ever arrived.

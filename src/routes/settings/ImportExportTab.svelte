@@ -18,7 +18,13 @@
       success: toast.success,
       error: toast.error,
     });
-    downloadAsFile([JSON.stringify(data, null, 2)], 'llama-ui-database.json');
+    // Dated, so successive backups sit beside each other rather than being
+    // told apart by the browser appending (1) to the second one.
+    const today = new Date().toISOString().slice(0, 10);
+    downloadAsFile(
+      [JSON.stringify(data, null, 2)],
+      `llama-ui-database-${today}.json`
+    );
   }
 
   async function handleImport(e: Event) {

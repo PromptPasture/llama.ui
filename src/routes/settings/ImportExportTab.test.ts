@@ -6,9 +6,13 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   importDB: vi.fn().mockResolvedValue(undefined),
   exportDB: vi.fn().mockResolvedValue([]),
+  downloadAsFile: vi.fn(),
 }));
 
 vi.mock('$lib/state/app.svelte', () => ({ app: mocks }));
+vi.mock('$lib/utils/downloadAsFile', () => ({
+  downloadAsFile: mocks.downloadAsFile,
+}));
 
 const { default: ImportExportTab } = await import('./ImportExportTab.svelte');
 
@@ -128,5 +132,20 @@ describe('ImportExportTab import control', () => {
     const { fileInput } = renderTab();
     expect(fileInput).toHaveAttribute('hidden');
     expect(fileInput).toHaveAttribute('accept', '.json');
+  });
+});
+
+describe('what the exported database is called', () => {
+  it('carries the day it was taken', async () => {
+    const user = userEvent.setup();
+    mocks.downloadAsFile.mockClear();
+    renderTab();
+
+    await user.click(screen.getByRole('button', { name: /Export/i }));
+
+    // A fixed name leaves the browser to tell two backups apart by appending
+    // (1) to the second.
+    const [, name] = mocks.downloadAsFile.mock.calls[0];
+    expect(name).toMatch(/^llama-ui-database-\d{4}-\d{2}-\d{2}\.json$/);
   });
 });
