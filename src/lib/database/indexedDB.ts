@@ -443,7 +443,68 @@ export default class IndexedDB {
    * Import data into database.
    * @returns A promise that resolves when import is complete.
    */
+  /**
+   * Rejects anything that is not a llama.ui export before it reaches the
+   * database. Rows are written with `bulkPut`, so an unchecked import can
+   * overwrite existing conversations with malformed ones — a conversation
+   * lacking `name` breaks sidebar search, and one lacking `lastModified`
+   * cannot be grouped. A file that parses as JSON but carries no known table
+   * would otherwise report a successful import while doing nothing.
+   *
+   * @param data The parsed contents of the file being imported.
+   * @throws If the payload is not a recognisable export.
+   */
+  static assertValidExport(data: unknown): asserts data is ExportJsonStructure {
+    if (!Array.isArray(data)) {
+      throw new Error('Import file is not a llama.ui export.');
+    }
+
+    const records = data as Array<{ table?: unknown; rows?: unknown }>;
+    for (const record of records) {
+      if (
+        !record ||
+        typeof record !== 'object' ||
+        typeof record.table !== 'string' ||
+        !Array.isArray(record.rows)
+      ) {
+        throw new Error('Import file is not a llama.ui export.');
+      }
+    }
+
+    const known = records.filter((r) =>
+      db.tables.some((t) => t.name === r.table)
+    );
+    if (known.length === 0) {
+      throw new Error('Import file contains no llama.ui tables.');
+    }
+
+    for (const record of known) {
+      for (const row of record.rows as Array<Record<string, unknown>>) {
+        if (!row || typeof row !== 'object') {
+          throw new Error(
+            `Import file has an invalid row in '${record.table}'.`
+          );
+        }
+        if (
+          record.table === db.conversations.name &&
+          (typeof row.id !== 'string' ||
+            typeof row.name !== 'string' ||
+            typeof row.lastModified !== 'number')
+        ) {
+          throw new Error('Import file has a malformed conversation.');
+        }
+        if (
+          record.table === db.messages.name &&
+          (typeof row.id !== 'number' || typeof row.convId !== 'string')
+        ) {
+          throw new Error('Import file has a malformed message.');
+        }
+      }
+    }
+  }
+
   static async importDB(data: ExportJsonStructure) {
+    IndexedDB.assertValidExport(data);
     return await db.transaction('rw', db.tables, async () => {
       for (const record of data) {
         console.debug(`Import - Processing table '${record.table}'...`);
