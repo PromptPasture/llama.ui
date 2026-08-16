@@ -121,6 +121,16 @@
   const nextSibling = $derived(siblingLeafNodeIds[siblingCurrIdx + 1]);
   const isThinking = $derived(!!isPending && !content);
 
+  /**
+   * A message of the reader's own that nothing ever answered.
+   *
+   * Only ever the last one in the branch: any earlier one has a reply below
+   * it. While a reply is on its way there is nothing to ask for.
+   */
+  const isUnanswered = $derived(
+    isUser && msg.children.length === 0 && !chat.isGenerating(msg.convId)
+  );
+
   let isEditing = $state(false);
   let editContent = $state('');
   // Deliberately seeded from config once: this tracks whether the user has
@@ -377,6 +387,18 @@
           disabled={!msg.content}
           title={$_('chatScreen.titles.regenerate')}
           aria-label={$_('chatScreen.ariaLabels.regenerateResponse')}
+        >
+          <RefreshCwIcon size={14} />
+        </Button>
+      {:else if isUnanswered}
+        <!-- A send that fails before any reply is stored leaves the message
+             sitting there, with a toast that fades and nothing to press. -->
+        <Button
+          variant="ghost"
+          size="icon"
+          onclick={() => onregeneratefn(msg as Message)}
+          title={$_('chatScreen.titles.getReply')}
+          aria-label={$_('chatScreen.ariaLabels.getReply')}
         >
           <RefreshCwIcon size={14} />
         </Button>

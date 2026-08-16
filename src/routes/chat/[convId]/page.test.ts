@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   loadConversation: vi.fn().mockResolvedValue(true),
   unloadConversation: vi.fn(),
   ttsStop: vi.fn(),
+  sendMessage: vi.fn(),
+  viewingChat: null as { messages: unknown[] } | null,
 }));
 
 vi.mock('$app/navigation', () => ({ goto: mocks.goto }));
@@ -16,7 +18,11 @@ vi.mock('$lib/state/chat.svelte', () => ({
   chat: {
     loadConversation: mocks.loadConversation,
     unloadConversation: mocks.unloadConversation,
-    viewingChat: null,
+    sendMessage: mocks.sendMessage,
+    // A getter, so a test can put a conversation on screen before rendering.
+    get viewingChat() {
+      return mocks.viewingChat;
+    },
     pendingMessages: {},
     isGenerating: () => false,
   },
@@ -40,6 +46,7 @@ beforeEach(() => {
   // An unsent message is kept for the next visit, including the next test.
   localStorage.clear();
   forgetAllAttachments();
+  mocks.viewingChat = null;
   vi.clearAllMocks();
 });
 
@@ -205,5 +212,74 @@ describe('a file attached but not sent', () => {
     await openAnother('c1');
 
     expect(screen.getByText('notes.txt')).toBeInTheDocument();
+  });
+});
+
+describe('asking again for a reply that never came', () => {
+  const root = {
+    id: 0,
+    convId: 'c1',
+    type: 'root',
+    timestamp: 0,
+    role: 'system',
+    content: '',
+    parent: -1,
+    children: [5],
+  };
+  const unanswered = {
+    id: 5,
+    convId: 'c1',
+    type: 'text',
+    timestamp: 5,
+    role: 'user',
+    content: 'why does this crash?',
+    parent: 0,
+    children: [],
+  };
+
+  const reply = {
+    id: 6,
+    convId: 'c1',
+    type: 'text',
+    timestamp: 6,
+    role: 'assistant',
+    content: 'because of a null pointer',
+    parent: 5,
+    children: [],
+  };
+
+  it('replaces a reply that did come, rather than adding another', async () => {
+    mocks.viewingChat = {
+      messages: [{ ...root }, { ...unanswered, children: [6] }, reply],
+    };
+    await renderChat('c1');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Regenerate response' })
+    );
+
+    // Generation starts again from the message the reply was answering, so
+    // the new one is a sibling of the old rather than a turn below it.
+    expect(mocks.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ parent: 5, content: null }),
+      expect.anything()
+    );
+  });
+
+  it('generates a reply to that message', async () => {
+    mocks.viewingChat = { messages: [root, unanswered] };
+    await renderChat('c1');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Get a reply to this message' })
+    );
+
+    // Taking the message's own parent would regenerate the turn above it,
+    // replacing an answer the reader still has instead of getting the one
+    // they never did.
+    expect(mocks.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ parent: 5, content: null }),
+      expect.anything()
+    );
   });
 });

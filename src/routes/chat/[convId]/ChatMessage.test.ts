@@ -1,7 +1,15 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import type { Message, MessageDisplay, PendingMessage } from '$lib/types';
 
 const mocks = vi.hoisted(() => ({
@@ -9,13 +17,17 @@ const mocks = vi.hoisted(() => ({
   deleteMessage: vi.fn(),
   branchMessage: vi.fn(),
   copyStr: vi.fn(),
+  isGenerating: vi.fn(() => false),
 }));
 
 vi.mock('$lib/state/modal.svelte', () => ({
   modal: { showConfirm: mocks.showConfirm },
 }));
 vi.mock('$lib/state/chat.svelte', () => ({
-  chat: { branchMessage: mocks.branchMessage },
+  chat: {
+    branchMessage: mocks.branchMessage,
+    isGenerating: mocks.isGenerating,
+  },
 }));
 vi.mock('$lib/database/indexedDB', () => ({
   default: { deleteMessage: mocks.deleteMessage },
@@ -31,6 +43,12 @@ beforeAll(async () => {
   register('en', () => import('../../../lib/i18n/en.json'));
   init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
+});
+
+beforeEach(() => {
+  // Left true by one test, every later one renders as though a reply were on
+  // its way.
+  mocks.isGenerating.mockReturnValue(false);
 });
 
 function message(overrides: Partial<Message> = {}): Message {
@@ -769,5 +787,71 @@ describe('waiting for a reply to begin', () => {
 
     // Not pending: nothing is on its way, so nothing is happening.
     expect(screen.queryByRole('status')).toBeNull();
+  });
+});
+
+describe('a message that never got a reply', () => {
+  const unanswered = (overrides: Partial<Message> = {}) =>
+    display({
+      msg: message({
+        id: 5,
+        role: 'user',
+        content: 'why does this crash?',
+        children: [],
+        ...overrides,
+      }),
+    });
+
+  it('offers a way to ask for one', () => {
+    renderMessage(unanswered());
+
+    // A send that fails before any reply is stored leaves the message sitting
+    // there, with a toast that fades and nothing to press.
+    expect(
+      screen.getByRole('button', { name: 'Get a reply to this message' })
+    ).toBeInTheDocument();
+  });
+
+  it('asks for a reply to itself, not to the turn before it', async () => {
+    const user = userEvent.setup();
+    const { onregeneratefn } = renderMessage(unanswered());
+
+    await user.click(
+      screen.getByRole('button', { name: 'Get a reply to this message' })
+    );
+
+    expect(onregeneratefn).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 5, role: 'user' })
+    );
+  });
+
+  it('offers nothing once it has one', () => {
+    renderMessage(unanswered({ children: [6] }));
+
+    expect(
+      screen.queryByRole('button', { name: 'Get a reply to this message' })
+    ).toBeNull();
+  });
+
+  it('offers nothing while a reply is on its way', () => {
+    mocks.isGenerating.mockReturnValue(true);
+
+    renderMessage(unanswered());
+
+    // One is already coming; asking for another would start a second.
+    expect(
+      screen.queryByRole('button', { name: 'Get a reply to this message' })
+    ).toBeNull();
+  });
+
+  it('leaves the assistant its own regenerate', () => {
+    renderMessage();
+
+    expect(
+      screen.getByRole('button', { name: 'Regenerate response' })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Get a reply to this message' })
+    ).toBeNull();
   });
 });

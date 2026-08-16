@@ -140,13 +140,18 @@
   }
 
   function handleRegenerate(msg: Message) {
-    currNodeId = msg.parent as number;
+    // Asked of a reply, this replaces it: generation starts again from the
+    // message it was answering. Asked of a message of the reader's own that
+    // nothing answered, there is no reply to replace and the message itself
+    // is what wants answering.
+    const answering = msg.role === 'user' ? msg.id : (msg.parent as number);
+    currNodeId = answering;
     chat.sendMessage(
       {
         convId,
         type: msg.type,
         role: msg.role,
-        parent: msg.parent,
+        parent: answering,
         content: null,
         extra: [],
         system: app.config.systemMessage,
