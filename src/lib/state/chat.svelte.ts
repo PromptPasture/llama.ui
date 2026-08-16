@@ -61,6 +61,37 @@ function replyWorthKeeping(pending: PendingMessage): Message | null {
   return { ...pending, content: pending.content ?? '' } as Message;
 }
 
+/**
+ * Stores a finished reply, unless the conversation has gone meanwhile.
+ *
+ * A tab refuses to delete a conversation it is generating in, but it cannot
+ * see that another tab is: the guard reads in-memory state, and only the
+ * database is shared. Appending regardless leaves messages behind pointing at
+ * a conversation that no longer exists, which nothing reads and nothing
+ * deletes.
+ *
+ * @param pending The reply as streamed
+ * @param leafNodeId The message it answers
+ * @param toast How to report that the conversation has gone
+ * @returns The stored message, or null if there was nothing to store
+ */
+async function storeReply(
+  pending: PendingMessage,
+  leafNodeId: Message['id'],
+  toast: ToastFn
+): Promise<Message | null> {
+  const reply = replyWorthKeeping(pending);
+  if (!reply) return null;
+
+  if (!(await IndexedDB.getOneConversation(pending.convId))) {
+    toast(t('state.chat.errors.conversationNotFound'));
+    return null;
+  }
+
+  await IndexedDB.appendMsg(reply, leafNodeId);
+  return reply;
+}
+
 /** @returns whether the conversation exists. */
 async function loadViewingChat(convId: string): Promise<boolean> {
   const conv = await IndexedDB.getOneConversation(convId);
@@ -267,11 +298,8 @@ export const chat = {
         if (isDev) console.debug('Generation aborted by user.');
         // Stopping is not discarding. Keep what was streamed before the user
         // pressed stop, the same way a completed reply is kept.
-        const stopped = replyWorthKeeping(pendingMsg);
-        if (stopped) {
-          await IndexedDB.appendMsg(stopped, leafNodeId);
-          onChunk(stopped.id);
-        }
+        const stopped = await storeReply(pendingMsg, leafNodeId, deps.toast);
+        if (stopped) onChunk(stopped.id);
         delete state.aborts[convId];
         return;
       }
@@ -283,10 +311,7 @@ export const chat = {
       throw err;
     }
 
-    const finished = replyWorthKeeping(pendingMsg);
-    if (finished) {
-      await IndexedDB.appendMsg(finished, leafNodeId);
-    }
+    await storeReply(pendingMsg, leafNodeId, deps.toast);
     delete state.pendingMessages[convId];
     delete state.aborts[convId];
     onChunk(pendingId);

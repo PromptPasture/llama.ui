@@ -28,6 +28,12 @@ beforeAll(async () => {
   await waitLocale('en');
 });
 
+// Each test says for itself whether the conversation is there; without a
+// default, whichever earlier test last called mockResolvedValue decides.
+beforeEach(() => {
+  mocks.getOneConversation.mockResolvedValue({ id: 'conv-1', currNode: -1 });
+});
+
 function deps(overrides: Record<string, unknown> = {}) {
   return {
     config: {} as never,
@@ -382,5 +388,48 @@ describe('saving an edit to a reply', () => {
     // Unreported, a failed save looks exactly like one that worked: the editor
     // closes and the old text comes back.
     expect(d.toast).toHaveBeenCalled();
+  });
+});
+
+describe('a conversation deleted while it was being answered', () => {
+  const generate = (d = deps({ provider: {} })) =>
+    chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      d as never
+    );
+
+  beforeEach(() => {
+    mocks.appendMsg.mockClear().mockResolvedValue(undefined);
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ content: 'the answer' });
+      }
+    );
+  });
+
+  it('does not store the reply', async () => {
+    mocks.getOneConversation.mockResolvedValue(undefined);
+
+    await generate();
+
+    // A tab will not delete a conversation it is answering in, but it cannot
+    // see that another tab is. Appending anyway leaves messages pointing at a
+    // conversation that is gone, which nothing reads and nothing deletes.
+    expect(mocks.appendMsg).not.toHaveBeenCalled();
+  });
+
+  it('says what happened', async () => {
+    mocks.getOneConversation.mockResolvedValue(undefined);
+    const d = deps({ provider: {} });
+
+    await generate(d);
+
+    expect(d.toast).toHaveBeenCalled();
+  });
+
+  it('stores it as usual when the conversation is still there', async () => {
+    await generate();
+
+    expect(mocks.appendMsg).toHaveBeenCalledOnce();
   });
 });
