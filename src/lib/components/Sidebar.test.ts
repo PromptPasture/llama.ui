@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, locale, register, waitLocale } from 'svelte-i18n';
 import {
@@ -527,5 +527,24 @@ describe('a sidebar with nothing in it', () => {
     await renderSidebar();
 
     expect(screen.queryByText('No conversations yet')).not.toBeInTheDocument();
+  });
+});
+
+describe('the shortcuts the sidebar does not otherwise mention', () => {
+  it('shows the one that reaches the search box', async () => {
+    const { container } = await renderSidebar();
+
+    // Ctrl+K opens the sidebar and puts the cursor here, and nothing said so.
+    const box = container.querySelector('.sidebar__search-input');
+    expect(box).toHaveAttribute('aria-keyshortcuts', 'Control+K Meta+K');
+    expect(box?.getAttribute('title')).toMatch(/\(\S+K\)$/);
+  });
+
+  it('shows the one that starts a conversation', async () => {
+    const { container } = await renderSidebar();
+
+    expect(
+      within(container).getByLabelText('New conversation')
+    ).toHaveAttribute('aria-keyshortcuts', 'Control+N Meta+N');
   });
 });

@@ -92,3 +92,32 @@ describe('the wording of the header controls', () => {
     await waitLocale();
   });
 });
+
+describe('the shortcuts the header does not otherwise mention', () => {
+  it('shows the one that starts a conversation', () => {
+    const { container } = render(Header);
+
+    // Ctrl+N, Ctrl+K and Ctrl+, all worked and nothing anywhere said so.
+    // Matched as a trailing bracketed shortcut: the button's own name
+    // contains an N, so looking for one proves nothing.
+    const button = within(container).getByLabelText('New conversation');
+    expect(button.getAttribute('title')).toMatch(/\(\S+N\)$/);
+  });
+
+  it('tells assistive tech about it in the form ARIA defines', () => {
+    const { container } = render(Header);
+
+    // Both modifiers, because the app answers to both.
+    expect(
+      within(container).getByLabelText('New conversation')
+    ).toHaveAttribute('aria-keyshortcuts', 'Control+N Meta+N');
+  });
+
+  it('shows the one that opens the settings', () => {
+    const { container } = render(Header);
+
+    expect(
+      narrowWindowRow(container).getByLabelText('Open settings menu')
+    ).toHaveAttribute('aria-keyshortcuts', 'Control+, Meta+,');
+  });
+});

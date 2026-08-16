@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { keyShortcuts, titleWithShortcut } from '$lib/utils/shortcuts';
   import { _ } from 'svelte-i18n';
   import CogIcon from 'lucide-svelte/icons/cog';
   import MenuIcon from 'lucide-svelte/icons/menu';
@@ -64,8 +65,9 @@
       variant="ghost"
       size="icon-xl"
       onclick={() => goto(resolve('/'))}
-      title={$_('header.buttons.newConv')}
+      title={titleWithShortcut($_('header.buttons.newConv'), 'N')}
       aria-label={$_('header.ariaLabels.newConv')}
+      aria-keyshortcuts={keyShortcuts('N')}
     >
       <SquarePenIcon size={20} />
     </Button>
@@ -78,8 +80,9 @@
         variant="ghost"
         size="icon-xl"
         onclick={() => goto(resolve('/settings'))}
-        title={$_('header.buttons.settings')}
+        title={titleWithShortcut($_('header.buttons.settings'), ',')}
         aria-label={$_('header.ariaLabels.settings')}
+        aria-keyshortcuts={keyShortcuts(',')}
       >
         <CogIcon size={20} />
       </Button>
@@ -112,8 +115,9 @@
         variant="ghost"
         size="icon-xl"
         onclick={() => goto(resolve('/settings'))}
-        title={$_('header.buttons.settings')}
+        title={titleWithShortcut($_('header.buttons.settings'), ',')}
         aria-label={$_('header.ariaLabels.settings')}
+        aria-keyshortcuts={keyShortcuts(',')}
       >
         <CogIcon size={20} />
       </Button>

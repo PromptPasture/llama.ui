@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { keyShortcuts, titleWithShortcut } from '$lib/utils/shortcuts';
   import { _, locale } from 'svelte-i18n';
   import SearchIcon from 'lucide-svelte/icons/search';
   import SquarePenIcon from 'lucide-svelte/icons/square-pen';
@@ -181,8 +182,9 @@
       variant="ghost"
       size="icon-xl"
       onclick={handleNewChat}
-      title={$_('header.buttons.newConv')}
+      title={titleWithShortcut($_('header.buttons.newConv'), 'N')}
       aria-label={$_('header.ariaLabels.newConv')}
+      aria-keyshortcuts={keyShortcuts('N')}
     >
       <SquarePenIcon size={20} />
     </Button>
@@ -196,6 +198,8 @@
       type="text"
       class="sidebar__search-input"
       placeholder={$_('sidebar.searchPlaceHolder')}
+      title={titleWithShortcut($_('sidebar.searchPlaceHolder'), 'K')}
+      aria-keyshortcuts={keyShortcuts('K')}
       bind:value={searchTerm}
       onkeydown={(e) => {
         if (e.key !== 'Escape' || !searchTerm) return;
