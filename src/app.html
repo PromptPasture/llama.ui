@@ -18,6 +18,11 @@
       rel="apple-touch-icon"
       href="%sveltekit.assets%/assets/apple-icon-180.png"
     />
+    <!-- The plugin can add this itself, but only through Vite's HTML
+         transform, which SvelteKit's generated pages never reach. Without it
+         the browser never reads the manifest, so the icons, name and display
+         mode go unused and the app cannot be installed. -->
+    <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
     <!-- Overwritten below to match the theme. Declared here, ahead of the
          script, so that it exists by the time the script looks for it. -->
     <meta name="theme-color" content="#ffffff" />

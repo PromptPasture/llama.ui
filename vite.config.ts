@@ -25,8 +25,12 @@ export default defineConfig({
         // the splash screen cannot follow the theme the way the page does.
         theme_color: '#ffffff',
         background_color: '#ffffff',
-        start_url: 'https://llama-ui.js.org',
-        scope: 'https://llama-ui.js.org',
+        // Resolved against wherever the manifest is served from. Naming one
+        // site pinned both to it, and a manifest whose scope is another origin
+        // is rejected — so anyone running their own copy, which is most of the
+        // point of this app, could not install it.
+        start_url: '.',
+        scope: '.',
         orientation: 'any',
         lang: 'en',
         icons: [
@@ -72,7 +76,9 @@ export default defineConfig({
         shortcuts: [
           {
             name: 'New Chat',
-            url: '/',
+            // Relative for the same reason as scope: an absolute path leaves
+            // the scope of an app served from a subdirectory.
+            url: '.',
             description: 'Start a new chat.',
           },
         ],
