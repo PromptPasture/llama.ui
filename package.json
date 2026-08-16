@@ -13,9 +13,9 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"format": "eslint . && prettier --write .",
-		"lint": "eslint .",
-		"lint:fix": "eslint --fix .",
+		"format": "prettier --write src/",
+		"lint": "eslint . && prettier --check src/",
+		"lint:fix": "eslint --fix . && prettier --write src/",
 		"preview": "npm run build && vite preview"
 	},
 	"dependencies": {
@@ -32,12 +32,20 @@
 		"vite-plugin-pwa": "^1.3.0"
 	},
 	"devDependencies": {
+		"@eslint/js": "^10.0.1",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"eslint": "^10.8.1",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.23.0",
+		"globals": "^17.11.0",
+		"prettier": "^3.9.6",
+		"prettier-plugin-svelte": "^4.1.1",
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.67.0",
 		"vite": "^8.0.16",
 		"vite-plugin-package-version": "^1.1.0"
 	},
@@ -46,7 +54,18 @@
 		"tabWidth": 2,
 		"semi": true,
 		"singleQuote": true,
-		"bracketSameLine": false
+		"bracketSameLine": false,
+		"plugins": [
+			"prettier-plugin-svelte"
+		],
+		"overrides": [
+			{
+				"files": "*.svelte",
+				"options": {
+					"parser": "svelte"
+				}
+			}
+		]
 	},
 	"repository": {
 		"type": "git",
