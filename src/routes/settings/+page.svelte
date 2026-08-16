@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { goto } from '$app/navigation';
+  import { afterNavigate, goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { CONFIG_DEFAULT, INFERENCE_PROVIDERS } from '$lib/config';
   import { app } from '$lib/state/app.svelte';
@@ -132,10 +132,25 @@
     }
   }
 
+  /**
+   * Where saving or cancelling returns to. The conversation cannot be asked
+   * for once we are here — leaving its route unloads it — so remember the page
+   * we arrived from. Null when the settings were opened directly, by URL or
+   * from the installed app's launcher.
+   */
+  let cameFrom = $state<string | null>(null);
+
+  afterNavigate(({ from }) => {
+    const path = from?.url.pathname ?? null;
+    // Guard against the settings sending you back to themselves.
+    cameFrom = path && path !== resolve('/settings') ? path : null;
+  });
+
   function handleClose() {
-    const conv = inference.selectedModel; // just checking if we have context
-    void conv;
-    goto(resolve('/'));
+    // cameFrom is a pathname SvelteKit itself reported for a completed
+    // navigation, so it already carries the base path that resolve() adds.
+    // eslint-disable-next-line svelte/no-navigation-without-resolve
+    goto(cameFrom ?? resolve('/'));
   }
 
   async function handleSavePreset(name: string, config: Configuration) {
