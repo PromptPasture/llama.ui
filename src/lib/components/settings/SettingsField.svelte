@@ -34,6 +34,10 @@
     onchange,
   }: Props = $props();
 
+  // Ties the label to the control it names. Only one settings tab is on
+  // screen at a time, and a key appears once within it.
+  const fieldId = $derived(`setting-${configKey}`);
+
   const label = $derived(
     $_(`settings.parameters.${configKey}.label`, { default: configKey })
   );
@@ -56,8 +60,9 @@
     </label>
   {:else if type === 'short'}
     <div class="field__row">
-      <span class="field__row-label">{label}</span>
+      <label class="field__row-label" for={fieldId}>{label}</label>
       <Input
+        id={fieldId}
         variant="bordered"
         value={String(value)}
         placeholder={`Default: ${defaultVal ?? 'none'}`}
@@ -67,8 +72,9 @@
     </div>
   {:else if type === 'long'}
     <div class="field__col">
-      <span class="field__col-label">{label}</span>
+      <label class="field__col-label" for={fieldId}>{label}</label>
       <Textarea
+        id={fieldId}
         value={String(value)}
         placeholder={`Default: ${defaultVal ?? 'none'}`}
         {disabled}
@@ -77,8 +83,9 @@
     </div>
   {:else if type === 'range' && range}
     <div class="field__row">
-      <span class="field__row-label">{label}</span>
+      <label class="field__row-label" for={fieldId}>{label}</label>
       <Input
+        id={fieldId}
         variant="range"
         type="range"
         min={range.min}
