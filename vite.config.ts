@@ -80,7 +80,12 @@ export default defineConfig({
         },
       },
       workbox: {
-        globPatterns: ['**/*.{js,mjs,css,html,woff2,woff}'],
+        // woff is deliberately excluded: KaTeX ships woff2, woff and ttf, but
+        // any browser able to run this app supports woff2, so precaching the
+        // legacy copies costs every first visit ~296 KB that is never read.
+        // The files remain in the build, so a browser that wants them can
+        // still fetch them over the network.
+        globPatterns: ['**/*.{js,mjs,css,html,woff2}'],
         runtimeCaching: [
           {
             urlPattern: ({ request }) =>
