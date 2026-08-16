@@ -118,6 +118,81 @@ describe('reporting why a request failed', () => {
   });
 });
 
+describe('repeating what the server said went wrong', () => {
+  it('prefers the server explanation to the description of the status', async () => {
+    vi.stubGlobal(
+      'fetch',
+      respondWith(
+        { error: { message: 'This model requires a verified organization' } },
+        403
+      )
+    );
+
+    // 'Forbidden: Access denied' tells the reader nothing they can act on.
+    await expect(provider().getModels()).rejects.toThrow(
+      'Forbidden: This model requires a verified organization'
+    );
+  });
+
+  it('carries the detail a bad request came back with', async () => {
+    vi.stubGlobal(
+      'fetch',
+      respondWith(
+        {
+          error: {
+            message:
+              'the request exceeds the available context size: 8192 > 4096',
+          },
+        },
+        400
+      )
+    );
+
+    await expect(provider().getModels()).rejects.toThrow(/8192 > 4096/);
+  });
+
+  it('accepts an error given as a plain string', async () => {
+    // Not every OpenAI-compatible server nests it under `message`.
+    vi.stubGlobal('fetch', respondWith({ error: 'model not loaded' }, 500));
+
+    await expect(provider().getModels()).rejects.toThrow(
+      'Internal server error: model not loaded'
+    );
+  });
+
+  it('accepts an error given at the top level', async () => {
+    vi.stubGlobal('fetch', respondWith({ message: 'no slots available' }, 503));
+
+    await expect(provider().getModels()).rejects.toThrow(
+      'Service unavailable: no slots available'
+    );
+  });
+
+  it('still describes the status when the server said nothing', async () => {
+    vi.stubGlobal('fetch', respondWith({}, 401));
+
+    await expect(provider().getModels()).rejects.toThrow(
+      'Unauthorized: Invalid or missing API key'
+    );
+  });
+
+  it('ignores an explanation that is only whitespace', async () => {
+    vi.stubGlobal('fetch', respondWith({ error: { message: '   ' } }, 404));
+
+    await expect(provider().getModels()).rejects.toThrow(
+      'Not found: The requested endpoint or model does not exist'
+    );
+  });
+
+  it('names a status it has no description for', async () => {
+    vi.stubGlobal('fetch', respondWith({}, 418));
+
+    await expect(provider().getModels()).rejects.toThrow(
+      'Unknown error: HTTP 418'
+    );
+  });
+});
+
 describe('caching the model list', () => {
   it('does not refetch while the cache is warm', async () => {
     const fetchMock = respondWith({ data: [{ id: 'llama3' }] });

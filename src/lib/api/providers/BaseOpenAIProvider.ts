@@ -12,6 +12,46 @@ import { describeNetworkFailure, PROVIDER_TIMEOUT_MS } from '../response-utils';
 import { processSSEStream } from '../sse-parser';
 
 /**
+ * What each HTTP status means, as a short name and a description to fall back
+ * on when the server did not explain itself.
+ */
+const HTTP_ERRORS: Readonly<Record<number, readonly [string, string]>> = {
+  400: ['Bad request', 'Invalid parameters or malformed input'],
+  401: ['Unauthorized', 'Invalid or missing API key'],
+  402: ['Payment required', 'Quota exceeded or subscription needed'],
+  403: ['Forbidden', 'Access denied'],
+  404: ['Not found', 'The requested endpoint or model does not exist'],
+  429: ['Too many requests', 'Rate limit exceeded'],
+  444: ['No response', 'Server closed connection without response'],
+  500: ['Internal server error', 'Please try again later'],
+  502: ['Bad gateway', 'Backend service is unavailable'],
+  503: ['Service unavailable', 'Server is temporarily down'],
+  504: ['Gateway timeout', 'Backend took too long to respond'],
+};
+
+/**
+ * Digs the server's own explanation out of an error body.
+ *
+ * OpenAI-compatible servers answer with `{ error: { message } }`, but not all
+ * of them: some send `{ error: "..." }` and some `{ message: "..." }`.
+ *
+ * @param body - The parsed error body, whatever shape it arrived in
+ * @returns The explanation, or an empty string if there is none
+ */
+function errorDetail(body: unknown): string {
+  if (!body || typeof body !== 'object') return '';
+  const record = body as Record<string, unknown>;
+  const error = record.error;
+  const candidate =
+    typeof error === 'string'
+      ? error
+      : typeof (error as Record<string, unknown>)?.message === 'string'
+        ? (error as Record<string, unknown>).message
+        : record.message;
+  return typeof candidate === 'string' ? candidate.trim() : '';
+}
+
+/**
  * Base implementation for OpenAI-compatible API providers.
  *
  * This class provides a foundational implementation for interacting with
@@ -272,41 +312,15 @@ export class BaseOpenAIProvider
       console.error('API error response:', body);
     }
 
-    // Map HTTP status codes to human-readable errors
-    switch (response.status) {
-      case 400:
-        throw new Error('Bad request: Invalid parameters or malformed input');
-      case 401:
-        throw new Error('Unauthorized: Invalid or missing API key');
-      case 402:
-        throw new Error(
-          'Payment required: Quota exceeded or subscription needed'
-        );
-      case 403:
-        throw new Error('Forbidden: Access denied');
-      case 404:
-        throw new Error(
-          'Not found: The requested endpoint or model does not exist'
-        );
-      case 429:
-        throw new Error('Too many requests: Rate limit exceeded');
-      case 444:
-        throw new Error(
-          'No response: Server closed connection without response'
-        );
-      case 500:
-        throw new Error('Internal server error: Please try again later');
-      case 502:
-        throw new Error('Bad gateway: Backend service is unavailable');
-      case 503:
-        throw new Error('Service unavailable: Server is temporarily down');
-      case 504:
-        throw new Error('Gateway timeout: Backend took too long to respond');
-      default:
-        throw new Error(
-          body?.error?.message || `Unknown error: HTTP ${response.status}`
-        );
-    }
+    const [name, generic] = HTTP_ERRORS[response.status] ?? [
+      'Unknown error',
+      `HTTP ${response.status}`,
+    ];
+    // What the server said about this particular request beats anything that
+    // can be inferred from the status alone: which model is missing, which
+    // parameter is out of range, how far over the context limit the request
+    // was. Falls back to the description of the status when it said nothing.
+    throw new Error(`${name}: ${errorDetail(body) || generic}`);
   }
 
   /**
