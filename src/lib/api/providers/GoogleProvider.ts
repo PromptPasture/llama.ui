@@ -72,7 +72,9 @@ export class GoogleProvider extends CloudOpenAIProvider {
 
     return {
       id: model.id,
-      name: model.display_name,
+      // Without the fallback a model that omits its display name arrives with
+      // no name at all, and shows in the picker as a blank line.
+      name: model.display_name || model.id,
     };
   }
 }

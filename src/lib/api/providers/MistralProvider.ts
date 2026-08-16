@@ -44,14 +44,18 @@ export class MistralProvider extends CloudOpenAIProvider {
   protected jsonToModel(m: unknown): InferenceApiModel {
     const model = m as MistralModel;
 
+    // A model that lists no capabilities used to throw here, and the throw
+    // came out of the whole fetch: one entry short of a field and the picker
+    // showed nothing at all.
+    const can = model.capabilities ?? ({} as MistralModel['capabilities']);
     const modalities: Modality[] = [];
-    if (model.capabilities.completion_chat) modalities.push('text');
-    if (model.capabilities.vision) modalities.push('image');
-    if (model.capabilities.audio) modalities.push('audio');
+    if (can.completion_chat) modalities.push('text');
+    if (can.vision) modalities.push('image');
+    if (can.audio) modalities.push('audio');
 
     return {
       id: model.id,
-      name: model.name,
+      name: model.name || model.id,
       description: model.description,
       created: model.created,
       modalities,

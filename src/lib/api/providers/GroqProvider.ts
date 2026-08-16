@@ -61,7 +61,8 @@ export class GroqProvider extends CloudOpenAIProvider {
 
     return {
       id: model.id,
-      name: `${model.owned_by}: ${model.id}`,
+      // Interpolated unguarded, a model without an owner reads 'undefined:'.
+      name: model.owned_by ? `${model.owned_by}: ${model.id}` : model.id,
       created: model.created,
     };
   }
