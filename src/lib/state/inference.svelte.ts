@@ -66,18 +66,20 @@ export const inference = {
         : null;
     }
 
-    if (Object.is(prevConfig, CONFIG_DEFAULT) || !!config.baseUrl) {
-      if (isProviderReady(config)) {
-        state.models = await inference.fetchModels(config, { silent: true });
-      } else {
-        state.models = [];
-      }
+    if (!isProviderReady(config)) {
+      // Clearing the base url leaves nothing to talk to, so the previous
+      // provider's models must not stay in the picker.
+      state.models = [];
+    } else if (Object.is(prevConfig, CONFIG_DEFAULT) || !!config.baseUrl) {
+      state.models = await inference.fetchModels(config, { silent: true });
     }
 
-    if (config.model && state.models.length > 0) {
-      state.selectedModel =
-        state.models.find((m) => m.id === config.model) ?? null;
-    }
+    // Always recomputed. Assigning only on a match left the model from the
+    // previous provider selected after switching, and every reply generated
+    // afterwards was labelled with its name.
+    state.selectedModel = config.model
+      ? (state.models.find((m) => m.id === config.model) ?? null)
+      : null;
 
     _prevConfig = config;
   },
