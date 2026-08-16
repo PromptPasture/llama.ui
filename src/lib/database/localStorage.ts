@@ -87,6 +87,22 @@ export default class LocalStorage {
   }
 
   /**
+   * Retrieves the language chosen in the settings.
+   * @returns The stored language tag, or null to follow the browser.
+   */
+  static getLanguage(): string | null {
+    return localStorage.getItem('language');
+  }
+
+  /**
+   * Saves the chosen language.
+   * @param language The language tag to store.
+   */
+  static setLanguage(language: string) {
+    localStorage.setItem('language', language);
+  }
+
+  /**
    * Retrieves the currently selected syntax theme.
    * @returns The theme string ('auto', etc.) or 'auto' if not set.
    */

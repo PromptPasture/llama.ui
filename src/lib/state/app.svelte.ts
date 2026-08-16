@@ -1,3 +1,4 @@
+import { locale } from 'svelte-i18n';
 import { CONFIG_DEFAULT, THEME_COLORS } from '$lib/config';
 import IndexedDB from '$lib/database/indexedDB';
 import LocalStorage from '$lib/database/localStorage';
@@ -101,6 +102,17 @@ export const app = {
       document.documentElement.setAttribute('data-theme', theme);
     }
     applyThemeColor(theme);
+  },
+
+  /**
+   * Applies and remembers the interface language. Without the storing half,
+   * the choice lasts until the page is reloaded and then falls back to
+   * whatever the browser asks for.
+   */
+  switchLanguage(language: string): void {
+    LocalStorage.setLanguage(language);
+    locale.set(language);
+    document.documentElement.setAttribute('lang', language);
   },
 
   async importDB(

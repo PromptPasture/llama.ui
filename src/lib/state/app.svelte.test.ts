@@ -64,6 +64,22 @@ describe('following the system theme', () => {
   });
 });
 
+describe('choosing a language', () => {
+  it('remembers it for the next visit', () => {
+    app.switchLanguage('ja');
+
+    // initI18n reads this key; without it the choice lasted only until the
+    // page was reloaded, which then reverted to the browser's language.
+    expect(localStorage.getItem('language')).toBe('ja');
+  });
+
+  it('tells the document what language it is in', () => {
+    app.switchLanguage('ja');
+
+    expect(document.documentElement.getAttribute('lang')).toBe('ja');
+  });
+});
+
 describe('the browser chrome', () => {
   const themeColor = () =>
     document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]')

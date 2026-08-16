@@ -36,7 +36,18 @@
 
   let { config, onchange }: Props = $props();
 
-  const currentLocale = $derived($locale ?? 'en');
+  /**
+   * Which entry in the list the interface is actually using. Browsers report a
+   * region — 'en-US', 'de-DE' — and svelte-i18n keeps the tag it was given, so
+   * matching it against the list directly leaves the field blank for almost
+   * everyone who has not chosen a language. Narrow it the same way svelte-i18n
+   * resolves a catalogue: exact tag, then the base language, then the fallback.
+   */
+  const currentLocale = $derived.by(() => {
+    const supported = (tag?: string | null) =>
+      SUPPORTED_LANGUAGES.some((l) => l.value === tag) ? tag : undefined;
+    return supported($locale) ?? supported($locale?.split('-')[0]) ?? 'en';
+  });
 </script>
 
 <section>
@@ -53,10 +64,7 @@
     configKey="language"
     value={currentLocale}
     options={SUPPORTED_LANGUAGES}
-    onchange={(v) => {
-      locale.set(String(v));
-      document.documentElement.setAttribute('lang', String(v));
-    }}
+    onchange={(v) => app.switchLanguage(String(v))}
   />
 
   <SettingsDropdownField
