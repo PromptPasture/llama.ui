@@ -1,9 +1,7 @@
 <script lang="ts">
   import 'katex/dist/katex.min.css';
-  import DOMPurify from 'dompurify';
-  import { marked, type RendererObject } from 'marked';
-  import markedKatex from 'marked-katex-extension';
   import { copyStr } from '$lib/utils/dom-helpers';
+  import { renderMarkdown } from '$lib/utils/markdown';
 
   interface Props {
     content: string;
@@ -12,71 +10,7 @@
 
   let { content, streaming = false }: Props = $props();
 
-  marked.use(markedKatex({ throwOnError: false }));
-  marked.use({ breaks: true, gfm: true });
-
-  // Custom renderer: wrap tables and code blocks
-  const renderer: RendererObject = {
-    table(token) {
-      const header = token.header
-        .map((cell) => `<th>${cell.text}</th>`)
-        .join('');
-      const rows = token.rows
-        .map(
-          (row) =>
-            `<tr>${row.map((cell) => `<td>${cell.text}</td>`).join('')}</tr>`
-        )
-        .join('');
-      return `<div class="table-wrapper"><table><thead><tr>${header}</tr></thead><tbody>${rows}</tbody></table></div>`;
-    },
-    code(token) {
-      const lang = token.lang ?? '';
-      const escaped = token.text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      return `<div class="code-block" data-lang="${lang}">
-        <div class="code-block__toolbar">
-          ${lang ? `<span class="code-block__lang">${lang}</span>` : ''}
-          <button type="button" class="code-block__copy-btn" data-code="${token.text.replace(/"/g, '&quot;')}">Copy</button>
-        </div>
-        <pre><code class="language-${lang}">${escaped}</code></pre>
-      </div>`;
-    },
-  };
-  marked.use({ renderer });
-
-  // marked passes raw HTML through untouched and this content is model output,
-  // so it is sanitised before reaching {@html}. The extra tag and attribute
-  // keep KaTeX's MathML annotation, which holds the original TeX source.
-  const html = $derived(
-    DOMPurify.sanitize(marked.parse(preprocessLaTeX(content)) as string, {
-      ADD_TAGS: ['annotation'],
-      ADD_ATTR: ['encoding'],
-    })
-  );
-
-  function preprocessLaTeX(src: string): string {
-    const codeBlocks: string[] = [];
-    let s = src.replace(/(```[\s\S]*?```|`[^`\n]+`)/g, (m) => {
-      codeBlocks.push(m);
-      return `<<CB_${codeBlocks.length - 1}>>`;
-    });
-    const latexExprs: string[] = [];
-    s = s.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\(.*?\\\))/g, (m) => {
-      latexExprs.push(m);
-      return `<<LX_${latexExprs.length - 1}>>`;
-    });
-    s = s.replace(/\$([^$]+)\$/g, (m, inner) => {
-      if (/^\s*\d+(?:\.\d+)?\s*$/.test(inner)) return m;
-      latexExprs.push(m);
-      return `<<LX_${latexExprs.length - 1}>>`;
-    });
-    s = s.replace(/\$(?=\d)/g, '\\$');
-    s = s.replace(/<<LX_(\d+)>>/g, (_, i) => latexExprs[+i]);
-    s = s.replace(/<<CB_(\d+)>>/g, (_, i) => codeBlocks[+i]);
-    return s;
-  }
+  const html = $derived(renderMarkdown(content));
 
   function handleClick(e: MouseEvent) {
     const btn = (e.target as HTMLElement).closest(
