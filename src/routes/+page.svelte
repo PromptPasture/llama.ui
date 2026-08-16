@@ -23,9 +23,21 @@
     }
   }
 
-  const samplePrompts = $derived(
-    getUniqueRandomElements(getSamplePrompts(), SAMPLE_COUNT)
-  );
+  /**
+   * Chosen once for each set of prompts, not derived from them.
+   *
+   * A derived value may be recomputed whenever it is read, and this one picks
+   * at random: two reads within a single update returned different prompts, so
+   * the keyed list saw a name twice and Svelte refused to render it. The
+   * welcome screen is the first thing a visitor sees.
+   */
+  // The rule below suggests a derived; a derived is what produced the bug.
+  // eslint-disable-next-line svelte/prefer-writable-derived
+  let samplePrompts = $state<string[]>([]);
+
+  $effect(() => {
+    samplePrompts = getUniqueRandomElements(getSamplePrompts(), SAMPLE_COUNT);
+  });
 
   async function handleSend(
     content: string,
@@ -74,7 +86,10 @@
 
     {#if samplePrompts.length > 0}
       <div class="welcome__prompts">
-        {#each samplePrompts as prompt (prompt)}
+        <!-- Keyed by position: these are drawn at random, so the text is not
+             an identity. Keyed by text, a draw that happened to repeat one
+             stopped the welcome screen rendering at all. -->
+        {#each samplePrompts as prompt, i (i)}
           <button
             type="button"
             class="welcome__prompt-btn"
