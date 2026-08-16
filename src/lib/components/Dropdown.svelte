@@ -53,6 +53,7 @@
 
   let filterEl: HTMLInputElement | undefined = $state();
   let panelEl: HTMLDivElement | undefined = $state();
+  let triggerEl: HTMLButtonElement | undefined = $state();
 
   /** The option buttons, in the order they are shown. */
   const optionButtons = () => [
@@ -68,6 +69,16 @@
    * this and a good deal more besides.
    */
   function onPanelKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      // Handled here rather than on the window: the layout closes the sidebar
+      // on Escape as well, and one press should shut the list without also
+      // shutting what is behind it.
+      event.stopPropagation();
+      open = false;
+      triggerEl?.focus();
+      return;
+    }
+
     const items = optionButtons();
     if (items.length === 0) return;
 
@@ -115,13 +126,7 @@
     const current = items.find((el) => el.getAttribute('aria-current'));
     (current ?? items[0])?.focus();
   });
-
-  function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') open = false;
-  }
 </script>
-
-<svelte:window on:keydown={onkeydown} />
 
 <div class="dropdown {className}">
   {#if isDisabled}
@@ -133,6 +138,7 @@
     </div>
   {:else}
     <button
+      bind:this={triggerEl}
       type="button"
       class="dropdown__trigger"
       aria-haspopup="true"

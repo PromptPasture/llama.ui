@@ -288,3 +288,52 @@ describe('Dropdown keyboard movement', () => {
     expect(option('Alpha')).toHaveFocus();
   });
 });
+
+describe('Dropdown Escape', () => {
+  /** What the layout listens on to close the sidebar. */
+  function watchWindow() {
+    const heard: KeyboardEvent[] = [];
+    const listener = (e: Event) => heard.push(e as KeyboardEvent);
+    window.addEventListener('keydown', listener);
+    return {
+      heard,
+      stop: () => window.removeEventListener('keydown', listener),
+    };
+  }
+
+  it('closes the list', async () => {
+    const user = userEvent.setup();
+    render(DropdownHarness, { props: { options: OPTIONS } });
+    await user.click(trigger());
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+  });
+
+  it('hands the cursor back to the control that opened it', async () => {
+    const user = userEvent.setup();
+    render(DropdownHarness, { props: { options: OPTIONS } });
+    await user.click(trigger());
+
+    await user.keyboard('{Escape}');
+
+    // The list held the cursor; closing it without this leaves the keyboard
+    // at the top of the document.
+    expect(trigger()).toHaveFocus();
+  });
+
+  it('does not also close whatever is behind it', async () => {
+    const user = userEvent.setup();
+    render(DropdownHarness, { props: { options: OPTIONS } });
+    await user.click(trigger());
+    const watcher = watchWindow();
+
+    await user.keyboard('{Escape}');
+
+    // The layout closes the sidebar on Escape too, and one press should shut
+    // the list without shutting the panel it sits in.
+    expect(watcher.heard).toHaveLength(0);
+    watcher.stop();
+  });
+});
