@@ -119,7 +119,7 @@
         variant="ghost"
         size="icon-md"
         onclick={() => (searchTerm = '')}
-        aria-label={$_('header.ariaLabels.clear')}
+        aria-label={$_('sidebar.ariaLabels.clear')}
       >
         <XIcon size={14} />
       </Button>
