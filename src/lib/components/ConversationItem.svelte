@@ -111,12 +111,10 @@
   }
 </script>
 
-<li
-  class="conv-item"
-  class:active={isCurrent}
-  role="menuitem"
-  aria-label={conv.name}
->
+<!-- A plain list item: it holds two buttons, and a menuitem may hold none.
+     These are conversations to open rather than commands to run, so the list
+     is a list. -->
+<li class="conv-item" class:active={isCurrent}>
   <button
     type="button"
     class="conv-item__btn"
@@ -154,22 +152,24 @@
         onclick={() => (menuOpen = false)}
         onkeydown={() => {}}
       ></div>
+      <!-- A labelled list of buttons rather than an ARIA menu. A menu promises
+           arrow-key navigation and typeahead; tabbing between buttons is what
+           this actually offers, and a button is what each of these is. -->
       <ul
         class="conv-item__dropdown"
-        role="menu"
         aria-label={$_('sidebar.ariaLabels.dropdown')}
       >
-        <li role="menuitem">
+        <li>
           <Button variant="menu-item" size="small" onclick={handleRename}
             ><PencilIcon size={14} />{$_('sidebar.buttons.rename')}</Button
           >
         </li>
-        <li role="menuitem">
+        <li>
           <Button variant="menu-item" size="small" onclick={handleDownload}
             ><DownloadIcon size={14} />{$_('sidebar.buttons.download')}</Button
           >
         </li>
-        <li role="menuitem">
+        <li>
           <Button
             variant="menu-item"
             size="small"

@@ -309,10 +309,12 @@ describe('Sidebar showing why a conversation matched', () => {
 
     // The name is the opening message trimmed, so a match found deeper in a
     // conversation is otherwise a result with no visible reason for being one.
-    const item = await screen.findByRole('menuitem', {
-      name: CONVERSATIONS[0].name,
-    });
-    expect(item.textContent).toContain('…and then add the yeast…');
+    const item = (
+      await screen.findByRole('button', {
+        name: `Select conversation: ${CONVERSATIONS[0].name}`,
+      })
+    ).closest('li');
+    expect(item?.textContent).toContain('…and then add the yeast…');
   });
 
   it('marks the words that matched', async () => {
@@ -340,7 +342,9 @@ describe('Sidebar showing why a conversation matched', () => {
 
     expect(
       screen
-        .getByRole('menuitem', { name: 'Holiday planning' })
+        .getByRole('button', {
+          name: 'Select conversation: Holiday planning',
+        })
         .textContent?.trim()
     ).toBe('Holiday planning');
   });

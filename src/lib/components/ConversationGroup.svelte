@@ -22,7 +22,7 @@
   <div class="conv-group__label" role="note">
     {$_(`sidebar.groups.${group.title}`, { default: group.title })}
   </div>
-  <ul class="conv-group__list" role="menu">
+  <ul class="conv-group__list">
     {#each group.conversations as conv (conv.id)}
       <ConversationItem {conv} {currentConvId} onselect={onitemselect} />
     {/each}

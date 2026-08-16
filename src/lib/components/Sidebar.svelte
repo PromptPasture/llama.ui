@@ -175,7 +175,7 @@
         />
       {/each}
     {:else}
-      <ul role="menu" class="sidebar__filtered-list">
+      <ul class="sidebar__filtered-list">
         {#each matches as match (match.conv.id)}
           <ConversationItem
             conv={match.conv}

@@ -211,3 +211,38 @@ describe('while a reply is being generated', () => {
     expect(mocks.error).toHaveBeenCalled();
   });
 });
+
+describe('how a conversation is presented to a screen reader', () => {
+  it('is a list item, not a menu item', async () => {
+    const { container } = render(ConversationItem, { props: { conv } });
+
+    // A menuitem may hold no focusable descendants, and this holds two: the
+    // conversation itself and the button that opens its actions.
+    expect(container.querySelector('[role="menuitem"]')).toBeNull();
+    expect(screen.getByRole('listitem')).toBeInTheDocument();
+  });
+
+  it('offers the conversation and its actions as buttons', async () => {
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv } });
+
+    await user.click(screen.getByRole('button', { name: 'Show more options' }));
+
+    // Tabbing between buttons is what this offers, so buttons is what they
+    // are: an ARIA menu would promise arrow keys that do nothing here.
+    for (const name of [/Rename/, /Download/, /Delete/]) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
+  });
+
+  it('says what the list of actions is for', async () => {
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv } });
+
+    await user.click(screen.getByRole('button', { name: 'Show more options' }));
+
+    expect(
+      screen.getByRole('list', { name: 'More options' })
+    ).toBeInTheDocument();
+  });
+});
