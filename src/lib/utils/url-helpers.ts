@@ -1,25 +1,12 @@
 /**
- * Removes specified query parameters from the current URL and updates the browser history.
+ * Joins a base URL and a path, tolerating the slashes people actually type.
  *
- * @param removeQueryParams - An array of query parameter names to remove from the current URL
- */
-export const cleanCurrentUrl = (removeQueryParams: string[]) => {
-  const url = new URL(window.location.href);
-  removeQueryParams.forEach((param) => {
-    url.searchParams.delete(param);
-  });
-  window.history.replaceState({}, '', url.toString());
-};
-
-/**
- * Normalizes a URL by combining a base URL with a path, ensuring proper slash handling.
+ * The base URL comes from a settings field, so it may or may not end in a
+ * slash; the path is supplied by a provider and may or may not begin with one.
  *
- * This function removes trailing slashes from the base URL, ensures the path starts with
- * a single slash, and removes any trailing slashes from the final path component.
- *
- * @param path - The path to append (e.g., '/v1/models' or 'v1/models')
- * @param base - The base URL (e.g., 'https://api.example.com' or 'https://example.com/api/')
- * @returns The normalized URL with proper slash formatting
+ * @param path - The path to append, with or without a leading slash.
+ * @param base - The base URL, with or without a trailing slash.
+ * @returns The two joined by exactly one slash.
  */
 export function normalizeUrl(path: string, base: string) {
   const cleanBase = base.replace(/\/+$/, '');
