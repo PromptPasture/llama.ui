@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import IndexedDB from './indexedDB';
-import type { Message } from '../types';
+import type { ExportJsonStructure, Message } from '../types';
 
 beforeAll(() => {
   // The legacy migration is covered separately; keep it out of the way here.
@@ -233,5 +233,83 @@ describe('exporting and importing', () => {
     expect(await IndexedDB.getOneConversation(conv.id)).toMatchObject({
       name: 'Restore me',
     });
+  });
+});
+
+describe('searching the conversations', () => {
+  // The store outlives each test in this file, and these assertions are about
+  // exactly which conversations come back.
+  beforeEach(async () => {
+    for (const conv of await IndexedDB.getAllConversations()) {
+      await IndexedDB.deleteConversation(conv.id);
+    }
+  });
+
+  const names = async (term: string) =>
+    (await IndexedDB.searchConversations(term)).map((c) => c.name);
+
+  it('finds one by its name', async () => {
+    await chat('Bread recipe', ['how much yeast']);
+    await chat('Rust borrow checker', ['what is a lifetime']);
+
+    expect(await names('bread')).toEqual(['Bread recipe']);
+  });
+
+  it('finds one by something said inside it', async () => {
+    await chat('Bread recipe', ['how much yeast']);
+    await chat('Rust borrow checker', ['what is a lifetime']);
+
+    // A name is only the opening message trimmed, so searching names alone
+    // finds a conversation by how it began and never by where it went.
+    expect(await names('lifetime')).toEqual(['Rust borrow checker']);
+  });
+
+  it('ignores case on both sides', async () => {
+    await chat('Bread recipe', ['Sourdough STARTER']);
+
+    expect(await names('sourdough starter')).toEqual(['Bread recipe']);
+    expect(await names('BREAD')).toEqual(['Bread recipe']);
+  });
+
+  it('lists a conversation once when the name and a message both match', async () => {
+    await chat('Bread recipe', ['more bread please', 'and bread again']);
+
+    expect(await names('bread')).toEqual(['Bread recipe']);
+  });
+
+  it('finds nothing for a term nobody used', async () => {
+    await chat('Bread recipe', ['how much yeast']);
+
+    expect(await names('quantum')).toEqual([]);
+  });
+
+  it('returns everything for a blank search', async () => {
+    await chat('Bread recipe', ['how much yeast']);
+    await chat('Rust borrow checker', ['what is a lifetime']);
+
+    expect((await names('   ')).sort()).toEqual([
+      'Bread recipe',
+      'Rust borrow checker',
+    ]);
+  });
+
+  it('is not upset by an imported message with no text in it', async () => {
+    await chat('Bread recipe', ['how much yeast']);
+    // Import checks a message's id and convId and nothing else, so a file can
+    // put anything at all in content. This pins the outcome — the search still
+    // answers — rather than the type check that guards it, which cannot be
+    // shown to be load-bearing here: removing it does not fail this test.
+    await IndexedDB.importDB([
+      {
+        table: 'conversations',
+        rows: [{ id: 'imported', name: 'From a file', lastModified: 1 }],
+      },
+      {
+        table: 'messages',
+        rows: [{ id: ++nextId, convId: 'imported', content: null }],
+      },
+    ] as unknown as ExportJsonStructure);
+
+    expect(await names('yeast')).toEqual(['Bread recipe']);
   });
 });

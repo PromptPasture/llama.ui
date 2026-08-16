@@ -15,6 +15,7 @@ import type { Conversation } from '$lib/types';
 const mocks = vi.hoisted(() => ({
   goto: vi.fn(),
   getAllConversations: vi.fn(),
+  searchConversations: vi.fn(),
   onConversationChanged: vi.fn(),
   offConversationChanged: vi.fn(),
 }));
@@ -25,6 +26,7 @@ vi.mock('$app/state', () => ({ page: { params: {} } }));
 vi.mock('$lib/database/indexedDB', () => ({
   default: {
     getAllConversations: mocks.getAllConversations,
+    searchConversations: mocks.searchConversations,
     onConversationChanged: mocks.onConversationChanged,
     offConversationChanged: mocks.offConversationChanged,
   },
@@ -60,6 +62,13 @@ const CONVERSATIONS = [
 beforeEach(() => {
   mocks.goto.mockClear();
   mocks.getAllConversations.mockResolvedValue(CONVERSATIONS);
+  // Stands in for the database: the real one also reads message content, which
+  // these conversations do not have.
+  mocks.searchConversations.mockImplementation(async (term: string) =>
+    CONVERSATIONS.filter((c) =>
+      c.name.toLowerCase().includes(term.toLowerCase())
+    )
+  );
 });
 
 async function renderSidebar(props: Record<string, unknown> = {}) {
@@ -224,5 +233,31 @@ describe('Sidebar navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Close sidebar' }));
 
     expect(onclose).toHaveBeenCalled();
+  });
+});
+
+describe('Sidebar search results arriving out of order', () => {
+  const search = () => screen.getByPlaceholderText('Search');
+
+  it('keeps the newest search, not the one that answered last', async () => {
+    const user = userEvent.setup();
+    // Searching reads every message, so a search for a short term can take
+    // longer than the narrower one typed after it.
+    const pending = new Map<string, (c: Conversation[]) => void>();
+    mocks.searchConversations.mockImplementation(
+      (term: string) =>
+        new Promise<Conversation[]>((res) => pending.set(term, res))
+    );
+    await renderSidebar();
+
+    await user.type(search(), 'ho');
+    await user.type(search(), 'l');
+
+    // The broader search answers second, with what is now the wrong answer.
+    pending.get('hol')?.([CONVERSATIONS[2]]);
+    pending.get('ho')?.([CONVERSATIONS[0], CONVERSATIONS[1]]);
+
+    expect(await screen.findByText('Holiday planning')).toBeInTheDocument();
+    expect(screen.queryByText('Recipe for bread')).not.toBeInTheDocument();
   });
 });

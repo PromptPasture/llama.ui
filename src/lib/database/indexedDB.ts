@@ -431,6 +431,44 @@ export default class IndexedDB {
     dispatchConversationChange(convId);
   }
 
+  /**
+   * Finds conversations matching a search term.
+   *
+   * Matches the name or anything said inside, because a name is only the
+   * opening message trimmed to length — so searching by name alone finds a
+   * conversation solely by how it happened to start, and never by what it
+   * turned out to be about.
+   *
+   * @param term The text to look for. Blank returns everything.
+   * @returns The matching conversations, most recently changed first.
+   */
+  static async searchConversations(term: string): Promise<Conversation[]> {
+    const all = await IndexedDB.getAllConversations();
+    const needle = term.trim().toLowerCase();
+    if (!needle) return all;
+
+    const byName = all.filter((c) => c.name.toLowerCase().includes(needle));
+    const named = new Set(byName.map((c) => c.id));
+
+    // One pass over the messages rather than a query per conversation: the
+    // content is not indexed, so either way every message is read, and this
+    // reads them once.
+    const spokenIn = new Set<string>();
+    await db.messages.each((message) => {
+      if (
+        !spokenIn.has(message.convId) &&
+        !named.has(message.convId) &&
+        // Import validates a message's id and convId and nothing else.
+        typeof message.content === 'string' &&
+        message.content.toLowerCase().includes(needle)
+      ) {
+        spokenIn.add(message.convId);
+      }
+    });
+
+    return all.filter((c) => named.has(c.id) || spokenIn.has(c.id));
+  }
+
   // --- Export / Import Functions ---
 
   /**

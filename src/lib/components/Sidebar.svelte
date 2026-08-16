@@ -25,13 +25,34 @@
 
   const currentConvId = $derived(page.params.convId as string | undefined);
 
-  const filteredConversations = $derived(
-    searchTerm.trim()
-      ? conversations.filter((c) =>
-          c.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      : []
-  );
+  let filteredConversations = $state<Conversation[]>([]);
+
+  /**
+   * Searching reads every message, so it happens off to the side rather than
+   * as the list is derived. Results can arrive out of order when one search
+   * outruns another, so each is numbered and only the newest is kept.
+   */
+  let searchNo = 0;
+
+  // Named so the effect below tracks both: the list matters as well as the
+  // term, or a conversation renamed or deleted during a search would linger in
+  // the results.
+  const searchInputs = $derived({
+    term: searchTerm.trim(),
+    listSize: conversations.length,
+  });
+
+  $effect(() => {
+    const { term } = searchInputs;
+    if (!term) {
+      filteredConversations = [];
+      return;
+    }
+    const mine = ++searchNo;
+    IndexedDB.searchConversations(term).then((found) => {
+      if (mine === searchNo) filteredConversations = found;
+    });
+  });
 
   const isFiltered = $derived(searchTerm.trim().length > 0);
 
