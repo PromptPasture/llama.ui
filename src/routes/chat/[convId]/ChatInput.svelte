@@ -17,6 +17,11 @@
     MAX_FILE_BYTES,
   } from '$lib/utils/text-file';
   import { isImageType, readAsDataUrl } from '$lib/utils/image-file';
+  import {
+    readAttachments,
+    writeAttachments,
+    type PendingAttachment,
+  } from '$lib/utils/attachments';
   import type { MessageExtra } from '$lib/types';
 
   interface Props {
@@ -45,10 +50,22 @@
    * Carries an id of its own because two attachments can share a name — the
    * same file picked twice — and keying the list by name crashes the render.
    */
-  let attached = $state<{ id: number; extra: MessageExtra }[]>([]);
+  let attached = $state<PendingAttachment[]>(readAttachments(shownConv));
 
-  /** Identifies every attachment. Only ever counts up. */
-  let counter = 0;
+  /** Identifies every attachment. Carries on from whatever was already
+   * waiting, so no two of them share a key. Only ever counts up. */
+  let counter = untrack(() => highestId(attached));
+
+  function highestId(items: PendingAttachment[]): number {
+    return items.reduce((highest, a) => Math.max(highest, a.id), 0);
+  }
+
+  /** Assigns and remembers together, so no path can change one without the
+   * other. */
+  function setAttached(next: PendingAttachment[]) {
+    attached = next;
+    writeAttachments(convId, next);
+  }
 
   /** Numbers pasted text, which has no name of its own to be known by. */
   let pasteCount = 0;
@@ -66,9 +83,10 @@
       if (id === shownConv) return;
       shownConv = id;
       value = readDraft(id);
-      // Attachments belong to the message they were made for, and this is a
-      // different conversation now.
-      attached = [];
+      // Attachments belong to the message they were made for, so this picks
+      // up whatever was left waiting in the conversation being opened.
+      attached = readAttachments(id);
+      counter = highestId(attached);
       resize();
     });
   });
@@ -89,7 +107,7 @@
     if (!msg && attached.length === 0) return;
     const sent = attached;
     value = '';
-    attached = [];
+    setAttached([]);
     writeDraft(convId, '');
     resize();
     const ok = await onsend(
@@ -98,7 +116,7 @@
     );
     if (ok === false) {
       value = msg;
-      attached = sent;
+      setAttached(sent);
       writeDraft(convId, msg);
     }
   }
@@ -144,11 +162,11 @@
 
   function attach(extra: MessageExtra) {
     counter += 1;
-    attached = [...attached, { id: counter, extra }];
+    setAttached([...attached, { id: counter, extra }]);
   }
 
   function unattach(id: number) {
-    attached = attached.filter((a) => a.id !== id);
+    setAttached(attached.filter((a) => a.id !== id));
   }
 
   /**

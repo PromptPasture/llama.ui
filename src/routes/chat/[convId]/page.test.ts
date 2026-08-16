@@ -26,6 +26,7 @@ vi.mock('$lib/state/tts.svelte', () => ({
 }));
 
 const { default: ChatPage } = await import('./+page.svelte');
+const { forgetAllAttachments } = await import('$lib/utils/attachments');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
@@ -38,6 +39,7 @@ beforeAll(async () => {
 beforeEach(() => {
   // An unsent message is kept for the next visit, including the next test.
   localStorage.clear();
+  forgetAllAttachments();
   vi.clearAllMocks();
 });
 
@@ -66,7 +68,7 @@ async function renderChat(convId = 'c1') {
     rerender({ data: {}, params: { convId: id } });
   // Scoped to this page: a test may have more than one of them open.
   const box = () => within(container).getByRole('textbox');
-  return { scroller, openAnother, box };
+  return { scroller, openAnother, box, container };
 }
 
 const jumpButton = () =>
@@ -172,5 +174,36 @@ describe('a message that has been typed but not sent', () => {
     const second = await renderChat('c1');
 
     expect(second.box()).toHaveValue('half a thought');
+  });
+});
+
+describe('a file attached but not sent', () => {
+  const attach = async (container: HTMLElement) => {
+    const picker =
+      container.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!picker) throw new Error('the box has no file picker');
+    await userEvent.upload(
+      picker,
+      new File(['the contents'], 'notes.txt', { type: 'text/plain' })
+    );
+  };
+
+  it('stays behind when another conversation is opened', async () => {
+    const { openAnother, container } = await renderChat('c1');
+    await attach(container);
+
+    await openAnother('c2');
+
+    expect(screen.queryByText('notes.txt')).not.toBeInTheDocument();
+  });
+
+  it('is waiting on the way back', async () => {
+    const { openAnother, container } = await renderChat('c1');
+    await attach(container);
+
+    await openAnother('c2');
+    await openAnother('c1');
+
+    expect(screen.getByText('notes.txt')).toBeInTheDocument();
   });
 });

@@ -44,6 +44,7 @@ vi.mock('$lib/components/toast.js', () => ({
 }));
 
 const { default: HomePage } = await import('./+page.svelte');
+const { forgetAllAttachments } = await import('$lib/utils/attachments');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
@@ -54,6 +55,7 @@ beforeAll(async () => {
 beforeEach(() => {
   // An unsent message is kept for the next visit, including the next test.
   localStorage.clear();
+  forgetAllAttachments();
   mocks.goto.mockClear();
   mocks.createConversation.mockClear().mockResolvedValue({
     id: 'conv-1',

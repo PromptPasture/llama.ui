@@ -21,6 +21,7 @@ vi.mock('$lib/state/chat.svelte', () => ({ chat: mocks }));
 const { default: ChatInput } = await import('./ChatInput.svelte');
 const { app } = await import('$lib/state/app.svelte');
 const { toast } = await import('$lib/components/toast');
+const { forgetAllAttachments } = await import('$lib/utils/attachments');
 
 // Set the locale explicitly rather than through initI18n(), which picks its
 // initial locale from navigator.language and is not deterministic here.
@@ -34,6 +35,7 @@ beforeAll(async () => {
 beforeEach(() => {
   // An unsent message is kept for the next visit, including the next test.
   localStorage.clear();
+  forgetAllAttachments();
   mocks.isGenerating.mockReturnValue(false);
   mocks.stopGenerating.mockClear();
 });
@@ -725,5 +727,72 @@ describe('attaching a picture', () => {
     await user.paste('a short quote');
 
     expect(textarea).toHaveValue('a short quote');
+  });
+});
+
+describe('attachments outliving the page', () => {
+  const textFile = () =>
+    new File(['the contents'], 'notes.txt', { type: 'text/plain' });
+
+  it('are waiting when the conversation is opened again', async () => {
+    const user = userEvent.setup();
+    const first = renderInput();
+    await user.upload(first.filePicker, textFile());
+    first.unmount();
+
+    renderInput();
+
+    // Going to the settings to change the model and coming back is the usual
+    // way to lose them.
+    expect(screen.getByText('notes.txt')).toBeInTheDocument();
+  });
+
+  it('stay with the conversation they were made for', async () => {
+    const user = userEvent.setup();
+    const first = renderInput();
+    await user.upload(first.filePicker, textFile());
+    first.unmount();
+
+    render(ChatInput, { props: { convId: 'conv-2', onsend: vi.fn() } });
+
+    expect(screen.queryByText('notes.txt')).not.toBeInTheDocument();
+  });
+
+  it('are gone once they have been sent', async () => {
+    const user = userEvent.setup();
+    const first = renderInput();
+    await user.upload(first.filePicker, textFile());
+    await user.type(first.textarea, 'a question{Enter}');
+    first.unmount();
+
+    renderInput();
+
+    expect(screen.queryByText('notes.txt')).not.toBeInTheDocument();
+  });
+
+  it('are gone once they have been taken off', async () => {
+    const user = userEvent.setup();
+    const first = renderInput();
+    await user.upload(first.filePicker, textFile());
+    await user.click(screen.getByRole('button', { name: 'Remove file' }));
+    first.unmount();
+
+    renderInput();
+
+    expect(screen.queryByText('notes.txt')).not.toBeInTheDocument();
+  });
+
+  it('do not take a name already in use when one is added', async () => {
+    const user = userEvent.setup();
+    const first = renderInput();
+    await user.upload(first.filePicker, textFile());
+    first.unmount();
+
+    const second = renderInput();
+    await user.upload(second.filePicker, textFile());
+
+    // Ids carry on from what was already there; restarting at one would give
+    // two attachments the same key and crash the render.
+    expect(screen.getAllByText('notes.txt')).toHaveLength(2);
   });
 });
