@@ -7,19 +7,23 @@ interface ModalEntry {
   resolve: (value: boolean | string | undefined) => void;
 }
 
-const state = $state<{ current: ModalEntry | null }>({ current: null });
+/**
+ * Questions waiting to be answered, the first of which is on screen.
+ *
+ * A queue rather than one at a time: asking a second question used to replace
+ * the first, and whoever was waiting on that one waited for ever. Nothing on
+ * screen can ask while a modal is open — the dialog makes the rest of the page
+ * inert — but a service worker finding an update does not go through the page.
+ */
+const state = $state<{ queue: ModalEntry[] }>({ queue: [] });
 
 function open(entry: ModalEntry): void {
-  state.current = entry;
-}
-
-function close(): void {
-  state.current = null;
+  state.queue = [...state.queue, entry];
 }
 
 export const modal = {
   get current() {
-    return state.current;
+    return state.queue[0] ?? null;
   },
 
   showConfirm(message: string): Promise<boolean> {
@@ -57,7 +61,11 @@ export const modal = {
   },
 
   respond(value: boolean | string | undefined): void {
-    state.current?.resolve(value);
-    close();
+    const answered = state.queue[0];
+    if (!answered) return;
+    // Taken off the queue before resolving, so the next question is the
+    // current one by the time anyone waiting on this one runs.
+    state.queue = state.queue.slice(1);
+    answered.resolve(value);
   },
 };
