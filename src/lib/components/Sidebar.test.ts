@@ -64,6 +64,7 @@ beforeEach(() => {
   mocks.getAllConversations.mockResolvedValue(CONVERSATIONS);
   // Stands in for the database: the real one also reads message content, which
   // these conversations do not have.
+  mocks.searchConversations.mockClear();
   mocks.searchConversations.mockImplementation(async (term: string) =>
     CONVERSATIONS.filter((c) =>
       c.name.toLowerCase().includes(term.toLowerCase())
@@ -147,13 +148,20 @@ describe('Sidebar conversation list', () => {
 describe('Sidebar search', () => {
   const search = () => screen.getByPlaceholderText('Search');
 
+  /**
+   * Searching waits for typing to stop, so nothing has been asked for until
+   * the pause has passed. Asserting before then reads the list as it was.
+   */
+  const searched = () =>
+    vi.waitFor(() => expect(mocks.searchConversations).toHaveBeenCalled());
+
   it('narrows the list to matching names', async () => {
     const user = userEvent.setup();
     await renderSidebar();
 
     await user.type(search(), 'holiday');
 
-    expect(screen.getByText('Holiday planning')).toBeInTheDocument();
+    expect(await screen.findByText('Holiday planning')).toBeInTheDocument();
     expect(screen.queryByText('Recipe for bread')).not.toBeInTheDocument();
   });
 
@@ -163,7 +171,9 @@ describe('Sidebar search', () => {
 
     await user.type(search(), 'RUST');
 
-    expect(screen.getByText('Debugging a rust panic')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Debugging a rust panic')
+    ).toBeInTheDocument();
     expect(screen.queryByText('Holiday planning')).not.toBeInTheDocument();
   });
 
@@ -172,9 +182,25 @@ describe('Sidebar search', () => {
     await renderSidebar();
 
     await user.type(search(), 'zzzzz');
+    await searched();
 
     expect(screen.queryByText('Recipe for bread')).not.toBeInTheDocument();
     expect(screen.queryByText('Holiday planning')).not.toBeInTheDocument();
+  });
+
+  it('asks once for a word typed in one go', async () => {
+    const user = userEvent.setup();
+    await renderSidebar();
+
+    await user.type(search(), 'holiday');
+    await searched();
+
+    // Every message is read on each search, so one per letter is seven scans
+    // of the whole store to answer a question asked once. Not pinned to
+    // exactly one: rendering seven keystrokes here can outlast the pause.
+    const calls = mocks.searchConversations.mock.calls;
+    expect(calls.length).toBeLessThan('holiday'.length);
+    expect(calls[calls.length - 1][0]).toBe('holiday');
   });
 
   it('restores the full list when the search is cleared', async () => {
@@ -250,8 +276,12 @@ describe('Sidebar search results arriving out of order', () => {
     );
     await renderSidebar();
 
+    // Typed with a pause, so the first search is already away when the second
+    // is asked for; typed together they would coalesce into one.
     await user.type(search(), 'ho');
+    await vi.waitFor(() => expect(pending.has('ho')).toBe(true));
     await user.type(search(), 'l');
+    await vi.waitFor(() => expect(pending.has('hol')).toBe(true));
 
     // The broader search answers second, with what is now the wrong answer.
     pending.get('hol')?.([CONVERSATIONS[2]]);

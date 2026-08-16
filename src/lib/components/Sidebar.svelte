@@ -42,6 +42,14 @@
     listSize: conversations.length,
   });
 
+  /**
+   * How long to wait before searching. Message content is not indexed, so a
+   * search reads every message there is: measured at ~40ms over 1,800 of them,
+   * on every keystroke, with the scans piling up on each other. Waiting for a
+   * pause turns a search per letter into one per word.
+   */
+  const SEARCH_SETTLE_MS = 200;
+
   $effect(() => {
     const { term } = searchInputs;
     if (!term) {
@@ -49,9 +57,13 @@
       return;
     }
     const mine = ++searchNo;
-    IndexedDB.searchConversations(term).then((found) => {
-      if (mine === searchNo) filteredConversations = found;
-    });
+    const timer = setTimeout(() => {
+      IndexedDB.searchConversations(term).then((found) => {
+        if (mine === searchNo) filteredConversations = found;
+      });
+    }, SEARCH_SETTLE_MS);
+    // Typing on cancels the search that was about to run for what came before.
+    return () => clearTimeout(timer);
   });
 
   const isFiltered = $derived(searchTerm.trim().length > 0);
