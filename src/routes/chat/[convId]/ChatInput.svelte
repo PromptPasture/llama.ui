@@ -27,6 +27,9 @@
   }
 
   async function send() {
+    // A reply is still arriving. Sending is refused further down anyway, and
+    // clearing the box on the way would take the message with it.
+    if (isPending) return;
     const msg = value.trim();
     if (!msg) return;
     value = '';
@@ -68,8 +71,7 @@
       rows={1}
       dir="auto"
       {onkeydown}
-      oninput={resize}
-      disabled={isPending}></textarea>
+      oninput={resize}></textarea>
 
     <div class="chat-input__actions">
       {#if isPending}

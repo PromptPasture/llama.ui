@@ -141,7 +141,7 @@ describe('ChatInput and input methods', () => {
 });
 
 describe('ChatInput while a reply is generating', () => {
-  it('offers stop instead of send, and locks the box', () => {
+  it('offers stop instead of send', () => {
     mocks.isGenerating.mockReturnValue(true);
     renderInput();
 
@@ -151,7 +151,41 @@ describe('ChatInput while a reply is generating', () => {
     expect(
       screen.queryByRole('button', { name: 'Send message' })
     ).not.toBeInTheDocument();
-    expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('leaves the box usable, so the next message can be written', async () => {
+    const user = userEvent.setup();
+    mocks.isGenerating.mockReturnValue(true);
+    const { textarea } = renderInput();
+
+    await user.type(textarea, 'and another thing');
+
+    expect(textarea).toBeEnabled();
+    expect(textarea).toHaveValue('and another thing');
+  });
+
+  it('keeps the cursor in the box while the reply arrives', () => {
+    mocks.isGenerating.mockReturnValue(true);
+    const { textarea } = renderInput();
+
+    textarea.focus();
+
+    // A disabled field cannot hold focus, so disabling it took the cursor away
+    // at the moment of sending and left it out until the reply finished.
+    expect(textarea).toHaveFocus();
+  });
+
+  it('does not send on Enter while the reply is still arriving', async () => {
+    const user = userEvent.setup();
+    mocks.isGenerating.mockReturnValue(true);
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, 'queued up{Enter}');
+
+    // Sending is refused further along anyway; what matters is that the
+    // message is still there to send once the reply finishes.
+    expect(onsend).not.toHaveBeenCalled();
+    expect(textarea).toHaveValue('queued up');
   });
 
   it('stops generation for its own conversation', async () => {
