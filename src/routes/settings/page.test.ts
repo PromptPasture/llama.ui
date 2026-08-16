@@ -28,6 +28,8 @@ vi.mock('$lib/state/modal.svelte', () => ({
 
 const { default: SettingsPage } = await import('./+page.svelte');
 const { app } = await import('$lib/state/app.svelte');
+const { inference } = await import('$lib/state/inference.svelte');
+const { toast } = await import('$lib/components/toast');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
@@ -310,5 +312,39 @@ describe('leaving by some other route than the Close button', () => {
 
     expect(cancel).not.toHaveBeenCalled();
     expect(mocks.showConfirm).not.toHaveBeenCalled();
+  });
+});
+
+describe('finding out whether the settings work', () => {
+  it('says why the models could not be fetched', async () => {
+    const failure = vi
+      .spyOn(inference, 'fetchModels')
+      .mockRejectedValue(new Error('Unauthorized: Invalid or missing API key'));
+    const shown = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fetch Models' }));
+
+    // Pressing it and seeing nothing happen is the same view a wrong url, a
+    // rejected key and a server that is down all used to give.
+    expect(shown).toHaveBeenCalledWith(
+      expect.stringContaining('Unauthorized: Invalid or missing API key')
+    );
+    failure.mockRestore();
+    shown.mockRestore();
+  });
+
+  it('says nothing when they do work', async () => {
+    const ok = vi.spyOn(inference, 'fetchModels').mockResolvedValue([]);
+    const shown = vi.spyOn(toast, 'error').mockImplementation(() => {});
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fetch Models' }));
+
+    expect(shown).not.toHaveBeenCalled();
+    ok.mockRestore();
+    shown.mockRestore();
   });
 });

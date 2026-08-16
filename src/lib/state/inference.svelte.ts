@@ -52,8 +52,11 @@ export const inference = {
     try {
       return await provider.getModels();
     } catch (err) {
-      if (!options.silent) console.error('fetch models failed:', err);
-      return [];
+      // Silent means asked for in the background — while a base url is being
+      // typed, say — where a failure at every keystroke is noise. Asked for
+      // outright, the reason is the whole point of asking.
+      if (options.silent) return [];
+      throw err;
     }
   },
 

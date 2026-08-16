@@ -146,3 +146,33 @@ describe('choosing a model when the configuration names none', () => {
     expect(inference.modelToAdopt(config({ model: '' }))).toBeNull();
   });
 });
+
+describe('asking a provider for its models', () => {
+  it('reports why it could not, when asked outright', async () => {
+    mocks.getModels.mockRejectedValue(
+      new Error('Unauthorized: Invalid or missing API key')
+    );
+
+    // Returning an empty list left a wrong url, a rejected key and a server
+    // that is down looking exactly alike.
+    await expect(inference.fetchModels(ready())).rejects.toThrow(
+      /Unauthorized/
+    );
+  });
+
+  it('stays quiet when asked in the background', async () => {
+    mocks.getModels.mockRejectedValue(new Error('Cannot reach the server'));
+
+    // Asked for at every keystroke while a url is typed, where a failure is
+    // expected until the url is finished.
+    await expect(
+      inference.fetchModels(ready(), { silent: true })
+    ).resolves.toEqual([]);
+  });
+
+  it('answers an empty list when there is no provider to ask', async () => {
+    await expect(
+      inference.fetchModels(config({ baseUrl: '' }))
+    ).resolves.toEqual([]);
+  });
+});

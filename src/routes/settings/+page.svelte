@@ -71,7 +71,18 @@
   }
 
   async function fetchModels() {
-    localModels = await inference.fetchModels(localConfig);
+    try {
+      localModels = await inference.fetchModels(localConfig);
+    } catch (error) {
+      // The one button whose job is to find out whether the settings work.
+      // It used to answer an empty list either way, leaving a wrong url, a
+      // rejected key and a server that is down looking exactly alike.
+      toast.error(
+        $_('state.inference.errors.providerError', {
+          values: { message: (error as Error).message },
+        })
+      );
+    }
   }
 
   async function handleSave() {
