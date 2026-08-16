@@ -1,5 +1,6 @@
 import { normalizeMsgsForAPI } from '$lib/api/message-normalization';
 import { isDev } from '$lib/config';
+import { nextId } from '$lib/database/id';
 import IndexedDB from '$lib/database/indexedDB';
 import { t } from '$lib/i18n/translate';
 import { generateChatStream } from '$lib/services/inference-service';
@@ -125,7 +126,7 @@ export const chat = {
     if (content === null) {
       currMsgId = parent as number;
     } else {
-      currMsgId = Date.now();
+      currMsgId = nextId();
       try {
         await IndexedDB.appendMsg(
           {
@@ -204,7 +205,7 @@ export const chat = {
     if (system) messages.unshift({ role: 'system', content: system });
 
     const { model } = deps.config;
-    const pendingId = Date.now() + 1;
+    const pendingId = nextId();
     let pendingMsg: PendingMessage = {
       id: pendingId,
       convId,
@@ -279,7 +280,7 @@ export const chat = {
     }
   ): Promise<void> {
     if (chat.isGenerating(msg.convId)) return;
-    const now = Date.now();
+    const now = nextId();
     await IndexedDB.appendMsg(
       { ...msg, id: now, timestamp: now, content: newContent },
       msg.parent

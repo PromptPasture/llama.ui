@@ -11,6 +11,7 @@ import {
   ExportJsonStructure,
   Message,
 } from '../types';
+import { nextId } from './id';
 import { migrationLStoIDB } from './migration';
 
 // --- Event Handling ---
@@ -37,28 +38,6 @@ const onConversationChangedHandlers: [
  * Dispatches a custom event indicating a conversation has changed.
  * @param convId The ID of the conversation that changed.
  */
-/**
- * The most recent id handed out, so that two allocations in the same
- * millisecond cannot repeat.
- */
-let lastIssuedId = 0;
-
-/**
- * Issues an id for a conversation or message.
- *
- * Ids are timestamps, and both stores key on them uniquely, so anything minted
- * twice within the same millisecond collided and failed the write. Keeping a
- * high-water mark preserves the ordering the timestamps give while making a
- * repeat impossible.
- *
- * @returns A millisecond timestamp, never one already issued this session.
- */
-function nextId(): number {
-  const now = Date.now();
-  lastIssuedId = now > lastIssuedId ? now : lastIssuedId + 1;
-  return lastIssuedId;
-}
-
 const dispatchConversationChange = (convId: string) => {
   event.dispatchEvent(
     new CustomEvent<string>('conversationChange', { detail: convId })
