@@ -85,7 +85,9 @@ describe('the wording of the theme choices', () => {
     const trigger = fields[1].querySelector('button');
     if (!trigger) throw new Error('the theme field has no control');
     await user.click(trigger);
-    return [...screen.getAllByRole('option')].map((o) => o.textContent?.trim());
+    return [...screen.getAllByRole('listitem')].map((o) =>
+      o.textContent?.trim()
+    );
   }
 
   it('names them in English', async () => {

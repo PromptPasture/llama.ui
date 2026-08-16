@@ -51,6 +51,14 @@
     filter = '';
   }
 
+  let filterEl: HTMLInputElement | undefined = $state();
+
+  // Typing should narrow the list straight away. Done here rather than with
+  // the autofocus attribute, which applies wherever the element appears.
+  $effect(() => {
+    if (open && filterable) filterEl?.focus();
+  });
+
   function onkeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') open = false;
   }
@@ -70,7 +78,7 @@
     <button
       type="button"
       class="dropdown__trigger"
-      aria-haspopup="listbox"
+      aria-haspopup="true"
       aria-expanded={open}
       aria-label={$_('dropdown.chooseEntity', { values: { entity } })}
       onclick={() => (open = !open)}
@@ -96,11 +104,7 @@
         onclick={() => (open = false)}
         onkeydown={() => {}}
       ></div>
-      <div
-        class="dropdown__panel"
-        class:align-start={align === 'start'}
-        role="listbox"
-      >
+      <div class="dropdown__panel" class:align-start={align === 'start'}>
         {#if filterable}
           <input
             class="dropdown__filter"
@@ -109,15 +113,19 @@
               values: { entity },
             })}
             bind:value={filter}
-            autofocus
+            bind:this={filterEl}
           />
         {/if}
         {#if filteredOptions.length === 0}
           <div class="dropdown__empty">{$_('dropdown.noOptions')}</div>
         {:else}
+          <!-- Buttons in a list, not an ARIA listbox: a listbox is navigated
+               with the arrow keys and owns its options directly, and this is
+               tabbed through with a filter box sitting inside it. -->
           <ul
             class="dropdown__list"
             class:dropdown__list--filterable={filterable}
+            aria-label={$_('dropdown.chooseEntity', { values: { entity } })}
           >
             {#each filteredOptions as option (option.value)}
               <li>
@@ -127,8 +135,7 @@
                     ? 'dropdown__option--selected'
                     : ''}"
                   onclick={() => select(option)}
-                  aria-selected={isSelected(option)}
-                  role="option"
+                  aria-current={isSelected(option) ? 'true' : undefined}
                 >
                   {@render renderOption(option)}
                 </Button>
