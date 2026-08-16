@@ -102,6 +102,13 @@ export type PendingMessage = Omit<Message, 'content' | 'reasoning_content'> & {
  * A message display is a message node with additional information for rendering.
  * For example, siblings of the message node are stored as their last node (aka leaf node).
  */
+/** A conversation that matched a search, and why. */
+export interface ConversationMatch {
+  conv: Conversation;
+  /** The text around the match, absent when the name is what matched. */
+  excerpt?: string;
+}
+
 export interface MessageDisplay {
   msg: Message | PendingMessage;
   siblingLeafNodeIds: Message['id'][];

@@ -7,10 +7,12 @@ import {
   Configuration,
   ConfigurationPreset,
   Conversation,
+  ConversationMatch,
   Database,
   ExportJsonStructure,
   Message,
 } from '../types';
+import { excerptAround } from '../utils/excerpt';
 import { nextId } from './id';
 import { migrationLStoIDB } from './migration';
 
@@ -440,33 +442,38 @@ export default class IndexedDB {
    * turned out to be about.
    *
    * @param term The text to look for. Blank returns everything.
-   * @returns The matching conversations, most recently changed first.
+   * @returns The matches, most recently changed first, each carrying the text
+   *   around it when the match came from inside rather than from the name.
    */
-  static async searchConversations(term: string): Promise<Conversation[]> {
+  static async searchConversations(term: string): Promise<ConversationMatch[]> {
     const all = await IndexedDB.getAllConversations();
     const needle = term.trim().toLowerCase();
-    if (!needle) return all;
+    if (!needle) return all.map((conv) => ({ conv }));
 
-    const byName = all.filter((c) => c.name.toLowerCase().includes(needle));
-    const named = new Set(byName.map((c) => c.id));
+    const named = new Set(
+      all.filter((c) => c.name.toLowerCase().includes(needle)).map((c) => c.id)
+    );
 
     // One pass over the messages rather than a query per conversation: the
     // content is not indexed, so either way every message is read, and this
     // reads them once.
-    const spokenIn = new Set<string>();
+    const spokenIn = new Map<string, string>();
     await db.messages.each((message) => {
       if (
-        !spokenIn.has(message.convId) &&
-        !named.has(message.convId) &&
+        spokenIn.has(message.convId) ||
+        named.has(message.convId) ||
         // Import validates a message's id and convId and nothing else.
-        typeof message.content === 'string' &&
-        message.content.toLowerCase().includes(needle)
+        typeof message.content !== 'string'
       ) {
-        spokenIn.add(message.convId);
+        return;
       }
+      const excerpt = excerptAround(message.content, needle);
+      if (excerpt) spokenIn.set(message.convId, excerpt);
     });
 
-    return all.filter((c) => named.has(c.id) || spokenIn.has(c.id));
+    return all
+      .filter((c) => named.has(c.id) || spokenIn.has(c.id))
+      .map((conv) => ({ conv, excerpt: spokenIn.get(conv.id) }));
   }
 
   // --- Export / Import Functions ---

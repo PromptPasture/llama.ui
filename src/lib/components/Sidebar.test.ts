@@ -10,7 +10,7 @@ import {
   it,
   vi,
 } from 'vitest';
-import type { Conversation } from '$lib/types';
+import type { Conversation, ConversationMatch } from '$lib/types';
 
 const mocks = vi.hoisted(() => ({
   goto: vi.fn(),
@@ -68,7 +68,7 @@ beforeEach(() => {
   mocks.searchConversations.mockImplementation(async (term: string) =>
     CONVERSATIONS.filter((c) =>
       c.name.toLowerCase().includes(term.toLowerCase())
-    )
+    ).map((conv) => ({ conv }))
   );
 });
 
@@ -269,10 +269,10 @@ describe('Sidebar search results arriving out of order', () => {
     const user = userEvent.setup();
     // Searching reads every message, so a search for a short term can take
     // longer than the narrower one typed after it.
-    const pending = new Map<string, (c: Conversation[]) => void>();
+    const pending = new Map<string, (m: ConversationMatch[]) => void>();
     mocks.searchConversations.mockImplementation(
       (term: string) =>
-        new Promise<Conversation[]>((res) => pending.set(term, res))
+        new Promise<ConversationMatch[]>((res) => pending.set(term, res))
     );
     await renderSidebar();
 
@@ -284,10 +284,47 @@ describe('Sidebar search results arriving out of order', () => {
     await vi.waitFor(() => expect(pending.has('hol')).toBe(true));
 
     // The broader search answers second, with what is now the wrong answer.
-    pending.get('hol')?.([CONVERSATIONS[2]]);
-    pending.get('ho')?.([CONVERSATIONS[0], CONVERSATIONS[1]]);
+    pending.get('hol')?.([{ conv: CONVERSATIONS[2] }]);
+    pending.get('ho')?.([
+      { conv: CONVERSATIONS[0] },
+      { conv: CONVERSATIONS[1] },
+    ]);
 
     expect(await screen.findByText('Holiday planning')).toBeInTheDocument();
     expect(screen.queryByText('Recipe for bread')).not.toBeInTheDocument();
+  });
+});
+
+describe('Sidebar showing why a conversation matched', () => {
+  const search = () => screen.getByPlaceholderText('Search');
+
+  it('shows the text the match was found in', async () => {
+    const user = userEvent.setup();
+    mocks.searchConversations.mockResolvedValue([
+      { conv: CONVERSATIONS[0], excerpt: '…and then add the yeast…' },
+    ]);
+    await renderSidebar();
+
+    await user.type(search(), 'yeast');
+
+    // The name is the opening message trimmed, so a match found deeper in a
+    // conversation is otherwise a result with no visible reason for being one.
+    expect(
+      await screen.findByText('…and then add the yeast…')
+    ).toBeInTheDocument();
+  });
+
+  it('shows nothing extra when the name is what matched', async () => {
+    const user = userEvent.setup();
+    await renderSidebar();
+
+    await user.type(search(), 'holiday');
+    await screen.findByText('Holiday planning');
+
+    expect(
+      screen
+        .getByRole('menuitem', { name: 'Holiday planning' })
+        .textContent?.trim()
+    ).toBe('Holiday planning');
   });
 });

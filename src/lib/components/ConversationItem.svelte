@@ -17,10 +17,12 @@
   interface Props {
     conv: Conversation;
     currentConvId?: string;
+    /** Why this conversation came up in a search, when it was not the name. */
+    excerpt?: string;
     onselect?: () => void;
   }
 
-  let { conv, currentConvId, onselect }: Props = $props();
+  let { conv, currentConvId, excerpt, onselect }: Props = $props();
 
   const isCurrent = $derived(currentConvId === conv.id);
   const isPending = $derived(chat.isGenerating(conv.id));
@@ -114,7 +116,10 @@
       values: { name: conv.name },
     })}
   >
-    {conv.name}
+    <span class="conv-item__name">{conv.name}</span>
+    {#if excerpt}
+      <span class="conv-item__excerpt">{excerpt}</span>
+    {/if}
   </button>
 
   <div class="conv-item__menu-wrap">
@@ -177,6 +182,16 @@
   }
   .conv-item.active {
     background: var(--color-surface-alt);
+  }
+
+  .conv-item__name {
+    @apply block overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  /* One line: the fragment is already trimmed to the words around the match. */
+  .conv-item__excerpt {
+    @apply block overflow-hidden text-ellipsis whitespace-nowrap text-xs mt-0.5;
+    color: var(--color-text-muted);
   }
 
   .conv-item__btn {

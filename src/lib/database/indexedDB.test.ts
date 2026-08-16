@@ -246,7 +246,7 @@ describe('searching the conversations', () => {
   });
 
   const names = async (term: string) =>
-    (await IndexedDB.searchConversations(term)).map((c) => c.name);
+    (await IndexedDB.searchConversations(term)).map((m) => m.conv.name);
 
   it('finds one by its name', async () => {
     await chat('Bread recipe', ['how much yeast']);
@@ -311,5 +311,40 @@ describe('searching the conversations', () => {
     ] as unknown as ExportJsonStructure);
 
     expect(await names('yeast')).toEqual(['Bread recipe']);
+  });
+});
+
+describe('what a search result says about the match', () => {
+  beforeEach(async () => {
+    for (const conv of await IndexedDB.getAllConversations()) {
+      await IndexedDB.deleteConversation(conv.id);
+    }
+  });
+
+  it('carries the text around a match found inside', async () => {
+    await chat('Bread recipe', ['Let the sourdough starter rest overnight.']);
+
+    const [match] = await IndexedDB.searchConversations('starter');
+
+    expect(match.excerpt).toContain('sourdough starter rest');
+  });
+
+  it('carries nothing when the name is what matched', async () => {
+    // The messages mention it too, so finding no excerpt is a decision rather
+    // than an absence of anything to quote.
+    await chat('Bread recipe', ['more bread please']);
+
+    const [match] = await IndexedDB.searchConversations('bread');
+
+    // Repeating the name underneath the name says nothing.
+    expect(match.excerpt).toBeUndefined();
+  });
+
+  it('quotes the first match, not the last', async () => {
+    await chat('Notes', ['first mention of docker', 'second one about docker']);
+
+    const [match] = await IndexedDB.searchConversations('docker');
+
+    expect(match.excerpt).toContain('first mention');
   });
 });

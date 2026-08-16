@@ -8,7 +8,7 @@
   import { page } from '$app/state';
   import IndexedDB from '$lib/database/indexedDB';
   import { groupConversationsByDate } from '$lib/utils/conversation-grouper';
-  import type { Conversation } from '$lib/types';
+  import type { Conversation, ConversationMatch } from '$lib/types';
   import Button from './Button.svelte';
   import ConversationGroup from './ConversationGroup.svelte';
   import ConversationItem from './ConversationItem.svelte';
@@ -25,7 +25,7 @@
 
   const currentConvId = $derived(page.params.convId as string | undefined);
 
-  let filteredConversations = $state<Conversation[]>([]);
+  let matches = $state<ConversationMatch[]>([]);
 
   /**
    * Searching reads every message, so it happens off to the side rather than
@@ -53,13 +53,13 @@
   $effect(() => {
     const { term } = searchInputs;
     if (!term) {
-      filteredConversations = [];
+      matches = [];
       return;
     }
     const mine = ++searchNo;
     const timer = setTimeout(() => {
       IndexedDB.searchConversations(term).then((found) => {
-        if (mine === searchNo) filteredConversations = found;
+        if (mine === searchNo) matches = found;
       });
     }, SEARCH_SETTLE_MS);
     // Typing on cancels the search that was about to run for what came before.
@@ -176,9 +176,10 @@
       {/each}
     {:else}
       <ul role="menu" class="sidebar__filtered-list">
-        {#each filteredConversations as conv (conv.id)}
+        {#each matches as match (match.conv.id)}
           <ConversationItem
-            {conv}
+            conv={match.conv}
+            excerpt={match.excerpt}
             {currentConvId}
             onselect={handleItemSelect}
           />
