@@ -616,3 +616,77 @@ describe('ChatMessage saving an edit from the keyboard', () => {
     expect(oneditassistantfn).not.toHaveBeenCalled();
   });
 });
+
+describe('a message that carried an attachment', () => {
+  const withAttachment = () =>
+    display({
+      msg: message({
+        role: 'user',
+        content: 'what went wrong here?',
+        extra: [
+          { type: 'textFile', name: 'Pasted text 1', content: 'a long log' },
+        ],
+      }),
+    });
+
+  it('says what was attached', () => {
+    renderMessage(withAttachment());
+
+    // Without it the question reads as though its subject had gone missing.
+    expect(screen.getByText('Pasted text 1')).toBeInTheDocument();
+  });
+
+  it('gathers them under a heading a reader can find', () => {
+    renderMessage(withAttachment());
+
+    expect(
+      screen.getByRole('list', { name: 'Attachments' })
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the text folded away', () => {
+    renderMessage(withAttachment());
+
+    // A pasted log is thousands of lines; unfolded it buries the conversation
+    // exactly as it would have buried the message box.
+    expect(screen.getByText('a long log')).not.toBeVisible();
+  });
+
+  it('shows the text when it is unfolded', async () => {
+    const user = userEvent.setup();
+    renderMessage(withAttachment());
+
+    await user.click(screen.getByText('Pasted text 1'));
+
+    expect(screen.getByText('a long log')).toBeVisible();
+  });
+
+  it('still shows the message itself', () => {
+    renderMessage(withAttachment());
+
+    expect(screen.getByText('what went wrong here?')).toBeInTheDocument();
+  });
+
+  it('has nothing to show for a message that carried none', () => {
+    renderMessage();
+
+    expect(screen.queryByRole('list', { name: 'Attachments' })).toBeNull();
+  });
+
+  it('leaves out an attachment it cannot show as text', () => {
+    renderMessage(
+      display({
+        msg: message({
+          role: 'user',
+          content: 'what is this?',
+          extra: [
+            { type: 'imageFile', name: 'photo.png', base64Url: 'data:,' },
+          ],
+        }),
+      })
+    );
+
+    // Stored the same way, but there is nothing to show it with yet.
+    expect(screen.queryByRole('list', { name: 'Attachments' })).toBeNull();
+  });
+});

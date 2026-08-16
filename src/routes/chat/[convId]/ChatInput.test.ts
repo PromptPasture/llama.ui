@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('$lib/state/chat.svelte', () => ({ chat: mocks }));
 
 const { default: ChatInput } = await import('./ChatInput.svelte');
+const { app } = await import('$lib/state/app.svelte');
 
 // Set the locale explicitly rather than through initI18n(), which picks its
 // initial locale from navigator.language and is not deterministic here.
@@ -320,5 +321,164 @@ describe('the message box being announced', () => {
     expect(
       screen.getByRole('textbox', { name: 'Chat input' })
     ).toBeInTheDocument();
+  });
+});
+
+describe('pasting more than the box can hold', () => {
+  const LONG = 'x'.repeat(200);
+
+  /** userEvent.paste puts the text on the clipboard the component reads. */
+  async function pasteInto(
+    user: ReturnType<typeof userEvent.setup>,
+    textarea: HTMLElement,
+    text: string
+  ) {
+    await user.click(textarea);
+    await user.paste(text);
+  }
+
+  beforeEach(() => {
+    app.saveConfig({ ...app.config, pasteLongTextToFileLen: 100 });
+  });
+
+  it('keeps a long paste out of the box', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+
+    await pasteInto(user, textarea, LONG);
+
+    // Thousands of lines in the box push the conversation off the screen and
+    // leave the writer scrolling inside a textarea to find their question.
+    expect(textarea).toHaveValue('');
+  });
+
+  it('shows what it attached instead', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+
+    await pasteInto(user, textarea, LONG);
+
+    expect(screen.getByText('Pasted text 1')).toBeInTheDocument();
+  });
+
+  it('leaves a short paste in the box', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+
+    await pasteInto(user, textarea, 'a short quote');
+
+    expect(textarea).toHaveValue('a short quote');
+    expect(screen.queryByText(/Pasted text/)).not.toBeInTheDocument();
+  });
+
+  it('leaves every paste in the box when the limit is zero', async () => {
+    app.saveConfig({ ...app.config, pasteLongTextToFileLen: 0 });
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+
+    await pasteInto(user, textarea, LONG);
+
+    expect(textarea).toHaveValue(LONG);
+  });
+
+  it('gives each paste a name of its own', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+
+    await pasteInto(user, textarea, LONG);
+    await pasteInto(user, textarea, LONG);
+
+    expect(screen.getByText('Pasted text 1')).toBeInTheDocument();
+    expect(screen.getByText('Pasted text 2')).toBeInTheDocument();
+  });
+
+  it('lets one be taken off again', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+    await pasteInto(user, textarea, LONG);
+
+    await user.click(screen.getByRole('button', { name: 'Remove file' }));
+
+    expect(screen.queryByText('Pasted text 1')).not.toBeInTheDocument();
+  });
+
+  it('does not reuse the name of one that was taken off', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+    await pasteInto(user, textarea, LONG);
+    await user.click(screen.getByRole('button', { name: 'Remove file' }));
+
+    await pasteInto(user, textarea, LONG);
+
+    // Two attachments sharing a name is ambiguous to read and ambiguous to
+    // key the list by.
+    expect(screen.getByText('Pasted text 2')).toBeInTheDocument();
+  });
+});
+
+describe('sending what was attached', () => {
+  const LONG = 'x'.repeat(200);
+
+  beforeEach(() => {
+    app.saveConfig({ ...app.config, pasteLongTextToFileLen: 100 });
+  });
+
+  it('sends it along with the message', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+    await user.click(textarea);
+    await user.paste(LONG);
+
+    await user.type(textarea, 'what went wrong here?{Enter}');
+
+    expect(onsend).toHaveBeenCalledWith('what went wrong here?', [
+      { type: 'textFile', name: 'Pasted text 1', content: LONG },
+    ]);
+  });
+
+  it('sends an attachment with no message at all', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+    await user.click(textarea);
+    await user.paste(LONG);
+
+    await user.type(textarea, '{Enter}');
+
+    // The question may already have been asked; the paste is the answer to it.
+    expect(onsend).toHaveBeenCalledWith('', [
+      { type: 'textFile', name: 'Pasted text 1', content: LONG },
+    ]);
+  });
+
+  it('still refuses an empty message with nothing attached', async () => {
+    const user = userEvent.setup();
+    const { onsend, textarea } = renderInput();
+
+    await user.type(textarea, '{Enter}');
+
+    expect(onsend).not.toHaveBeenCalled();
+  });
+
+  it('clears the attachments once they have gone', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+    await user.click(textarea);
+    await user.paste(LONG);
+
+    await user.type(textarea, 'a question{Enter}');
+
+    expect(screen.queryByText('Pasted text 1')).not.toBeInTheDocument();
+  });
+
+  it('keeps them when the send is refused', async () => {
+    const user = userEvent.setup();
+    const { textarea } = renderInput(vi.fn().mockResolvedValue(false));
+    await user.click(textarea);
+    await user.paste(LONG);
+
+    await user.type(textarea, 'a question{Enter}');
+
+    // Nothing was sent, so nothing should have to be pasted again.
+    expect(screen.getByText('Pasted text 1')).toBeInTheDocument();
   });
 });

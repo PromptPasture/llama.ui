@@ -88,6 +88,12 @@
     value={!!config.showRawAssistantMessage}
     onchange={onchange('showRawAssistantMessage')}
   />
+  <SettingsField
+    type="short"
+    configKey="pasteLongTextToFileLen"
+    value={Number(config.pasteLongTextToFileLen)}
+    onchange={onchange('pasteLongTextToFileLen')}
+  />
 </section>
 
 <style>

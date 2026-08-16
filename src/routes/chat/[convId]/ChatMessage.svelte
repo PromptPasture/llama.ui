@@ -53,6 +53,18 @@
   const { msg, siblingCurrIdx, siblingLeafNodeIds, isPending } =
     $derived(message);
   const isUser = $derived(msg.role === 'user');
+
+  /**
+   * The text that was attached to the message.
+   *
+   * Images and audio are stored the same way but have nothing to show as
+   * text, and are left out until there is something to show them with.
+   */
+  const attachments = $derived(
+    (msg.extra ?? []).filter(
+      (e) => e.type === 'textFile' || e.type === 'context'
+    )
+  );
   const isAssistant = $derived(msg.role === 'assistant');
   const config = $derived(app.config);
 
@@ -248,6 +260,24 @@
               </div>
             {/if}
           </div>
+        {/if}
+
+        {#if attachments.length > 0}
+          <!-- What was attached is part of what was asked: without it the
+               question reads as though it were missing its subject. -->
+          <ul
+            class="msg__attachments"
+            aria-label={$_('chatScreen.attachments')}
+          >
+            {#each attachments as item (item.name)}
+              <li>
+                <details class="msg__attachment">
+                  <summary class="msg__attachment-name">{item.name}</summary>
+                  <pre class="msg__attachment-content">{item.content}</pre>
+                </details>
+              </li>
+            {/each}
+          </ul>
         {/if}
 
         {#if content}
@@ -449,6 +479,26 @@
     @apply ps-4 mb-3 text-sm;
     border-left: 2px solid var(--color-border);
     color: var(--color-text-muted);
+  }
+
+  .msg__attachments {
+    @apply flex flex-col gap-1 list-none p-0 m-0 mb-2;
+  }
+
+  .msg__attachment {
+    @apply rounded-md text-sm;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .msg__attachment-name {
+    @apply px-2 py-1 cursor-pointer truncate;
+  }
+
+  .msg__attachment-content {
+    @apply px-2 pb-2 m-0 overflow-x-auto whitespace-pre-wrap break-words;
+    max-height: 20rem;
+    overflow-y: auto;
   }
 
   .msg__raw {

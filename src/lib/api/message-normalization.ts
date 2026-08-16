@@ -63,11 +63,15 @@ export function normalizeMsgsForAPI(
       }
     }
 
-    // add user message to the end
-    contentArr.push({
-      type: 'text',
-      text: msg.content,
-    });
+    // add user message to the end, if there is one: a message can be nothing
+    // but an attachment — a pasted log with the question already asked — and
+    // an empty part is at best wasted, at worst rejected by the provider.
+    if (msg.content) {
+      contentArr.push({
+        type: 'text',
+        text: msg.content,
+      });
+    }
 
     return {
       role: msg.role,

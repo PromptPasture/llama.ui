@@ -3,8 +3,12 @@
   import { _ } from 'svelte-i18n';
   import ArrowUpIcon from 'lucide-svelte/icons/arrow-up';
   import SquareIcon from 'lucide-svelte/icons/square';
+  import XIcon from 'lucide-svelte/icons/x';
+  import FileTextIcon from 'lucide-svelte/icons/file-text';
+  import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
   import { readDraft, writeDraft } from '$lib/utils/drafts';
+  import { isLongPaste } from '$lib/utils/long-paste';
   import type { MessageExtra } from '$lib/types';
 
   interface Props {
@@ -23,6 +27,19 @@
   let value = $state(readDraft(shownConv));
   let textareaEl: HTMLTextAreaElement;
 
+  /**
+   * What has been attached to the message being written.
+   *
+   * Held in memory rather than stored with the draft: an attachment is as long
+   * as whatever was pasted, and filling the browser's storage quota would cost
+   * the reader every other draft they have.
+   */
+  let attached = $state<MessageExtra[]>([]);
+
+  /** Numbers the attachments. Only ever counts up, so removing one leaves no
+   * two of them sharing a name. */
+  let pasteCount = 0;
+
   const isPending = $derived(convId ? chat.isGenerating(convId) : false);
 
   // Opening another conversation is a change of parameters, not a new page, so
@@ -33,6 +50,9 @@
       if (id === shownConv) return;
       shownConv = id;
       value = readDraft(id);
+      // Attachments belong to the message they were made for, and this is a
+      // different conversation now.
+      attached = [];
       resize();
     });
   });
@@ -48,13 +68,18 @@
     // clearing the box on the way would take the message with it.
     if (isPending) return;
     const msg = value.trim();
-    if (!msg) return;
+    // An attachment is a message in itself: pasting a log in answer to a
+    // question that has already been asked leaves nothing to type.
+    if (!msg && attached.length === 0) return;
+    const sent = attached;
     value = '';
+    attached = [];
     writeDraft(convId, '');
     resize();
-    const ok = await onsend(msg, undefined);
+    const ok = await onsend(msg, sent.length ? sent : undefined);
     if (ok === false) {
       value = msg;
+      attached = sent;
       writeDraft(convId, msg);
     }
   }
@@ -74,6 +99,27 @@
       e.preventDefault();
       send();
     }
+  }
+
+  function onPaste(e: ClipboardEvent) {
+    const text = e.clipboardData?.getData('text/plain') ?? '';
+    if (!isLongPaste(text, app.config.pasteLongTextToFileLen)) return;
+    // Otherwise the box fills with thousands of lines and the writer has to
+    // scroll inside it to find their own question.
+    e.preventDefault();
+    pasteCount += 1;
+    attached = [
+      ...attached,
+      {
+        type: 'textFile',
+        name: $_('chatInput.pastedText', { values: { index: pasteCount } }),
+        content: text,
+      },
+    ];
+  }
+
+  function unattach(index: number) {
+    attached = attached.filter((_unused, i) => i !== index);
   }
 
   function onInput() {
@@ -101,6 +147,28 @@
 </script>
 
 <div class="chat-input">
+  {#if attached.length > 0}
+    <ul
+      class="chat-input__attachments"
+      aria-label={$_('chatScreen.attachments')}
+    >
+      {#each attached as item, i (item.name)}
+        <li class="chat-input__attachment">
+          <FileTextIcon size={14} />
+          <span class="chat-input__attachment-name">{item.name}</span>
+          <button
+            type="button"
+            class="chat-input__attachment-remove"
+            onclick={() => unattach(i)}
+            aria-label={$_('chatInput.ariaLabels.removeButton')}
+          >
+            <XIcon size={14} />
+          </button>
+        </li>
+      {/each}
+    </ul>
+  {/if}
+
   <div class="chat-input__box">
     <textarea
       bind:this={textareaEl}
@@ -113,7 +181,8 @@
       rows={1}
       dir="auto"
       {onkeydown}
-      oninput={onInput}></textarea>
+      oninput={onInput}
+      onpaste={onPaste}></textarea>
 
     <div class="chat-input__actions">
       {#if isPending}
@@ -163,6 +232,31 @@
     font: inherit;
     min-height: 1.5rem;
     max-height: 12rem;
+  }
+
+  .chat-input__attachments {
+    @apply flex flex-wrap gap-2 list-none p-0 m-0 mb-2;
+  }
+
+  .chat-input__attachment {
+    @apply flex items-center gap-1.5 max-w-full ps-2 pe-1 py-1 rounded-md text-sm;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .chat-input__attachment-name {
+    @apply truncate;
+  }
+
+  .chat-input__attachment-remove {
+    @apply p-1 rounded cursor-pointer opacity-70;
+    background: none;
+    border: none;
+    color: inherit;
+  }
+
+  .chat-input__attachment-remove:hover {
+    @apply opacity-100;
   }
 
   .chat-input__actions {

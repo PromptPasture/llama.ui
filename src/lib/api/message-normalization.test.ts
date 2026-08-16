@@ -130,3 +130,27 @@ describe('messages carrying attachments', () => {
     expect(() => first(msg({ extra }))).toThrow(/Unknown extra type/);
   });
 });
+
+describe('a message that is only an attachment', () => {
+  it('sends the attachment without an empty part after it', () => {
+    const [normalized] = normalizeMsgsForAPI([
+      {
+        id: 1,
+        convId: 'c',
+        type: 'text',
+        timestamp: 1,
+        role: 'user',
+        content: '',
+        parent: -1,
+        children: [],
+        extra: [{ type: 'textFile', name: 'log.txt', content: 'a long log' }],
+      } as Message,
+    ]);
+
+    // A pasted log with the question already asked leaves no text of its own.
+    expect(normalized.content).toHaveLength(1);
+    expect(normalized.content).toEqual([
+      { type: 'text', text: 'File: log.txt\nContent:\n\na long log' },
+    ]);
+  });
+});

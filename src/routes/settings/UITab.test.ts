@@ -104,3 +104,25 @@ describe('the wording of the theme choices', () => {
     ]);
   });
 });
+
+describe('the length at which a paste becomes an attachment', () => {
+  it('can be changed', async () => {
+    await locale.set('en');
+    await waitLocale();
+    render(UITab, { props });
+
+    // The setting shipped with a default and a translation in every
+    // catalogue, and no way at all to reach it.
+    expect(screen.getByLabelText('Paste: limitation')).toBeInTheDocument();
+  });
+
+  it('shows the length it is currently set to', async () => {
+    await locale.set('en');
+    await waitLocale();
+    render(UITab, { props });
+
+    expect(screen.getByLabelText('Paste: limitation')).toHaveValue(
+      String(CONFIG_DEFAULT.pasteLongTextToFileLen)
+    );
+  });
+});
