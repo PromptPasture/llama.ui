@@ -131,9 +131,7 @@
   }
 
   async function handleReset() {
-    if (
-      await modal.showConfirm('Are you sure you want to reset all settings?')
-    ) {
+    if (await modal.showConfirm($_('settings.modals.resetConfirm'))) {
       localConfig = { ...CONFIG_DEFAULT } as Configuration;
     }
   }
@@ -155,7 +153,8 @@
   /** Whether anything on these screens differs from what is stored. */
   const edited = $derived(!deepEqual(localConfig, app.config));
 
-  const confirmDiscard = () => modal.showConfirm('Discard your changes?');
+  const confirmDiscard = () =>
+    modal.showConfirm($_('settings.modals.discardChanges'));
 
   /** Set while leaving on purpose, so the guard below stays out of the way. */
   let leaving = false;

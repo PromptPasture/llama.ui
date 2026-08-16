@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { init, locale, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import CONFIG_DEFAULT from '$lib/config/config-default.json';
@@ -70,5 +71,34 @@ describe('naming the fields on the interface tab', () => {
   it("names it in the reader's language", async () => {
     // Russian rather than German, whose word for it is also 'Theme'.
     expect(await labels('ru')).toEqual(['Язык', 'Тема']);
+  });
+});
+
+describe('the wording of the theme choices', () => {
+  /** The theme field is the second of the two on this tab. */
+  async function themeOptions(tag: string) {
+    await locale.set(tag);
+    await waitLocale();
+    const user = userEvent.setup();
+    const { container } = render(UITab, { props });
+    const fields = container.querySelectorAll('.settings-dropdown');
+    const trigger = fields[1].querySelector('button');
+    if (!trigger) throw new Error('the theme field has no control');
+    await user.click(trigger);
+    return [...screen.getAllByRole('option')].map((o) => o.textContent?.trim());
+  }
+
+  it('names them in English', async () => {
+    expect(await themeOptions('en')).toEqual(['System', 'Light', 'Dark']);
+  });
+
+  it("names them in the reader's language", async () => {
+    // Hardcoded, these three stayed English inside an otherwise translated
+    // settings screen.
+    expect(await themeOptions('ru')).toEqual([
+      'Системная',
+      'Светлая',
+      'Тёмная',
+    ]);
   });
 });

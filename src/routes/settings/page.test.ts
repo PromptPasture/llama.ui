@@ -2,8 +2,16 @@
 import 'fake-indexeddb/auto';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { init, register, waitLocale } from 'svelte-i18n';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import type { AfterNavigate } from '@sveltejs/kit';
 import CONFIG_DEFAULT from '$lib/config/config-default.json';
 import type { Configuration } from '$lib/types';
@@ -33,6 +41,7 @@ const { toast } = await import('$lib/components/toast');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
+  register('ru', () => import('$lib/i18n/ru.json'));
   init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
@@ -346,5 +355,31 @@ describe('finding out whether the settings work', () => {
     expect(shown).not.toHaveBeenCalled();
     ok.mockRestore();
     shown.mockRestore();
+  });
+});
+
+describe('the wording of the settings questions', () => {
+  afterEach(async () => {
+    await locale.set('en');
+    await waitLocale();
+  });
+
+  it('asks about discarding changes in the language being read', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    await userEvent.type(
+      screen.getByRole('textbox', { name: /API Key/i }),
+      'sk-typed'
+    );
+    // Held on to before the switch: its wording changes with the language,
+    // which is the whole point.
+    const close = screen.getByRole('button', { name: 'Close' });
+    await locale.set('ru');
+    await waitLocale();
+
+    await userEvent.click(close);
+
+    // Hardcoded, this question stayed English inside a translated screen.
+    expect(mocks.showConfirm).toHaveBeenCalledWith('Отменить изменения?');
   });
 });

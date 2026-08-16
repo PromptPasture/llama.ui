@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { init, register, waitLocale } from 'svelte-i18n';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
 import {
   afterEach,
   beforeAll,
@@ -18,6 +18,7 @@ const { tts } = await import('$lib/state/tts.svelte');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
+  register('ru', () => import('$lib/i18n/ru.json'));
   init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
@@ -123,5 +124,27 @@ describe('checking how a voice sounds', () => {
     expect(
       await screen.findByRole('button', { name: 'Stop' })
     ).toBeInTheDocument();
+  });
+});
+
+describe('the wording of the voice choices', () => {
+  afterEach(async () => {
+    await locale.set('en');
+    await waitLocale();
+  });
+
+  it('names the stored default in the language being read', async () => {
+    await locale.set('ru');
+    await waitLocale();
+    const { container } = render(VoiceTab, {
+      props: {
+        config: CONFIG_DEFAULT as unknown as Configuration,
+        onchange: vi.fn(() => vi.fn()),
+      },
+    });
+
+    // Hardcoded, this entry stayed English inside a translated screen.
+    const field = container.querySelector('.settings-dropdown');
+    expect(field?.textContent).toContain('Системный по умолчанию');
   });
 });

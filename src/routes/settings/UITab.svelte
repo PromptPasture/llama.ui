@@ -20,12 +20,14 @@
     { value: 'ar', label: 'اَلْعَرَبِيَّةُ' },
   ];
 
-  const THEMES = [
+  // Derived, so the names follow the language rather than keeping whatever it
+  // was when the tab first rendered.
+  const THEMES = $derived([
     // The stored default, and the only way back to it once a theme is picked.
-    { value: 'auto', label: 'System' },
-    { value: 'light', label: 'Light' },
-    { value: 'dark', label: 'Dark' },
-  ];
+    { value: 'auto', label: $_('settings.themeManager.system') },
+    { value: 'light', label: $_('settings.themeManager.light') },
+    { value: 'dark', label: $_('settings.themeManager.dark') },
+  ]);
 
   interface Props {
     config: Configuration;

@@ -28,7 +28,7 @@
   const voiceOptions = $derived([
     // The stored default is the empty string, so without an entry for it the
     // field reads blank until a voice is picked.
-    { value: '', label: 'System default' },
+    { value: '', label: $_('settings.parameters.ttsVoice.systemDefault') },
     ...tts.voices.map((v) => ({
       value: v.name,
       label: `${v.name} (${v.lang})`,
