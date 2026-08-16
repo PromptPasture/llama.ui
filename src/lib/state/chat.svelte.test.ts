@@ -1,5 +1,5 @@
 import { init, register, waitLocale } from 'svelte-i18n';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   getOneConversation: vi.fn(),
@@ -237,6 +237,80 @@ describe('sending with nothing configured to send to', () => {
     // A request that fails was still sent, and belongs in the conversation
     // where it can be tried again. This one was never attempted: stored, it
     // would sit there unanswered with nothing able to ask again.
+    expect(mocks.appendMsg).not.toHaveBeenCalled();
+  });
+});
+
+describe('a reply that says nothing but its reasoning', () => {
+  const generate = () =>
+    chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      deps({ provider: {} }) as never
+    );
+
+  beforeEach(() => {
+    mocks.appendMsg.mockClear();
+  });
+
+  it('is kept', async () => {
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ reasoning_content: 'thinking it through' });
+      }
+    );
+
+    await generate();
+
+    // The thinking used to stream in and then vanish with the message that
+    // carried it, leaving the question looking unanswered.
+    expect(mocks.appendMsg).toHaveBeenCalledOnce();
+    expect(mocks.appendMsg.mock.calls[0][0]).toMatchObject({
+      reasoning_content: 'thinking it through',
+      content: '',
+    });
+  });
+
+  it('is kept when the reader stops it part way', async () => {
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ reasoning_content: 'half a thought' });
+        const err = new Error('aborted');
+        err.name = 'AbortError';
+        throw err;
+      }
+    );
+
+    await generate();
+
+    expect(mocks.appendMsg).toHaveBeenCalledOnce();
+  });
+
+  it('stores content as text, never as nothing', async () => {
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ reasoning_content: 'thinking it through' });
+      }
+    );
+
+    await generate();
+
+    // A null would reach the markdown renderer as the message body.
+    expect(typeof mocks.appendMsg.mock.calls[0][0].content).toBe('string');
+  });
+});
+
+describe('a reply that says nothing at all', () => {
+  it('is not stored', async () => {
+    mocks.appendMsg.mockClear();
+    stream.generateChatStream.mockImplementationOnce(async () => {});
+
+    await chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      deps({ provider: {} }) as never
+    );
+
+    // Nothing arrived, so there is nothing to keep: an empty bubble would say
+    // less than no bubble.
     expect(mocks.appendMsg).not.toHaveBeenCalled();
   });
 });

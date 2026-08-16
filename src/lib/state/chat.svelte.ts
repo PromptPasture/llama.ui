@@ -41,6 +41,26 @@ function detachViewingListener(): void {
   }
 }
 
+/**
+ * The message to store for a reply, or null if nothing arrived.
+ *
+ * Keyed on anything having arrived rather than on there being an answer: a
+ * model that thinks and then answers nothing has still said something, and the
+ * reasoning is the only record of it. Requiring content dropped the whole
+ * message, so the thinking streamed in and then vanished, leaving the question
+ * looking unanswered.
+ *
+ * @param pending The reply as streamed
+ * @returns The message to append, or null when it said nothing at all
+ */
+function replyWorthKeeping(pending: PendingMessage): Message | null {
+  if (pending.content === null && pending.reasoning_content == null) {
+    return null;
+  }
+  // Content stays a string: null reaches the markdown renderer otherwise.
+  return { ...pending, content: pending.content ?? '' } as Message;
+}
+
 /** @returns whether the conversation exists. */
 async function loadViewingChat(convId: string): Promise<boolean> {
   const conv = await IndexedDB.getOneConversation(convId);
@@ -247,9 +267,10 @@ export const chat = {
         if (isDev) console.debug('Generation aborted by user.');
         // Stopping is not discarding. Keep what was streamed before the user
         // pressed stop, the same way a completed reply is kept.
-        if (pendingMsg.content !== null) {
-          await IndexedDB.appendMsg(pendingMsg as Message, leafNodeId);
-          onChunk(pendingMsg.id);
+        const stopped = replyWorthKeeping(pendingMsg);
+        if (stopped) {
+          await IndexedDB.appendMsg(stopped, leafNodeId);
+          onChunk(stopped.id);
         }
         delete state.aborts[convId];
         return;
@@ -262,8 +283,9 @@ export const chat = {
       throw err;
     }
 
-    if (pendingMsg.content !== null) {
-      await IndexedDB.appendMsg(pendingMsg as Message, leafNodeId);
+    const finished = replyWorthKeeping(pendingMsg);
+    if (finished) {
+      await IndexedDB.appendMsg(finished, leafNodeId);
     }
     delete state.pendingMessages[convId];
     delete state.aborts[convId];
