@@ -40,10 +40,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Set basePath variable
-        id: vars
-        run: echo "basePath=${{ github.event.repository.name }}" >> $GITHUB_ENV
-
+      # The site is served from the root of a custom domain, so no base path is
+      # needed. A fork deploying to a project-pages URL should set BASE_PATH
+      # here (svelte.config.js reads it) and change the CNAME below.
       - name: Build
         run: npm run build:prod
 
