@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { CONFIG_DEFAULT, INFERENCE_PROVIDERS } from '$lib/config';
   import { app } from '$lib/state/app.svelte';
@@ -150,8 +150,14 @@
   /** Whether anything on these screens differs from what is stored. */
   const edited = $derived(!deepEqual(localConfig, app.config));
 
+  const confirmDiscard = () => modal.showConfirm('Discard your changes?');
+
+  /** Set while leaving on purpose, so the guard below stays out of the way. */
+  let leaving = false;
+
   /** Leaves without asking — for the paths that have just saved something. */
   function leave() {
+    leaving = true;
     // cameFrom is a pathname SvelteKit itself reported for a completed
     // navigation, so it already carries the base path that resolve() adds.
     // eslint-disable-next-line svelte/no-navigation-without-resolve
@@ -161,9 +167,35 @@
   async function handleClose() {
     // Closing is one button away from Save and discards everything typed since
     // it was opened — a rewritten system prompt is a lot to lose to a misclick.
-    if (edited && !(await modal.showConfirm('Discard your changes?'))) return;
+    if (edited && !(await confirmDiscard())) return;
     leave();
   }
+
+  // Close is not the only way out: the sidebar, the browser's back gesture and
+  // Ctrl+N all leave too, and each of them discarded the same work silently.
+  beforeNavigate((nav) => {
+    if (leaving || !edited) return;
+
+    // Closing the tab, reloading, or following a link off the site. Only the
+    // browser can ask about that, and only if the navigation is refused here.
+    if (nav.type === 'leave') {
+      nav.cancel();
+      return;
+    }
+
+    const target = nav.to?.url;
+    if (!target) return;
+
+    // cancel() only counts while this callback is still running, so the
+    // navigation has to be stopped first and restarted once the answer is in.
+    nav.cancel();
+    confirmDiscard().then((discard) => {
+      if (!discard) return;
+      leaving = true;
+      // eslint-disable-next-line svelte/no-navigation-without-resolve
+      goto(target);
+    });
+  });
 
   async function handleSavePreset(name: string, config: Configuration) {
     await app.savePreset(name, config, toast.success);

@@ -5,10 +5,13 @@ import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AfterNavigate } from '@sveltejs/kit';
+import CONFIG_DEFAULT from '$lib/config/config-default.json';
+import type { Configuration } from '$lib/types';
 
 const mocks = vi.hoisted(() => ({
   goto: vi.fn(),
   afterNavigate: vi.fn(),
+  beforeNavigate: vi.fn(),
   showConfirm: vi.fn().mockResolvedValue(true),
   showAlert: vi.fn(),
 }));
@@ -16,6 +19,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('$app/navigation', () => ({
   goto: mocks.goto,
   afterNavigate: mocks.afterNavigate,
+  beforeNavigate: mocks.beforeNavigate,
 }));
 vi.mock('$app/paths', () => ({ resolve: (p: string) => p }));
 vi.mock('$lib/state/modal.svelte', () => ({
@@ -23,6 +27,7 @@ vi.mock('$lib/state/modal.svelte', () => ({
 }));
 
 const { default: SettingsPage } = await import('./+page.svelte');
+const { app } = await import('$lib/state/app.svelte');
 
 beforeAll(async () => {
   register('en', () => import('$lib/i18n/en.json'));
@@ -33,7 +38,12 @@ beforeAll(async () => {
 beforeEach(() => {
   mocks.goto.mockClear();
   mocks.afterNavigate.mockClear();
+  mocks.beforeNavigate.mockClear();
   mocks.showConfirm.mockClear().mockResolvedValue(true);
+  // The page reads and writes the real configuration, so a test that saves
+  // one would otherwise decide where the next test starts from.
+  localStorage.clear();
+  app.saveConfig({ ...CONFIG_DEFAULT } as unknown as Configuration);
 });
 
 /** Replays the navigation that brought the user to the settings. */
@@ -165,7 +175,6 @@ describe('leaving with something typed but not saved', () => {
     expect(mocks.goto).toHaveBeenCalledWith('/chat/1');
   });
   it('does not ask after loading a preset, which also stores one', async () => {
-    const { app } = await import('$lib/state/app.svelte');
     await app.savePreset('Fast', { ...app.config, systemMessage: 'be brief' });
     render(SettingsPage);
     arriveFrom('/chat/1');
@@ -179,5 +188,127 @@ describe('leaving with something typed but not saved', () => {
     // preset that was just loaded.
     expect(mocks.showConfirm).not.toHaveBeenCalledWith('Discard your changes?');
     expect(mocks.goto).toHaveBeenCalledWith('/chat/1');
+  });
+});
+
+describe('leaving by some other route than the Close button', () => {
+  /** Replays a navigation SvelteKit is about to start, and reports it. */
+  function navigateAway(
+    to: string | null,
+    type: 'link' | 'popstate' | 'leave' = 'link'
+  ) {
+    const guard = mocks.beforeNavigate.mock.calls[0]?.[0] as (
+      n: unknown
+    ) => void;
+    if (!guard) throw new Error('the settings page no longer guards leaving');
+    const cancel = vi.fn();
+    guard({
+      type,
+      to: to ? { url: new URL(`http://localhost${to}`) } : null,
+      cancel,
+    });
+    return cancel;
+  }
+
+  async function edit() {
+    await userEvent.type(
+      screen.getByRole('textbox', { name: /API Key/i }),
+      'sk-typed'
+    );
+  }
+
+  it('lets a navigation through when nothing was touched', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+
+    const cancel = navigateAway('/chat/2');
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(mocks.showConfirm).not.toHaveBeenCalled();
+  });
+
+  it('stops a sidebar click long enough to ask', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    await edit();
+
+    const cancel = navigateAway('/chat/2');
+
+    // The answer cannot be awaited inside the callback, so the navigation has
+    // to be stopped first.
+    expect(cancel).toHaveBeenCalled();
+    expect(mocks.showConfirm).toHaveBeenCalled();
+  });
+
+  it('goes where it was headed once the reader agrees', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    await edit();
+
+    navigateAway('/chat/2');
+    await vi.waitFor(() =>
+      expect(mocks.goto).toHaveBeenCalledWith(
+        new URL('http://localhost/chat/2')
+      )
+    );
+  });
+
+  it('stays put when the reader declines', async () => {
+    mocks.showConfirm.mockResolvedValue(false);
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    await edit();
+
+    navigateAway('/chat/2');
+
+    await expect
+      .poll(() => mocks.goto.mock.calls.length, { timeout: 200 })
+      .toBe(0);
+  });
+
+  it('handles the browser back gesture the same way', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    await edit();
+
+    const cancel = navigateAway('/chat/1', 'popstate');
+
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it('refuses to unload so the browser asks instead', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+    await edit();
+
+    // Closing the tab cannot show a dialog of ours; refusing here is what
+    // makes the browser show its own.
+    const cancel = navigateAway(null, 'leave');
+
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it('does not interfere with leaving on purpose', async () => {
+    render(SettingsPage);
+    arriveFrom('/chat/1');
+
+    // Deliberately a numeric setting. Saving converts the string a text field
+    // hands back into a number, so the page's copy and the stored one stay
+    // unequal afterwards — meaning 'nothing was edited' is not what keeps the
+    // guard quiet here, and the flag set on the way out has to be.
+    await userEvent.click(screen.getByRole('tab', { name: 'Advanced' }));
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Override Generation Options' })
+    );
+    const temperature = screen.getByRole('textbox', { name: 'temperature' });
+    await userEvent.clear(temperature);
+    await userEvent.type(temperature, '0.7');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    mocks.showConfirm.mockClear();
+
+    const cancel = navigateAway('/chat/1', 'link');
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(mocks.showConfirm).not.toHaveBeenCalled();
   });
 });
