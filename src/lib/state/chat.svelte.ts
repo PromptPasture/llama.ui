@@ -161,7 +161,13 @@ export const chat = {
       toast: ToastFn;
     }
   ): Promise<void> {
-    if (chat.isGenerating(convId) || !deps.provider) return;
+    if (chat.isGenerating(convId)) return;
+    if (!deps.provider) {
+      // Nothing is configured yet. Without this the send simply does nothing:
+      // the message is stored and no reply ever arrives, with no explanation.
+      deps.toast(t('toast.noModelsPopup.description'));
+      return;
+    }
 
     const rawMessages = await IndexedDB.getMessages(convId);
     const currMessages = IndexedDB.filterByLeafNodeId(
