@@ -284,6 +284,7 @@
   "state.preset.saved": "El preajuste se guardó correctamente.",
   "state.preset.removed": "El preajuste se eliminó correctamente.",
   "state.inference.errors.providerError": "Proveedor de inferencia: {message}.",
+  "state.chat.branchedName": "{name} - Ramificado",
   "state.chat.errors.conversationNotFound": "No se encontró la conversación actual",
   "state.chat.errors.messagesNotFound": "No se encontraron los mensajes actuales",
   "state.chat.errors.unknownError": "Error desconocido",

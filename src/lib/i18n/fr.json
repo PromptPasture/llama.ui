@@ -284,6 +284,7 @@
   "state.preset.saved": "Préréglage enregistré avec succès.",
   "state.preset.removed": "Préréglage supprimé avec succès.",
   "state.inference.errors.providerError": "Fournisseur d'inférence : {message}.",
+  "state.chat.branchedName": "{name} - Ramifié",
   "state.chat.errors.conversationNotFound": "Conversation actuelle introuvable",
   "state.chat.errors.messagesNotFound": "Messages actuels introuvables",
   "state.chat.errors.unknownError": "Erreur inconnue",

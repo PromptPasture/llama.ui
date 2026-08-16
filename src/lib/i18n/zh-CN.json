@@ -284,6 +284,7 @@
   "state.preset.saved": "预设保存成功。",
   "state.preset.removed": "预设移除成功。",
   "state.inference.errors.providerError": "推理提供者: {message}。",
+  "state.chat.branchedName": "{name} - 分支",
   "state.chat.errors.conversationNotFound": "未找到当前对话",
   "state.chat.errors.messagesNotFound": "未找到当前消息",
   "state.chat.errors.unknownError": "未知错误",

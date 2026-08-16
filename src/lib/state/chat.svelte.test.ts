@@ -1,4 +1,4 @@
-import { init, register, waitLocale } from 'svelte-i18n';
+import { init, locale, register, waitLocale } from 'svelte-i18n';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   offConversationChanged: vi.fn(),
   filterByLeafNodeId: vi.fn().mockReturnValue([]),
   appendMsg: vi.fn().mockResolvedValue(undefined),
+  branchConversation: vi.fn(),
 }));
 
 const stream = vi.hoisted(() => ({ generateChatStream: vi.fn() }));
@@ -24,6 +25,7 @@ const { chat } = await import('./chat.svelte');
 // initial locale from navigator.language and is not deterministic here.
 beforeAll(async () => {
   register('en', () => import('../i18n/en.json'));
+  register('ru', () => import('../i18n/ru.json'));
   init({ fallbackLocale: 'en', initialLocale: 'en' });
   await waitLocale('en');
 });
@@ -431,5 +433,34 @@ describe('a conversation deleted while it was being answered', () => {
     await generate();
 
     expect(mocks.appendMsg).toHaveBeenCalledOnce();
+  });
+});
+
+describe('branching a conversation', () => {
+  it('names the branch after the one it came from', async () => {
+    await locale.set('ru');
+    await waitLocale();
+    mocks.getOneConversation.mockResolvedValue({
+      id: 'conv-1',
+      name: 'Bread recipe',
+      currNode: -1,
+    });
+    mocks.branchConversation.mockResolvedValue({ id: 'conv-2' });
+
+    await chat.branchMessage({ convId: 'conv-1', id: 7 } as never, {
+      navigate: vi.fn(),
+      toast: vi.fn(),
+    });
+
+    // Asserted in Russian: in English the translated name and the hardcoded
+    // one it replaced read exactly the same, so this would pass either way.
+    expect(mocks.branchConversation).toHaveBeenCalledWith(
+      'conv-1',
+      7,
+      'Bread recipe — ветка'
+    );
+
+    await locale.set('en');
+    await waitLocale();
   });
 });

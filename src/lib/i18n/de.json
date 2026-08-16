@@ -284,6 +284,7 @@
   "state.preset.saved": "Voreinstellung erfolgreich gespeichert.",
   "state.preset.removed": "Voreinstellung erfolgreich entfernt.",
   "state.inference.errors.providerError": "Inferenz-Anbieter: {message}.",
+  "state.chat.branchedName": "{name} - Verzweigt",
   "state.chat.errors.conversationNotFound": "Aktuelle Unterhaltung nicht gefunden",
   "state.chat.errors.messagesNotFound": "Aktuelle Nachrichten nicht gefunden",
   "state.chat.errors.unknownError": "Unbekannter Fehler",

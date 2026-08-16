@@ -214,11 +214,15 @@ export default class IndexedDB {
    * Creates a new conversation by branching from an existing message.
    * @param convId The ID of the conversation to branch.
    * @param msgId The ID of the message to branch from.
+   * @param name What to call the branch. Passed in rather than built here:
+   *   it is read by whoever opens the conversation, so it belongs in their
+   *   language, and this layer knows nothing about languages.
    * @returns A promise resolving to the newly created Conversation object.
    */
   static async branchConversation(
     convId: Conversation['id'],
-    msgId: Message['id']
+    msgId: Message['id'],
+    name: string
   ): Promise<Conversation> {
     // Get the source conversation
     const conv = await this.getOneConversation(convId);
@@ -246,7 +250,7 @@ export default class IndexedDB {
       id: branchConvId,
       lastModified: now,
       currNode: msgIdMap.get(msgId)!,
-      name: `${conv.name} - Branched`,
+      name,
     };
 
     await db.transaction('rw', db.conversations, db.messages, async () => {

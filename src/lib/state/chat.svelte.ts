@@ -363,7 +363,14 @@ export const chat = {
   ): Promise<void> {
     if (chat.isGenerating(msg.convId)) return;
     try {
-      const conv = await IndexedDB.branchConversation(msg.convId, msg.id);
+      const source = await IndexedDB.getOneConversation(msg.convId);
+      const conv = await IndexedDB.branchConversation(
+        msg.convId,
+        msg.id,
+        t('state.chat.branchedName', {
+          values: { name: source?.name ?? '' },
+        })
+      );
       deps.navigate(conv.id);
     } catch (error) {
       console.error('Conversation branch failed:', error);

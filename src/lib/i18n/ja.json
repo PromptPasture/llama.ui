@@ -284,6 +284,7 @@
   "state.preset.saved": "プリセットが正常に保存されました。",
   "state.preset.removed": "プリセットが正常に削除されました。",
   "state.inference.errors.providerError": "推論プロバイダー: {message}。",
+  "state.chat.branchedName": "{name} - 分岐",
   "state.chat.errors.conversationNotFound": "現在の会話が見つかりません",
   "state.chat.errors.messagesNotFound": "現在のメッセージが見つかりません",
   "state.chat.errors.unknownError": "不明なエラー",

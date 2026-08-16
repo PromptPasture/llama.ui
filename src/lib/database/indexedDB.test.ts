@@ -162,7 +162,11 @@ describe('branching a conversation', () => {
   it('copies the path up to the chosen message under fresh ids', async () => {
     const { conv, ids } = await chat('Branching', ['one', 'two', 'three']);
 
-    const branch = await IndexedDB.branchConversation(conv.id, ids[1]);
+    const branch = await IndexedDB.branchConversation(
+      conv.id,
+      ids[1],
+      'A branch'
+    );
     const copied = await IndexedDB.getMessages(branch.id);
 
     // root plus the first two turns; the third is past the branch point.
@@ -175,7 +179,11 @@ describe('branching a conversation', () => {
   it('rewires the copy so the chain still holds together', async () => {
     const { conv, ids } = await chat('Branch links', ['one', 'two']);
 
-    const branch = await IndexedDB.branchConversation(conv.id, ids[1]);
+    const branch = await IndexedDB.branchConversation(
+      conv.id,
+      ids[1],
+      'A branch'
+    );
     const copied = await IndexedDB.getMessages(branch.id);
 
     const root = copied.find((m) => m.type === 'root')!;
@@ -193,7 +201,7 @@ describe('branching a conversation', () => {
     const { conv, ids } = await chat('Original intact', ['one', 'two']);
     const before = await IndexedDB.getMessages(conv.id);
 
-    await IndexedDB.branchConversation(conv.id, ids[1]);
+    await IndexedDB.branchConversation(conv.id, ids[1], 'A branch');
     const after = await IndexedDB.getMessages(conv.id);
 
     expect(after).toHaveLength(before.length);
@@ -205,9 +213,9 @@ describe('branching a conversation', () => {
   it('refuses a message that is not in the conversation', async () => {
     const { conv } = await chat('Bad branch', ['one']);
 
-    await expect(IndexedDB.branchConversation(conv.id, 424242)).rejects.toThrow(
-      /not found/
-    );
+    await expect(
+      IndexedDB.branchConversation(conv.id, 424242, 'A branch')
+    ).rejects.toThrow(/not found/);
   });
 });
 
@@ -346,5 +354,22 @@ describe('what a search result says about the match', () => {
     const [match] = await IndexedDB.searchConversations('docker');
 
     expect(match.excerpt).toContain('first mention');
+  });
+});
+
+describe('naming a branch', () => {
+  it('calls it whatever it was told to', async () => {
+    const { conv, ids } = await chat('Bread recipe', ['one', 'two']);
+
+    const branch = await IndexedDB.branchConversation(
+      conv.id,
+      ids[1],
+      'パン のレシピ - 分岐'
+    );
+
+    // The name is written into the database and read by whoever opens the
+    // conversation, so it belongs in their language; this layer knows nothing
+    // about languages and is handed the finished name.
+    expect(branch.name).toBe('パン のレシピ - 分岐');
   });
 });

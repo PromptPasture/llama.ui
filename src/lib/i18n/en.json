@@ -284,6 +284,7 @@
   "state.preset.saved": "Preset is saved successfully.",
   "state.preset.removed": "Preset is removed successfully.",
   "state.inference.errors.providerError": "Inference Provider: {message}.",
+  "state.chat.branchedName": "{name} - Branched",
   "state.chat.errors.conversationNotFound": "Current conversation is not found",
   "state.chat.errors.messagesNotFound": "Current messages are not found",
   "state.chat.errors.unknownError": "Unknown error",

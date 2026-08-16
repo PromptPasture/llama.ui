@@ -284,6 +284,7 @@
   "state.preset.saved": "Шаблон успешно сохранён.",
   "state.preset.removed": "Шаблон успешно удалён.",
   "state.inference.errors.providerError": "Провайдер вывода: {message}.",
+  "state.chat.branchedName": "{name} — ветка",
   "state.chat.errors.conversationNotFound": "Текущая беседа не найдена",
   "state.chat.errors.messagesNotFound": "Текущие сообщения не найдены",
   "state.chat.errors.unknownError": "Неизвестная ошибка",

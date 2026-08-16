@@ -284,6 +284,7 @@
   "state.preset.saved": "تم حفظ الإعداد المسبق بنجاح.",
   "state.preset.removed": "تمت إزالة الإعداد المسبق بنجاح.",
   "state.inference.errors.providerError": "مزود الاستدلال: {message}.",
+  "state.chat.branchedName": "{name} - متفرع",
   "state.chat.errors.conversationNotFound": "لم يتم العثور على المحادثة الحالية",
   "state.chat.errors.messagesNotFound": "لم يتم العثور على الرسائل الحالية",
   "state.chat.errors.unknownError": "خطأ غير معروف",

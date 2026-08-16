@@ -284,6 +284,7 @@
   "state.preset.saved": "Predefinito salvato con successo.",
   "state.preset.removed": "Predefinito rimosso con successo.",
   "state.inference.errors.providerError": "Fornitore di inferenza: {message}.",
+  "state.chat.branchedName": "{name} - Ramificato",
   "state.chat.errors.conversationNotFound": "Conversazione attuale non trovata",
   "state.chat.errors.messagesNotFound": "Messaggi attuali non trovati",
   "state.chat.errors.unknownError": "Errore sconosciuto",
