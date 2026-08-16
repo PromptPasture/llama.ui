@@ -1,17 +1,43 @@
 <script lang="ts">
-  import { toastStore } from './toast.js';
+  import { toastStore, type ToastItem } from './toast.js';
+
+  // Errors go in an assertive region so a screen reader interrupts rather than
+  // waiting for a pause: they report a failure the user needs to act on.
+  const errors = $derived($toastStore.filter((t) => t.level === 'error'));
+  const rest = $derived($toastStore.filter((t) => t.level !== 'error'));
 </script>
 
-<div class="toast-host" role="status" aria-live="polite" aria-atomic="false">
-  {#each $toastStore as item (item.id)}
-    <div
-      class="toast"
-      class:toast--success={item.level === 'success'}
-      class:toast--error={item.level === 'error'}
-    >
-      {item.message}
-    </div>
-  {/each}
+{#snippet toastItem(item: ToastItem)}
+  <div
+    class="toast"
+    class:toast--success={item.level === 'success'}
+    class:toast--error={item.level === 'error'}
+  >
+    {item.message}
+  </div>
+{/snippet}
+
+<div class="toast-host">
+  <div
+    class="toast-region"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="false"
+  >
+    {#each errors as item (item.id)}
+      {@render toastItem(item)}
+    {/each}
+  </div>
+  <div
+    class="toast-region"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+  >
+    {#each rest as item (item.id)}
+      {@render toastItem(item)}
+    {/each}
+  </div>
 </div>
 
 <style>
@@ -19,6 +45,10 @@
   .toast-host {
     @apply fixed bottom-6 right-6 flex flex-col gap-2 pointer-events-none;
     z-index: 9999;
+  }
+
+  .toast-region {
+    @apply flex flex-col gap-2;
   }
 
   .toast {
