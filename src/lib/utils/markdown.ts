@@ -86,3 +86,30 @@ export function renderMarkdown(content: string): string {
     ADD_ATTR: ['encoding'],
   });
 }
+
+/**
+ * The prose of a message, for reading aloud.
+ *
+ * Speaking the markdown itself would announce every `#`, `*` and backtick. It
+ * is rendered and then flattened instead, which also drops link targets and
+ * leaves the visible text.
+ *
+ * Two parts of the rendered output are removed rather than read:
+ *
+ * - the code block's toolbar, whose language tag and Copy label are chrome
+ *   rather than anything the message says;
+ * - KaTeX's MathML, which restates the formula both as characters and as its
+ *   original TeX, so a rendered `$E = mc^2$` would otherwise be read three
+ *   times over.
+ *
+ * @param content - The markdown to speak
+ * @returns Plain text with runs of whitespace collapsed
+ */
+export function speechText(content: string): string {
+  const el = document.createElement('div');
+  el.innerHTML = renderMarkdown(content);
+  el.querySelectorAll('.code-block__toolbar, .katex-mathml').forEach((node) => {
+    node.remove();
+  });
+  return (el.textContent ?? '').replace(/\s+/g, ' ').trim();
+}

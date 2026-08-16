@@ -342,4 +342,30 @@ describe('ChatMessage read aloud', () => {
       screen.queryByRole('button', { name: 'Play message' })
     ).not.toBeInTheDocument();
   });
+  it('reads the prose rather than the markdown', async () => {
+    withSpeech();
+    const user = userEvent.setup();
+    renderMessage(
+      display({ msg: message({ content: 'Some **bold** text.' }) })
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Play message' }));
+
+    expect(spoken[0].text).toBe('Some bold text.');
+  });
+
+  it('reads the answer without the reasoning that led to it', async () => {
+    withSpeech();
+    const user = userEvent.setup();
+    renderMessage(
+      display({
+        msg: message({ content: '<think>weighing it up</think>It is four.' }),
+      })
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Play message' }));
+
+    // The thinking is collapsed on screen; there is no reason to hear it.
+    expect(spoken[0].text).toBe('It is four.');
+  });
 });

@@ -25,6 +25,7 @@
   import Textarea from '$lib/components/Textarea.svelte';
   import { copyStr } from '$lib/utils/dom-helpers';
   import { splitMessageContent } from '$lib/utils/message-parser';
+  import { speechText } from '$lib/utils/markdown';
   import { formatTime } from '$lib/utils/formatting';
   import type { Message, MessageDisplay, MessageExtra } from '$lib/types';
 
@@ -245,8 +246,8 @@
           onclick={() =>
             speaking
               ? tts.stop()
-              : tts.speak(msg.id, msg.content ?? '', app.config)}
-          disabled={!msg.content}
+              : tts.speak(msg.id, speechText(content ?? ''), app.config)}
+          disabled={!content}
           title={speaking
             ? $_('chatScreen.titles.stop')
             : $_('chatScreen.titles.play')}

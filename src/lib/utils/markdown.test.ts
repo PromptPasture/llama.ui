@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { preprocessLaTeX, renderMarkdown } from './markdown';
+import { preprocessLaTeX, renderMarkdown, speechText } from './markdown';
 
 /**
  * Model output is untrusted: it comes from whichever endpoint the user points
@@ -105,5 +105,53 @@ describe('preprocessLaTeX', () => {
   it('does not touch dollar signs inside code spans or blocks', () => {
     expect(preprocessLaTeX('`echo $5`')).toBe('`echo $5`');
     expect(preprocessLaTeX('```\ncost $5\n```')).toBe('```\ncost $5\n```');
+  });
+});
+
+describe('preparing a message to be read aloud', () => {
+  it('drops the markers around emphasis and headings', () => {
+    const spoken = speechText('## Heading\n\nSome **bold** and *italic* text.');
+
+    // Spoken as markdown this announces every hash and asterisk.
+    expect(spoken).toBe('Heading Some bold and italic text.');
+  });
+
+  it('reads a link by its text, not its address', () => {
+    expect(speechText('See [the docs](https://example.com) please.')).toBe(
+      'See the docs please.'
+    );
+  });
+
+  it('leaves out the code block toolbar', () => {
+    const spoken = speechText('Before.\n\n```js\nconst x = 1;\n```\n\nAfter.');
+
+    // The language tag and the copy button's label sit inside the rendered
+    // block; read straight through, the message says "js Copy".
+    expect(spoken).not.toContain('Copy');
+    expect(spoken).not.toMatch(/\bjs\b/);
+  });
+
+  it('still reads the code itself', () => {
+    const spoken = speechText('Before.\n\n```js\nconst x = 1;\n```\n\nAfter.');
+
+    expect(spoken).toContain('const x = 1;');
+    expect(spoken).toContain('Before.');
+    expect(spoken).toContain('After.');
+  });
+
+  it('reads a formula once rather than three times', () => {
+    const spoken = speechText('Einstein said $E = mc^2$ once.');
+
+    // KaTeX writes the formula as characters, as its original TeX inside the
+    // MathML, and again as the visible glyphs.
+    expect(spoken).toBe('Einstein said E=mc2 once.');
+  });
+
+  it('collapses the gaps between blocks', () => {
+    expect(speechText('One.\n\n\nTwo.\n\n- a\n- b')).toBe('One. Two. a b');
+  });
+
+  it('has nothing to say about an empty message', () => {
+    expect(speechText('')).toBe('');
   });
 });
