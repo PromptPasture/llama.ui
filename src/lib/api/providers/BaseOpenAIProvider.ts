@@ -8,8 +8,38 @@ import {
   SSEChatCompletionMessage,
 } from '../../types';
 import { normalizeUrl } from '../../utils/url-helpers';
-import { noResponse } from '../response-utils';
 import { processSSEStream } from '../sse-parser';
+
+/**
+ * How long to wait for the model list. The previous second was budgeted for a
+ * local server; most of the providers shipped with the app are remote, where a
+ * round trip regularly takes longer than that and the list came back empty.
+ */
+const MODELS_TIMEOUT_MS = 10_000;
+
+/**
+ * Turns a failed fetch into an error that says what went wrong.
+ *
+ * The reason used to be discarded, leaving the response as 444 and every
+ * failure — timeout, DNS, CORS, refused connection — reported as
+ * "Server closed connection without response".
+ *
+ * A deliberate cancellation is passed through untouched: callers recognise
+ * generation being stopped by the AbortError name.
+ *
+ * @param error - Whatever fetch rejected with.
+ * @returns The error to throw.
+ */
+function describeNetworkFailure(error: unknown): Error {
+  const name = (error as Error)?.name;
+  if (name === 'AbortError') return error as Error;
+  if (name === 'TimeoutError') {
+    return new Error('Timed out: the inference server did not respond in time');
+  }
+  return new Error(
+    `Cannot reach the inference server: ${(error as Error)?.message ?? 'network error'}`
+  );
+}
 
 /**
  * Base implementation for OpenAI-compatible API providers.
@@ -118,18 +148,18 @@ export class BaseOpenAIProvider
       return this.models;
     }
 
-    let fetchResponse = noResponse;
+    let fetchResponse: Response;
     try {
       fetchResponse = await fetch(
         normalizeUrl('/v1/models', this.getBaseUrl()),
         {
           method: 'GET',
           headers: this.getHeaders(),
-          signal: AbortSignal.timeout(1000),
+          signal: AbortSignal.timeout(MODELS_TIMEOUT_MS),
         }
       );
-    } catch {
-      // Silently ignore network/timeout errors; will be caught in isErrorResponse
+    } catch (error) {
+      throw describeNetworkFailure(error);
     }
     await this.isErrorResponse(fetchResponse);
     const json = await fetchResponse.json();
@@ -202,7 +232,7 @@ export class BaseOpenAIProvider
     }
 
     // Send request
-    let fetchResponse = noResponse;
+    let fetchResponse: Response;
     try {
       fetchResponse = await fetch(
         normalizeUrl('/v1/chat/completions', this.getBaseUrl()),
@@ -213,8 +243,8 @@ export class BaseOpenAIProvider
           signal: abortSignal,
         }
       );
-    } catch {
-      // Silently ignore network/timeout errors; will be caught in isErrorResponse
+    } catch (error) {
+      throw describeNetworkFailure(error);
     }
 
     await this.isErrorResponse(fetchResponse);
