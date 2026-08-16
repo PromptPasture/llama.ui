@@ -27,6 +27,7 @@
   import { splitMessageContent } from '$lib/utils/message-parser';
   import { speechText } from '$lib/utils/markdown';
   import { formatTime } from '$lib/utils/formatting';
+  import { describeTimings } from '$lib/utils/timings';
   import type { Message, MessageDisplay, MessageExtra } from '$lib/types';
 
   interface Props {
@@ -61,6 +62,10 @@
       return { content: msg.content, reasoning_content: msg.reasoning_content };
     return splitMessageContent(msg.content);
   });
+
+  // Collected from every reply and stored with it since before anything
+  // showed it, which left the setting asking for it doing nothing.
+  const performance = $derived(describeTimings(msg.timings));
 
   const renderAsMarkdown = $derived(
     (isUser && !config.showRawUserMessage) ||
@@ -140,6 +145,11 @@
         <span class="msg__sender">{msg.model}</span>
       {/if}
       <span class="msg__timestamp">{formatTime(msg.timestamp, $locale)}</span>
+      {#if config.showTokensPerSecond && performance}
+        <span class="msg__timings" title={$_('chatScreen.titles.performance')}
+          >{performance}</span
+        >
+      {/if}
     </div>
 
     <!-- Edit mode -->
@@ -354,6 +364,11 @@
 
   .msg__sender {
     @apply font-semibold;
+  }
+
+  .msg__timings {
+    @apply text-xs tabular-nums;
+    color: var(--color-text-muted);
   }
 
   .msg__timestamp {

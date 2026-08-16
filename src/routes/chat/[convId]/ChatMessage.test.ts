@@ -23,6 +23,7 @@ vi.mock('$lib/database/indexedDB', () => ({
 vi.mock('$lib/utils/dom-helpers', () => ({ copyStr: mocks.copyStr }));
 
 const { default: ChatMessage } = await import('./ChatMessage.svelte');
+const { app } = await import('$lib/state/app.svelte');
 
 // Set the locale explicitly rather than through initI18n(), which picks its
 // initial locale from navigator.language and is not deterministic here.
@@ -367,5 +368,41 @@ describe('ChatMessage read aloud', () => {
 
     // The thinking is collapsed on screen; there is no reason to hear it.
     expect(spoken[0].text).toBe('It is four.');
+  });
+});
+
+describe('ChatMessage performance figures', () => {
+  const timings = {
+    predicted_n: 120,
+    predicted_ms: 2000,
+    prompt_n: 45,
+    prompt_ms: 100,
+  };
+
+  afterEach(() => {
+    app.saveConfig({ ...app.config, showTokensPerSecond: false });
+  });
+
+  it('shows them when they have been asked for', () => {
+    app.saveConfig({ ...app.config, showTokensPerSecond: true });
+    renderMessage(display({ msg: message({ timings }) }));
+
+    // Collected from every reply and stored with it, while the setting that
+    // asks to see them did nothing at all.
+    expect(screen.getByText(/60\.0 tok\/s/)).toBeInTheDocument();
+  });
+
+  it('keeps them out of the way otherwise', () => {
+    renderMessage(display({ msg: message({ timings }) }));
+
+    expect(screen.queryByText(/tok\/s/)).toBeNull();
+  });
+
+  it('says nothing for a reply that reported none', () => {
+    app.saveConfig({ ...app.config, showTokensPerSecond: true });
+    renderMessage(display({ msg: message() }));
+
+    expect(screen.queryByText(/tok\/s/)).toBeNull();
+    expect(screen.queryByText(/tokens/)).toBeNull();
   });
 });
