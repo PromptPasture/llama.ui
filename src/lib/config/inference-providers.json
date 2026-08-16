@@ -91,7 +91,7 @@
     "isKeyRequired": true
   },
   "cohere": {
-    "baseUrl": "https://api.cohere.ai",
+    "baseUrl": "https://api.cohere.ai/compatibility",
     "name": "Cohere",
     "icon": "assets/providers/cohere.svg",
     "allowCustomBaseUrl": false,
