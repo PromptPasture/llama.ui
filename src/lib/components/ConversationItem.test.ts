@@ -15,6 +15,9 @@ const mocks = vi.hoisted(() => ({
   updateConversationName: vi.fn(),
   exportDB: vi.fn(),
   downloadAsFile: vi.fn(),
+  getMessages: vi.fn(),
+  filterByLeafNodeId: vi.fn(),
+  copyStr: vi.fn(),
 }));
 
 vi.mock('$app/navigation', () => ({ goto: mocks.goto }));
@@ -30,8 +33,11 @@ vi.mock('$lib/database/indexedDB', () => ({
     deleteConversation: mocks.deleteConversation,
     updateConversationName: mocks.updateConversationName,
     exportDB: mocks.exportDB,
+    getMessages: mocks.getMessages,
+    filterByLeafNodeId: mocks.filterByLeafNodeId,
   },
 }));
+vi.mock('$lib/utils/dom-helpers', () => ({ copyStr: mocks.copyStr }));
 
 vi.mock('$lib/utils/downloadAsFile', () => ({
   downloadAsFile: mocks.downloadAsFile,
@@ -312,5 +318,63 @@ describe('reaching the conversation actions from the keyboard', () => {
     await user.keyboard('{Escape}');
 
     expect(escapes).toHaveLength(0);
+  });
+});
+
+describe('copying a conversation', () => {
+  const turn = (role: string, content: string) =>
+    ({
+      id: 1,
+      convId: 'conv-1',
+      role,
+      content,
+      parent: -1,
+      children: [],
+    }) as never;
+
+  async function copy() {
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv, currentConvId: 'conv-1' } });
+    await user.click(screen.getByRole('button', { name: 'Show more options' }));
+    await user.click(screen.getByRole('button', { name: 'Copy conversation' }));
+  }
+
+  it('puts the conversation on the clipboard as markdown', async () => {
+    const shown = [
+      turn('user', 'How do I centre a div?'),
+      turn('assistant', 'Use flexbox.'),
+    ];
+    mocks.getMessages.mockResolvedValue(shown);
+    mocks.filterByLeafNodeId.mockReturnValue(shown);
+
+    await copy();
+
+    // JSON is right for reading back in and useless for showing anyone.
+    expect(mocks.copyStr).toHaveBeenCalledWith(
+      '## You\n\nHow do I centre a div?\n\n## Assistant\n\nUse flexbox.'
+    );
+  });
+
+  it('copies the branch on screen, not every version ever written', async () => {
+    mocks.getMessages.mockResolvedValue([turn('user', 'hi')]);
+    mocks.filterByLeafNodeId.mockReturnValue([turn('user', 'hi')]);
+
+    await copy();
+
+    expect(mocks.filterByLeafNodeId).toHaveBeenCalledWith(
+      expect.any(Array),
+      conv.currNode,
+      false
+    );
+  });
+
+  it('says so when the conversation could not be read', async () => {
+    mocks.getMessages.mockRejectedValue(new Error('database closed'));
+
+    await copy();
+
+    // Without this the menu simply closed and nothing reached the clipboard.
+    expect(mocks.error).toHaveBeenCalled();
+    expect(mocks.copyStr).not.toHaveBeenCalled();
   });
 });

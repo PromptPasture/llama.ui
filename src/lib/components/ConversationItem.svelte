@@ -1,5 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
+  import CopyIcon from 'lucide-svelte/icons/copy';
   import DownloadIcon from 'lucide-svelte/icons/download';
   import EllipsisVerticalIcon from 'lucide-svelte/icons/ellipsis-vertical';
   import PencilIcon from 'lucide-svelte/icons/pencil';
@@ -10,6 +11,8 @@
   import { chat } from '$lib/state/chat.svelte';
   import { modal } from '$lib/state/modal.svelte';
   import { toast } from '$lib/components/toast.js';
+  import { copyStr } from '$lib/utils/dom-helpers';
+  import { toMarkdown } from '$lib/utils/conversation-markdown';
   import { downloadAsFile } from '$lib/utils/downloadAsFile';
   import { toFileName } from '$lib/utils/filename';
   import { splitAround } from '$lib/utils/excerpt';
@@ -93,6 +96,25 @@
     } catch (error) {
       console.error('Conversation rename failed:', error);
       toast.error($_('sidebar.errors.renameFailed'));
+    }
+  }
+
+  async function handleCopy() {
+    menuOpen = false;
+    try {
+      const all = await IndexedDB.getMessages(conv.id);
+      // The branch on screen, rather than every version ever written: what is
+      // copied should be the conversation as it reads.
+      const shown = IndexedDB.filterByLeafNodeId(all, conv.currNode, false);
+      copyStr(
+        toMarkdown(shown, {
+          user: $_('chatScreen.labels.user'),
+          assistant: $_('chatScreen.labels.assistant'),
+        })
+      );
+    } catch (error) {
+      console.error('Conversation copy failed:', error);
+      toast.error($_('sidebar.errors.downloadFailed'));
     }
   }
 
@@ -199,6 +221,15 @@
         <li>
           <Button variant="menu-item" size="small" onclick={handleRename}
             ><PencilIcon size={14} />{$_('sidebar.buttons.rename')}</Button
+          >
+        </li>
+        <li>
+          <Button
+            variant="menu-item"
+            size="small"
+            onclick={handleCopy}
+            aria-label={$_('sidebar.ariaLabels.copy')}
+            ><CopyIcon size={14} />{$_('chatScreen.titles.copy')}</Button
           >
         </li>
         <li>
