@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, locale, register, waitLocale } from 'svelte-i18n';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import SettingsTabs from './SettingsTabs.svelte';
 
 // Set the locale explicitly rather than through initI18n(), which picks its
@@ -159,5 +159,63 @@ describe('the name of the tab strip', () => {
 
     await locale.set('en');
     await waitLocale();
+  });
+});
+
+describe('the arrow keys when the layout is turned round', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('dir');
+  });
+
+  async function pressOn(name: string, key: string) {
+    const user = userEvent.setup();
+    renderTabs('beta');
+    tab(name).focus();
+    await user.keyboard(`{${key}}`);
+    return document.activeElement;
+  }
+
+  it('goes towards the first tab on Right, which in Arabic is rightmost', async () => {
+    document.documentElement.dir = 'rtl';
+
+    const focused = await pressOn('Beta', 'ArrowRight');
+
+    // The strip runs right to left, so moving the eye rightward is moving
+    // back along it. Pressing Right used to move the other way.
+    expect(focused).toBe(tab('Alpha'));
+  });
+
+  it('goes onwards on Left when the layout is turned round', async () => {
+    document.documentElement.dir = 'rtl';
+
+    const focused = await pressOn('Beta', 'ArrowLeft');
+
+    expect(focused).toBe(tab('Gamma'));
+  });
+
+  it('leaves Right going onwards when it is not', async () => {
+    document.documentElement.dir = 'ltr';
+
+    const focused = await pressOn('Beta', 'ArrowRight');
+
+    expect(focused).toBe(tab('Gamma'));
+  });
+
+  it('leaves Down going onwards whichever way the text runs', async () => {
+    document.documentElement.dir = 'rtl';
+
+    const focused = await pressOn('Beta', 'ArrowDown');
+
+    // On a wide window the strip is a column; turning the text round does not
+    // turn a column upside down.
+    expect(focused).toBe(tab('Gamma'));
+  });
+
+  it('leaves Up going back whichever way the text runs', async () => {
+    document.documentElement.dir = 'rtl';
+
+    const focused = await pressOn('Beta', 'ArrowUp');
+
+    expect(focused).toBe(tab('Alpha'));
   });
 });

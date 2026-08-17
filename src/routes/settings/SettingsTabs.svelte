@@ -16,27 +16,46 @@
 
   let tabRefs: HTMLButtonElement[] = [];
 
+  /**
+   * Which way an arrow key moves along the strip.
+   *
+   * Right and left mean the other thing when the layout is turned round: in
+   * Arabic the first tab is the rightmost, so pressing Right moves towards it
+   * rather than away. Up and down are unaffected — the order does not turn
+   * over, only across.
+   *
+   * @param key - The key that was pressed
+   * @returns 1 onwards, -1 back, 0 for a key that means neither
+   */
+  function step(key: string): number {
+    const turnedRound = document.documentElement.dir === 'rtl';
+    switch (key) {
+      case 'ArrowDown':
+        return 1;
+      case 'ArrowUp':
+        return -1;
+      case 'ArrowRight':
+        return turnedRound ? -1 : 1;
+      case 'ArrowLeft':
+        return turnedRound ? 1 : -1;
+      default:
+        return 0;
+    }
+  }
+
   // A tablist is expected to move between tabs with the arrow keys, with only
   // the selected tab in the tab order (roving tabindex).
   function onTabKeydown(event: KeyboardEvent, index: number) {
     let next: number;
-    switch (event.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        next = (index + 1) % tabs.length;
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        next = (index - 1 + tabs.length) % tabs.length;
-        break;
-      case 'Home':
-        next = 0;
-        break;
-      case 'End':
-        next = tabs.length - 1;
-        break;
-      default:
-        return;
+    const moved = step(event.key);
+    if (moved !== 0) {
+      next = (index + moved + tabs.length) % tabs.length;
+    } else if (event.key === 'Home') {
+      next = 0;
+    } else if (event.key === 'End') {
+      next = tabs.length - 1;
+    } else {
+      return;
     }
     event.preventDefault();
     selected = tabs[next].id;
