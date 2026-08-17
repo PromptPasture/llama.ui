@@ -44,4 +44,16 @@ export const toast = {
   info: (msg: string) => add(msg, 'info'),
   success: (msg: string) => add(msg, 'success'),
   error: (msg: string) => add(msg, 'error'),
+
+  /**
+   * Takes one away before its time is up.
+   *
+   * An error is given up to ten seconds to be read, which is right for reading
+   * it and long to sit over the corner of a conversation once it has been.
+   *
+   * @param id - Which one
+   */
+  dismiss(id: number): void {
+    _store.update((list) => list.filter((t) => t.id !== id));
+  },
 };

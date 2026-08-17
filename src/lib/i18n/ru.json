@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "Сбросить",
   "settings.footer.storageNote": "Настройки сохраняются в localStorage браузера.",
   "toast.newVersion.description": "Обновитесь для получения последних функций и исправлений.",
+  "toast.dismiss": "Закрыть",
   "toast.newVersion.submitBtnLabel": "Обновить",
   "toast.newVersion.cancelBtnLabel": "Позже",
   "toast.welcomePopup.description": "Похоже, у вас ещё не настроены модели. Давайте перейдем в Настройки, чтобы настроить вашего провайдера вывода.",

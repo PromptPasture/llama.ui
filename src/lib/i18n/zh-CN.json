@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "重置",
   "settings.footer.storageNote": "设置保存在浏览器的 localStorage 中。",
   "toast.newVersion.description": "更新以获取最新功能和修复。",
+  "toast.dismiss": "关闭",
   "toast.newVersion.submitBtnLabel": "更新",
   "toast.newVersion.cancelBtnLabel": "稍后",
   "toast.welcomePopup.description": "看起来你还没有设置模型。让我们前往设置来配置你的推理提供者。",

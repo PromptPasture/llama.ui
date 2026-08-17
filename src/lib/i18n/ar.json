@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "إعادة تعيين",
   "settings.footer.storageNote": "يتم حفظ الإعدادات في localStorage الخاص بالمتصفح.",
   "toast.newVersion.description": "تحديث لأحدث الميزات والإصلاحات.",
+  "toast.dismiss": "إغلاق",
   "toast.newVersion.submitBtnLabel": "تحديث",
   "toast.newVersion.cancelBtnLabel": "لاحقاً",
   "toast.welcomePopup.description": "يبدو أنك لم تقم بإعداد النماذج بعد. لنذهب إلى الإعدادات لتكوين مزود الاستدلال الخاص بك.",

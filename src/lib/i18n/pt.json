@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "Redefinir",
   "settings.footer.storageNote": "As configurações são salvas no localStorage do navegador.",
   "toast.newVersion.description": "Atualize para os recursos e correções mais recentes.",
+  "toast.dismiss": "Descartar",
   "toast.newVersion.submitBtnLabel": "Atualizar",
   "toast.newVersion.cancelBtnLabel": "Depois",
   "toast.welcomePopup.description": "Parece que você ainda não configurou os modelos. Vamos para as Configurações para configurar seu provedor de Inferência.",

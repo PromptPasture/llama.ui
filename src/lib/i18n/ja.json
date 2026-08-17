@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "リセット",
   "settings.footer.storageNote": "設定はブラウザのlocalStorageに保存されます。",
   "toast.newVersion.description": "最新の機能と修正のために更新してください。",
+  "toast.dismiss": "閉じる",
   "toast.newVersion.submitBtnLabel": "更新",
   "toast.newVersion.cancelBtnLabel": "後で",
   "toast.welcomePopup.description": "まだモデルが設定されていないようです。設定に移動して推論プロバイダーを構成しましょう。",

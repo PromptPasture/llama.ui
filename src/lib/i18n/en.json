@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "Reset",
   "settings.footer.storageNote": "Settings are saved in browser's localStorage.",
   "toast.newVersion.description": "Update for the latest features & fixes.",
+  "toast.dismiss": "Dismiss",
   "toast.newVersion.submitBtnLabel": "Update",
   "toast.newVersion.cancelBtnLabel": "Later",
   "toast.welcomePopup.description": "It looks like you don't have the models set up yet. Let's go to the Settings to configure your Inference provider.",

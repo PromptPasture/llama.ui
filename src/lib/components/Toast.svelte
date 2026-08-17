@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { toastStore, type ToastItem } from './toast.js';
+  import { _ } from 'svelte-i18n';
+  import { toast, toastStore, type ToastItem } from './toast.js';
 
   // Errors go in an assertive region so a screen reader interrupts rather than
   // waiting for a pause: they report a failure the user needs to act on.
@@ -8,13 +9,20 @@
 </script>
 
 {#snippet toastItem(item: ToastItem)}
-  <div
+  <!-- The message itself is the control, so what a screen reader announces
+       from the live region is the message and not a word about closing it.
+       Pressing it takes it away: an error is given up to ten seconds to be
+       read, which is long to sit over the corner once it has been. -->
+  <button
+    type="button"
     class="toast"
     class:toast--success={item.level === 'success'}
     class:toast--error={item.level === 'error'}
+    title={$_('toast.dismiss')}
+    onclick={() => toast.dismiss(item.id)}
   >
     {item.message}
-  </div>
+  </button>
 {/snippet}
 
 <div class="toast-host">
@@ -52,6 +60,9 @@
   }
 
   .toast {
+    @apply pointer-events-auto cursor-pointer text-start;
+    border: none;
+    font: inherit;
     @apply px-4 py-3 text-sm pointer-events-auto max-w-80;
     border-radius: var(--radius-md);
     background: var(--color-surface);

@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "재설정",
   "settings.footer.storageNote": "설정은 브라우저의 localStorage에 저장됩니다.",
   "toast.newVersion.description": "최신 기능 및 수정 사항을 위해 업데이트하세요.",
+  "toast.dismiss": "닫기",
   "toast.newVersion.submitBtnLabel": "업데이트",
   "toast.newVersion.cancelBtnLabel": "나중에",
   "toast.welcomePopup.description": "아직 모델을 설정하지 않은 것 같습니다. 설정으로 이동하여 추론 제공자를 구성해 주세요.",

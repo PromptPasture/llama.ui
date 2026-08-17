@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "रीसेट करें",
   "settings.footer.storageNote": "सेटिंग्स ब्राउज़र के localStorage में सहेजी जाती हैं।",
   "toast.newVersion.description": "नवीनतम सुविधाओं और सुधारों के लिए अपडेट करें।",
+  "toast.dismiss": "हटाएं",
   "toast.newVersion.submitBtnLabel": "अपडेट करें",
   "toast.newVersion.cancelBtnLabel": "बाद में",
   "toast.welcomePopup.description": "ऐसा लगता है कि आपने अभी तक मॉडल सेट नहीं किए हैं। चलिए अपने अनुमान प्रदाता को कॉन्फ़िगर करने के लिए सेटिंग्स पर चलते हैं।",

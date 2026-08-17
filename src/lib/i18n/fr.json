@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "Réinitialiser",
   "settings.footer.storageNote": "Les paramètres sont enregistrés dans le localStorage du navigateur.",
   "toast.newVersion.description": "Mettez à jour pour les dernières fonctionnalités et correctifs.",
+  "toast.dismiss": "Fermer",
   "toast.newVersion.submitBtnLabel": "Mettre à jour",
   "toast.newVersion.cancelBtnLabel": "Plus tard",
   "toast.welcomePopup.description": "Il semble que vous n'ayez pas encore configuré les modèles. Allons dans les Paramètres pour configurer votre fournisseur d'inférence.",

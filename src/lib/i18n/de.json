@@ -245,6 +245,7 @@
   "settings.actionButtons.resetBtnLabel": "Zurücksetzen",
   "settings.footer.storageNote": "Einstellungen werden im localStorage des Browsers gespeichert.",
   "toast.newVersion.description": "Aktualisieren Sie, um die neuesten Funktionen und Korrekturen zu erhalten.",
+  "toast.dismiss": "Schließen",
   "toast.newVersion.submitBtnLabel": "Aktualisieren",
   "toast.newVersion.cancelBtnLabel": "Später",
   "toast.welcomePopup.description": "Es sieht so aus, als hätten Sie die Modelle noch nicht eingerichtet. Gehen Sie zu den Einstellungen, um Ihren Inferenz-Anbieter zu konfigurieren.",
