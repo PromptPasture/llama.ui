@@ -298,3 +298,31 @@ describe('what is asked of the server on a chat request', () => {
     expect(body.stream).toBe(true);
   });
 });
+
+describe('a server that answers 200 and is still refusing', () => {
+  /** What llama.cpp and LM Studio send for a path they do not serve. */
+  const refusal = { error: 'Unexpected endpoint or method. (GET /nowhere)' };
+
+  it('says what the server said, rather than finding no models', async () => {
+    vi.stubGlobal('fetch', respondWith(refusal));
+
+    // Read as an empty list, a mistyped address left the picker blank and the
+    // Fetch Models button reporting success.
+    await expect(provider().getModels()).rejects.toThrow(
+      /Unexpected endpoint or method/
+    );
+  });
+
+  it('says something even when the body explains nothing', async () => {
+    vi.stubGlobal('fetch', respondWith({ nonsense: true }));
+
+    await expect(provider().getModels()).rejects.toThrow(/did not answer/i);
+  });
+
+  it('still accepts a list that is simply empty', async () => {
+    vi.stubGlobal('fetch', respondWith({ data: [] }));
+
+    // A server with no models loaded is not a server that refused.
+    await expect(provider().getModels()).resolves.toEqual([]);
+  });
+});

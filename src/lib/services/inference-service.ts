@@ -1,3 +1,4 @@
+import { errorDetail } from '../api/response-utils';
 import { configToCustomOptions } from '../api/config-mapper';
 import {
   Configuration,
@@ -42,7 +43,10 @@ export const generateChatStream = async ({
 
   for await (const chunk of chunks) {
     if (chunk.error) {
-      throw new Error(chunk.error?.message || 'Unknown error');
+      // Read only as `error.message`, a server that answers with `error` as a
+      // plain string — llama.cpp and LM Studio both do — was reported as
+      // "Unknown error" while having said exactly what was wrong.
+      throw new Error(errorDetail(chunk) || 'Unknown error');
     }
     if (!chunk.choices || !Array.isArray(chunk.choices)) {
       console.warn('Invalid chunk format received:', chunk);

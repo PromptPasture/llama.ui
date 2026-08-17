@@ -8,7 +8,11 @@ import {
   SSEChatCompletionMessage,
 } from '../../types';
 import { normalizeUrl } from '../../utils/url-helpers';
-import { describeNetworkFailure, PROVIDER_TIMEOUT_MS } from '../response-utils';
+import {
+  describeNetworkFailure,
+  errorDetail,
+  PROVIDER_TIMEOUT_MS,
+} from '../response-utils';
 import { processSSEStream } from '../sse-parser';
 
 /**
@@ -28,28 +32,6 @@ const HTTP_ERRORS: Readonly<Record<number, readonly [string, string]>> = {
   503: ['Service unavailable', 'Server is temporarily down'],
   504: ['Gateway timeout', 'Backend took too long to respond'],
 };
-
-/**
- * Digs the server's own explanation out of an error body.
- *
- * OpenAI-compatible servers answer with `{ error: { message } }`, but not all
- * of them: some send `{ error: "..." }` and some `{ message: "..." }`.
- *
- * @param body - The parsed error body, whatever shape it arrived in
- * @returns The explanation, or an empty string if there is none
- */
-function errorDetail(body: unknown): string {
-  if (!body || typeof body !== 'object') return '';
-  const record = body as Record<string, unknown>;
-  const error = record.error;
-  const candidate =
-    typeof error === 'string'
-      ? error
-      : typeof (error as Record<string, unknown>)?.message === 'string'
-        ? (error as Record<string, unknown>).message
-        : record.message;
-  return typeof candidate === 'string' ? candidate.trim() : '';
-}
 
 /**
  * Base implementation for OpenAI-compatible API providers.
@@ -182,6 +164,18 @@ export class BaseOpenAIProvider
     }
     await this.isErrorResponse(fetchResponse);
     const json = await fetchResponse.json();
+
+    // A server can answer 200 and still be refusing: llama.cpp and LM Studio
+    // both reply to an unknown path with an error in the body and an ordinary
+    // status. Read as a model list that came back empty, a mistyped address
+    // left the picker blank with nothing said, while the server had named the
+    // path it did not recognise.
+    if (!Array.isArray(json?.data)) {
+      throw new Error(
+        errorDetail(json) || 'The server did not answer with a list of models.'
+      );
+    }
+
     this.models = this.jsonToModels(json.data);
 
     if (this.models.length > 0) this.lastUpdated = Date.now();

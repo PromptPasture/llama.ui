@@ -31,3 +31,26 @@ export function describeNetworkFailure(error: unknown): Error {
     `Cannot reach the inference server: ${(error as Error)?.message ?? 'network error'}`
   );
 }
+
+/**
+ * The reason a server gave, wherever it put it.
+ *
+ * OpenAI nests it as `error.message`; llama.cpp and LM Studio answer with
+ * `error` as a plain string. Reading only the nested form left the reader with
+ * "Unknown error" while the server had said exactly what was wrong.
+ *
+ * @param body - A parsed response body, or a streamed chunk
+ * @returns What it said, or an empty string if it said nothing
+ */
+export function errorDetail(body: unknown): string {
+  if (!body || typeof body !== 'object') return '';
+  const record = body as Record<string, unknown>;
+  const error = record.error;
+  const candidate =
+    typeof error === 'string'
+      ? error
+      : typeof (error as Record<string, unknown>)?.message === 'string'
+        ? (error as Record<string, unknown>).message
+        : record.message;
+  return typeof candidate === 'string' ? candidate.trim() : '';
+}

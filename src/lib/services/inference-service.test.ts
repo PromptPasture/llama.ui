@@ -162,3 +162,25 @@ describe('the chunk that carries how many tokens were used', () => {
     expect(last.content).toBe('hello');
   });
 });
+
+describe('a chunk carrying a refusal', () => {
+  it('reports it when the reason is nested, as OpenAI sends it', async () => {
+    await expect(
+      run([{ error: { message: 'Rate limit exceeded' } }])
+    ).rejects.toThrow(/Rate limit exceeded/);
+  });
+
+  it('reports it when the whole of error is the reason', async () => {
+    // llama.cpp and LM Studio answer this way; it used to arrive as
+    // "Unknown error" with the reason thrown away.
+    await expect(
+      run([{ error: 'Unexpected endpoint or method. (POST /nowhere)' }])
+    ).rejects.toThrow(/Unexpected endpoint or method/);
+  });
+
+  it('still says something when the reason is unreadable', async () => {
+    await expect(run([{ error: { code: 500 } }])).rejects.toThrow(
+      /Unknown error/
+    );
+  });
+});

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { describeNetworkFailure, PROVIDER_TIMEOUT_MS } from './response-utils';
+import {
+  describeNetworkFailure,
+  errorDetail,
+  PROVIDER_TIMEOUT_MS,
+} from './response-utils';
 
 /** What fetch rejects with, which is an Error carrying a particular name. */
 function rejectedWith(name: string, message = 'something went wrong') {
@@ -59,5 +63,37 @@ describe('how long to wait for a provider', () => {
     // Most of the providers shipped with the app are hosted, where a round
     // trip past a second is ordinary.
     expect(PROVIDER_TIMEOUT_MS).toBeGreaterThanOrEqual(5000);
+  });
+});
+
+describe('reading the reason a server gave', () => {
+  it('takes it from where OpenAI puts it', () => {
+    expect(errorDetail({ error: { message: 'Invalid API key' } })).toBe(
+      'Invalid API key'
+    );
+  });
+
+  it('takes it when the whole of error is the reason', () => {
+    // llama.cpp and LM Studio both answer this way. Read only as a nested
+    // message, the reader was told "Unknown error" instead.
+    expect(
+      errorDetail({ error: 'Unexpected endpoint or method. (GET /nowhere)' })
+    ).toBe('Unexpected endpoint or method. (GET /nowhere)');
+  });
+
+  it('falls back to a message at the top', () => {
+    expect(errorDetail({ message: 'Something went wrong' })).toBe(
+      'Something went wrong'
+    );
+  });
+
+  it('trims what it finds', () => {
+    expect(errorDetail({ error: '  padded  ' })).toBe('padded');
+  });
+
+  it('says nothing when there is nothing to say', () => {
+    expect(errorDetail({ data: [] })).toBe('');
+    expect(errorDetail(null)).toBe('');
+    expect(errorDetail('a string')).toBe('');
   });
 });
