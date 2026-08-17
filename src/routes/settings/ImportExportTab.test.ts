@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   showConfirm: vi.fn().mockResolvedValue(true),
   getAllConversations: vi.fn().mockResolvedValue([]),
   deleteAllConversations: vi.fn().mockResolvedValue(0),
-  deleteAllPresets: vi.fn().mockResolvedValue(0),
+  forgetDatabase: vi.fn().mockResolvedValue(undefined),
   forgetEverything: vi.fn(),
   success: vi.fn(),
   error: vi.fn(),
@@ -27,7 +27,7 @@ vi.mock('$lib/database/indexedDB', () => ({
   default: {
     getAllConversations: mocks.getAllConversations,
     deleteAllConversations: mocks.deleteAllConversations,
-    deleteAllPresets: mocks.deleteAllPresets,
+    forgetEverything: mocks.forgetDatabase,
   },
 }));
 vi.mock('$lib/database/localStorage', () => ({
@@ -53,7 +53,7 @@ beforeEach(() => {
   mocks.showConfirm.mockReset().mockResolvedValue(true);
   mocks.getAllConversations.mockReset().mockResolvedValue([]);
   mocks.deleteAllConversations.mockReset().mockResolvedValue(0);
-  mocks.deleteAllPresets.mockReset().mockResolvedValue(0);
+  mocks.forgetDatabase.mockReset().mockResolvedValue(undefined);
   mocks.forgetEverything.mockReset();
   mocks.success.mockClear();
   mocks.error.mockClear();
@@ -288,8 +288,7 @@ describe('handing the machine on', () => {
     // Deleting the conversations alone leaves the credential behind, which is
     // the part that matters when the machine changes hands.
     await vi.waitFor(() => {
-      expect(mocks.deleteAllConversations).toHaveBeenCalled();
-      expect(mocks.deleteAllPresets).toHaveBeenCalled();
+      expect(mocks.forgetDatabase).toHaveBeenCalled();
       expect(mocks.forgetEverything).toHaveBeenCalled();
     });
   });
@@ -305,13 +304,13 @@ describe('handing the machine on', () => {
 
     const onreload = await pressForgetEverything();
 
-    expect(mocks.deleteAllConversations).not.toHaveBeenCalled();
+    expect(mocks.forgetDatabase).not.toHaveBeenCalled();
     expect(mocks.forgetEverything).not.toHaveBeenCalled();
     expect(onreload).not.toHaveBeenCalled();
   });
 
   it('says so, and stays put, when it could not', async () => {
-    mocks.deleteAllPresets.mockRejectedValue(new Error('storage gone'));
+    mocks.forgetDatabase.mockRejectedValue(new Error('storage gone'));
 
     const onreload = await pressForgetEverything();
 

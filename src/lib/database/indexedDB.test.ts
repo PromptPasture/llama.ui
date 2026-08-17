@@ -496,3 +496,55 @@ describe('what an export gives away', () => {
     expect(exported).toContain('http://localhost:8080');
   });
 });
+
+describe('emptying the database', () => {
+  beforeEach(async () => {
+    for (const conv of await IndexedDB.getAllConversations()) {
+      await IndexedDB.deleteConversation(conv.id);
+    }
+    await IndexedDB.forgetEverything();
+  });
+
+  async function storeSomethingInEverything() {
+    await chat('Bread recipe', ['the sourdough starter']);
+    await IndexedDB.savePreset('Work', { apiKey: 'sk-secret' } as never);
+  }
+
+  it('leaves no table with anything in it', async () => {
+    await storeSomethingInEverything();
+
+    await IndexedDB.forgetEverything();
+
+    // Read back through the export, which walks the tables itself: a table
+    // added later is covered here without this test being touched.
+    const left = (await IndexedDB.exportDB())
+      .filter((t) => t.rows.length > 0)
+      .map((t) => t.table);
+    expect(left).toEqual([]);
+  });
+
+  it('takes the presets, and the api keys in them', async () => {
+    await storeSomethingInEverything();
+
+    await IndexedDB.forgetEverything();
+
+    expect(await IndexedDB.getPresets()).toEqual([]);
+  });
+
+  it('tells the rest of the app the conversations have gone', async () => {
+    await storeSomethingInEverything();
+    const told: string[] = [];
+    const listener = (id: string) => told.push(id);
+    IndexedDB.onConversationChanged(listener);
+
+    await IndexedDB.forgetEverything();
+    IndexedDB.offConversationChanged(listener);
+
+    // A tab reading one of them is looking at something that has gone.
+    expect(told).toHaveLength(1);
+  });
+
+  it('has nothing to do when nothing is stored', async () => {
+    await expect(IndexedDB.forgetEverything()).resolves.toBeUndefined();
+  });
+});

@@ -110,8 +110,7 @@
     if (!sure) return;
 
     try {
-      await IndexedDB.deleteAllConversations();
-      await IndexedDB.deleteAllPresets();
+      await IndexedDB.forgetEverything();
       LocalStorage.forgetEverything();
     } catch (error) {
       // Some of it may have gone; saying nothing would leave the reader

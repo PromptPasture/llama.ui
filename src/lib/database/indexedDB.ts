@@ -473,17 +473,20 @@ export default class IndexedDB {
   }
 
   /**
-   * Deletes every saved preset.
+   * Empties the database.
    *
-   * Presets hold whole configurations, api keys included, so a reset that
-   * left them behind would leave the credentials behind with them.
+   * Every table, rather than the ones that happen to exist today: presets
+   * hold whole configurations with api keys in them, and a table added later
+   * would otherwise survive a reset without anyone noticing.
    *
-   * @returns How many were deleted
+   * The conversations go first and one at a time, which is what tells another
+   * tab that the one it is reading has gone.
    */
-  static async deleteAllPresets(): Promise<number> {
-    const all = await IndexedDB.getPresets();
-    await db.userConfigurations.clear();
-    return all.length;
+  static async forgetEverything(): Promise<void> {
+    await IndexedDB.deleteAllConversations();
+    await db.transaction('rw', db.tables, async () => {
+      for (const table of db.tables) await table.clear();
+    });
   }
 
   /**
