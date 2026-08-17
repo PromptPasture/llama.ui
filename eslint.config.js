@@ -7,8 +7,7 @@ import ts from 'typescript-eslint';
 import svelteConfig from './svelte.config.js';
 
 export default defineConfig([
-  // `_react` is the pre-migration app, kept for reference and linted by its own config.
-  globalIgnores(['build/', '.svelte-kit/', 'node_modules/', 'static/', '_react/']),
+  globalIgnores(['build/', '.svelte-kit/', 'node_modules/', 'static/']),
 
   js.configs.recommended,
   ts.configs.recommended,

@@ -66,6 +66,6 @@
 - [ ] a11y audit (axe + keyboard-only + screen reader)
 - [ ] Data integrity check (load existing IndexedDB)
 - [ ] Update deploy.yml / build.yml output paths
-- [ ] Delete `_react/` reference folder
+- [x] Delete `_react/` reference folder
 - [ ] Update MEMORY.md
 - [ ] Open PR feat/sveltekit → main, tag release
