@@ -28,7 +28,6 @@ export interface Configuration {
 
   /* conversations */
   pasteLongTextToFileLen: number;
-  pdfAsImage: boolean;
   showTokensPerSecond: boolean;
   showThoughtInProgress: boolean;
   excludeThoughtOnReq: boolean;
@@ -65,7 +64,6 @@ export interface Configuration {
   custom: string;
 
   /* experimental */
-  pyIntepreterEnabled: boolean;
 
   /* text to speech */
   ttsVoice: string;

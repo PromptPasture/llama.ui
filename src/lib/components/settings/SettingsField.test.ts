@@ -69,13 +69,15 @@ describe('naming the control a settings field is for', () => {
     render(SettingsField, {
       props: {
         type: 'checkbox',
-        configKey: 'pdfAsImage',
+        configKey: 'showRawUserMessage',
         value: false,
         onchange: vi.fn(),
       },
     });
 
-    expect(screen.getByRole('checkbox', { name: /PDF/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('checkbox', { name: 'Display user messages raw' })
+    ).toBeInTheDocument();
   });
 });
 
