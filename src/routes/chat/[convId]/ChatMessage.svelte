@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { attachmentSize } from '$lib/utils/attachment-size';
+  import { describeSize } from '$lib/utils/text-file';
   import { _, locale } from 'svelte-i18n';
   import AtomIcon from 'lucide-svelte/icons/atom';
   import BotIcon from 'lucide-svelte/icons/bot';
@@ -299,7 +301,12 @@
                   />
                 {:else}
                   <details class="msg__attachment">
-                    <summary class="msg__attachment-name">{item.name}</summary>
+                    <summary class="msg__attachment-name"
+                      >{item.name}
+                      <span class="msg__attachment-size"
+                        >{describeSize(attachmentSize(item))}</span
+                      ></summary
+                    >
                     <pre class="msg__attachment-content">{item.content}</pre>
                   </details>
                 {/if}
@@ -552,6 +559,11 @@
 
   .msg__attachment-name {
     @apply px-2 py-1 cursor-pointer truncate;
+  }
+
+  .msg__attachment-size {
+    @apply text-xs;
+    color: var(--color-text-muted);
   }
 
   .msg__attachment-content {

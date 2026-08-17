@@ -852,3 +852,30 @@ describe('attaching a PDF', () => {
     failed.mockRestore();
   });
 });
+
+describe('how much an attachment amounts to', () => {
+  it('says so beside its name', async () => {
+    const user = userEvent.setup();
+    const { filePicker } = renderInput();
+
+    await user.upload(
+      filePicker,
+      new File(['x'.repeat(2048)], 'notes.txt', { type: 'text/plain' })
+    );
+
+    // A file name says nothing about what is being sent, and a pasted log
+    // looks the same in the box as a three-line note.
+    expect(screen.getByText('2KB')).toBeInTheDocument();
+  });
+
+  it('says how much was pasted', async () => {
+    app.saveConfig({ ...app.config, pasteLongTextToFileLen: 100 });
+    const user = userEvent.setup();
+    const { textarea } = renderInput();
+
+    await user.click(textarea);
+    await user.paste('x'.repeat(4096));
+
+    expect(screen.getByText('4KB')).toBeInTheDocument();
+  });
+});

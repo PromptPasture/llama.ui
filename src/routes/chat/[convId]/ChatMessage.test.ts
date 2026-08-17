@@ -882,3 +882,22 @@ describe('copying a message', () => {
     failed.mockRestore();
   });
 });
+
+describe('how much a sent attachment amounted to', () => {
+  it('says so beside its name', () => {
+    renderMessage(
+      display({
+        msg: message({
+          role: 'user',
+          content: 'what is in this?',
+          extra: [
+            { type: 'textFile', name: 'log.txt', content: 'x'.repeat(3072) },
+          ],
+        }),
+      })
+    );
+
+    // Folded away, the name is all there is to judge it by.
+    expect(screen.getByText('3KB')).toBeInTheDocument();
+  });
+});

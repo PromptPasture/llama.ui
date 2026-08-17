@@ -17,6 +17,7 @@
     MAX_FILE_BYTES,
   } from '$lib/utils/text-file';
   import { isImageType, readAsDataUrl } from '$lib/utils/image-file';
+  import { attachmentSize } from '$lib/utils/attachment-size';
   import {
     readAttachments,
     writeAttachments,
@@ -300,6 +301,9 @@
             <FileTextIcon size={14} />
           {/if}
           <span class="chat-input__attachment-name">{item.extra.name}</span>
+          <span class="chat-input__attachment-size"
+            >{describeSize(attachmentSize(item.extra))}</span
+          >
           <button
             type="button"
             class="chat-input__attachment-remove"
@@ -423,6 +427,11 @@
 
   .chat-input__attachment-name {
     @apply truncate;
+  }
+
+  .chat-input__attachment-size {
+    @apply shrink-0 text-xs;
+    color: var(--color-text-muted);
   }
 
   .chat-input__attachment-remove {
