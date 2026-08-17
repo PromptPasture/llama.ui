@@ -101,25 +101,4 @@ export default class LocalStorage {
   static setLanguage(language: string) {
     localStorage.setItem('language', language);
   }
-
-  /**
-   * Retrieves the currently selected syntax theme.
-   * @returns The theme string ('auto', etc.) or 'auto' if not set.
-   */
-  static getSyntaxTheme(): string {
-    return localStorage.getItem('syntaxTheme') || 'auto';
-  }
-
-  /**
-   * Saves the selected syntax theme to localStorage.
-   * If 'auto' is selected, the theme item is removed.
-   * @param theme The theme string to save.
-   */
-  static setSyntaxTheme(theme: string) {
-    if (theme === 'auto') {
-      localStorage.removeItem('syntaxTheme');
-    } else {
-      localStorage.setItem('syntaxTheme', theme);
-    }
-  }
 }

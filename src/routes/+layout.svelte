@@ -36,8 +36,13 @@
     await app.init();
     ready = true;
 
+    // Named buttons rather than a bare OK and Cancel: the wording has been
+    // sitting in every catalogue since the migration, unasked for.
     startServiceWorker(() =>
-      modal.showConfirm(t('toast.newVersion.description'))
+      modal.showConfirm(t('toast.newVersion.description'), {
+        confirm: t('toast.newVersion.submitBtnLabel'),
+        cancel: t('toast.newVersion.cancelBtnLabel'),
+      })
     );
 
     // Nothing can be answered until a provider is configured, and a first
