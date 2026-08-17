@@ -160,6 +160,14 @@ npm run check  # 🔍 svelte-check (types)
 
 `npm run format` rewrites `src/` with Prettier if the lint step complains.
 
+**Against a server you are actually running** — mocks answer the shape they
+were told to, so a few checks talk to a real one. They are skipped unless you
+point them at it:
+
+```bash
+LLAMA_UI_LIVE_URL=http://localhost:1234 npm test
+```
+
 ### 🧰 Preconfiguring Defaults
 
 Planning to redistribute the app with opinionated settings out of the box? Any JSON under
