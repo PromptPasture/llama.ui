@@ -433,6 +433,8 @@ describe('while one of these is working', () => {
     // Reading every conversation out takes as long as the history is, and
     // pressed with nothing to show for it a button looks like it did nothing.
     expect(button).toHaveAttribute('aria-busy', 'true');
+    // Said in a second way, because disabled and broken look alike otherwise.
+    expect(button.querySelector('.animate-spin')).not.toBeNull();
     finish();
   });
 
@@ -448,6 +450,12 @@ describe('while one of these is working', () => {
     // They all read or write the same store; forgetting everything halfway
     // through writing it out is not a thing to allow.
     expect(screen.getByRole('button', { name: 'Export' })).toBeDisabled();
+    // Only the one working turns; the rest are merely out of reach.
+    expect(
+      screen
+        .getByRole('button', { name: 'Export' })
+        .querySelector('.animate-spin')
+    ).toBeNull();
     expect(
       screen.getByRole('button', { name: 'Forget everything' })
     ).toBeDisabled();
@@ -464,6 +472,7 @@ describe('while one of these is working', () => {
 
     expect(button).not.toBeDisabled();
     expect(button).toHaveAttribute('aria-busy', 'false');
+    expect(button.querySelector('.animate-spin')).toBeNull();
   });
 
   it('is ready again after a failure', async () => {

@@ -8,6 +8,7 @@
   import { downloadAsFile } from '$lib/utils/downloadAsFile';
   import { historyToMarkdown } from '$lib/utils/history-markdown';
   import Button from '$lib/components/Button.svelte';
+  import LoaderIcon from 'lucide-svelte/icons/loader-circle';
 
   interface Props {
     onclose: () => void;
@@ -214,22 +215,37 @@
       onclick={handleExport}
       disabled={running !== null}
       aria-busy={running === 'export'}
-      >{$_('settings.importExport.exportBtnLabel')}</Button
     >
+      {#if running === 'export'}<LoaderIcon
+          size={14}
+          class="animate-spin"
+        />{/if}
+      {$_('settings.importExport.exportBtnLabel')}
+    </Button>
 
     <Button
       onclick={handleExportMarkdown}
       disabled={running !== null}
       aria-busy={running === 'markdown'}
-      >{$_('settings.importExport.exportMarkdownBtnLabel')}</Button
     >
+      {#if running === 'markdown'}<LoaderIcon
+          size={14}
+          class="animate-spin"
+        />{/if}
+      {$_('settings.importExport.exportMarkdownBtnLabel')}
+    </Button>
 
     <Button
       onclick={() => fileInput.click()}
       disabled={running !== null}
       aria-busy={running === 'import'}
-      >{$_('settings.importExport.importBtnLabel')}</Button
     >
+      {#if running === 'import'}<LoaderIcon
+          size={14}
+          class="animate-spin"
+        />{/if}
+      {$_('settings.importExport.importBtnLabel')}
+    </Button>
     <input
       bind:this={fileInput}
       type="file"
@@ -243,16 +259,26 @@
       onclick={handleDeleteAll}
       disabled={running !== null}
       aria-busy={running === 'delete'}
-      >{$_('settings.importExport.deleteAllBtnLabel')}</Button
     >
+      {#if running === 'delete'}<LoaderIcon
+          size={14}
+          class="animate-spin"
+        />{/if}
+      {$_('settings.importExport.deleteAllBtnLabel')}
+    </Button>
 
     <Button
       variant="danger"
       onclick={handleForgetEverything}
       disabled={running !== null}
       aria-busy={running === 'forget'}
-      >{$_('settings.importExport.forgetAllBtnLabel')}</Button
     >
+      {#if running === 'forget'}<LoaderIcon
+          size={14}
+          class="animate-spin"
+        />{/if}
+      {$_('settings.importExport.forgetAllBtnLabel')}
+    </Button>
   </div>
 </section>
 
