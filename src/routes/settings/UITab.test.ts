@@ -126,3 +126,47 @@ describe('the length at which a paste becomes an attachment', () => {
     );
   });
 });
+
+describe('where the keyboard shortcuts can be read', () => {
+  async function shortcutsIn(tag: string) {
+    await locale.set(tag);
+    await waitLocale();
+    const { container } = render(UITab, { props });
+    const rows = container.querySelectorAll('.shortcuts__row');
+    return [...rows].map((row) => ({
+      keys: row.querySelector('.shortcuts__keys')?.textContent?.trim(),
+      what: row.querySelector('.shortcuts__what')?.textContent?.trim(),
+    }));
+  }
+
+  it('lists the ones the app answers to', async () => {
+    const listed = await shortcutsIn('en');
+
+    // The buttons name their own shortcut in a tooltip, which a keyboard or a
+    // touchscreen never shows.
+    expect(listed.map((s) => s.keys)).toEqual([
+      'Ctrl+N',
+      'Ctrl+K',
+      'Ctrl+,',
+      'Enter',
+      'Shift+Enter',
+      'Ctrl+Enter',
+      'Escape',
+    ]);
+  });
+
+  it('says what each of them does', async () => {
+    const listed = await shortcutsIn('en');
+
+    expect(listed[0].what).toBe('New conversation');
+    expect(listed.every((s) => s.what)).toBe(true);
+  });
+
+  it("says it in the reader's language", async () => {
+    const listed = await shortcutsIn('ru');
+
+    // Hardcoded, this section would stay English inside an otherwise
+    // translated settings screen.
+    expect(listed[0].what).toBe('Новый разговор');
+  });
+});

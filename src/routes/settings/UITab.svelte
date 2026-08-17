@@ -4,6 +4,7 @@
   import { app } from '$lib/state/app.svelte';
   import SettingsField from '$lib/components/settings/SettingsField.svelte';
   import SettingsDropdownField from '$lib/components/settings/SettingsDropdownField.svelte';
+  import { shortcutHint } from '$lib/utils/shortcuts';
 
   const SUPPORTED_LANGUAGES = [
     { value: 'en', label: 'English' },
@@ -37,6 +38,23 @@
   }
 
   let { config, onchange }: Props = $props();
+
+  /**
+   * Written the way the reader's own keyboard has them — Command where there
+   * is a Command key — and derived so they follow the chosen language.
+   */
+  const SHORTCUTS = $derived([
+    {
+      keys: shortcutHint('N'),
+      label: $_('settings.shortcuts.newConversation'),
+    },
+    { keys: shortcutHint('K'), label: $_('settings.shortcuts.search') },
+    { keys: shortcutHint(','), label: $_('settings.shortcuts.settings') },
+    { keys: 'Enter', label: $_('settings.shortcuts.send') },
+    { keys: 'Shift+Enter', label: $_('settings.shortcuts.newline') },
+    { keys: shortcutHint('Enter'), label: $_('settings.shortcuts.saveEdit') },
+    { keys: 'Escape', label: $_('settings.shortcuts.escape') },
+  ]);
 
   /**
    * Which entry in the list the interface is actually using. Browsers report a
@@ -96,8 +114,43 @@
   />
 </section>
 
+<section>
+  <h4 class="section-heading">{$_('settings.shortcuts.heading')}</h4>
+
+  <!-- The buttons name their own shortcut in a tooltip, which a keyboard or a
+       touchscreen never shows. This is where they can be read. -->
+  <dl class="shortcuts">
+    {#each SHORTCUTS as { keys, label } (label)}
+      <div class="shortcuts__row">
+        <dt class="shortcuts__keys">{keys}</dt>
+        <dd class="shortcuts__what">{label}</dd>
+      </div>
+    {/each}
+  </dl>
+</section>
+
 <style>
   @reference "tailwindcss";
+  .shortcuts {
+    @apply flex flex-col gap-1 m-0;
+  }
+
+  .shortcuts__row {
+    @apply flex items-baseline gap-3 text-sm;
+  }
+
+  .shortcuts__keys {
+    @apply shrink-0 px-1.5 py-0.5 rounded font-mono text-xs;
+    min-width: 5.5rem;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+  }
+
+  .shortcuts__what {
+    @apply m-0;
+    color: var(--color-text-muted);
+  }
+
   .section-heading {
     @apply font-semibold m-0 mb-3;
     font-size: 0.9375rem;
