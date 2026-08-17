@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import CONFIG_DEFAULT from '../../config/config-default.json';
+import { normalizeMsgsForAPI } from '../message-normalization';
 import { generateChatStream } from '../../services/inference-service';
 import { BaseOpenAIProvider } from './BaseOpenAIProvider';
 import type { Configuration, Message } from '../../types';
@@ -96,6 +97,46 @@ describe.skipIf(!LIVE_URL)('against a server that is running', () => {
       predicted_n: expect.any(Number),
     });
   }, 90_000);
+
+  it('carries an attachment as far as the model', async () => {
+    // An attachment turns the message into an array of content parts rather
+    // than a string. Asking whether the request was refused proves little:
+    // a lenient server accepts a malformed shape and quietly sends the model
+    // nothing. So the attachment carries a word nothing else would produce,
+    // and the reply has to contain it.
+    const withNote = [
+      {
+        ...ask('Repeat the secret word from the note, and nothing else.')[0],
+        extra: [
+          {
+            type: 'textFile',
+            name: 'note.txt',
+            content: 'The secret word is Vondrapple.',
+          },
+        ],
+      },
+    ] as Message[];
+
+    let merged: Record<string, unknown> = {};
+    await generateChatStream({
+      provider: provider(),
+      config: { ...briefly(), max_tokens: 400 } as Configuration,
+      model,
+      // Normalised first, as chat state does: this is where an attachment
+      // becomes content parts, and passing the message straight through
+      // sends the server a field it has never heard of.
+      messages: normalizeMsgsForAPI(withNote) as unknown as Message[],
+      signal: AbortSignal.timeout(90_000),
+      onUpdate: (update) => {
+        merged = { ...merged, ...update };
+      },
+    });
+
+    // A reasoning model spends most of its budget thinking, and the word
+    // turns up there first.
+    const said = `${merged.reasoning_content ?? ''} ${merged.content ?? ''}`;
+    expect(said.toLowerCase()).toContain('vondrapple');
+  }, 120_000);
 
   it('says what went wrong when there is nothing at that address', async () => {
     const nowhere = BaseOpenAIProvider.new('http://localhost:9');
