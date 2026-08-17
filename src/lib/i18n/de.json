@@ -230,6 +230,7 @@
   "settings.presetManager.labels.created": "Erstellt:",
   "settings.importExport.chatsSectionTitle": "Chats",
   "settings.importExport.exportBtnLabel": "Exportieren",
+  "settings.importExport.exportMarkdownBtnLabel": "Als Markdown exportieren",
   "settings.importExport.importBtnLabel": "Importieren",
   "settings.importExport.deleteAllBtnLabel": "Alle Unterhaltungen löschen",
   "settings.importExport.deleteAllConfirm": "Alle {count} Unterhaltungen löschen? Dies kann nicht rückgängig gemacht werden. Exportieren Sie sie zuerst, wenn Sie eine Kopie behalten möchten.",

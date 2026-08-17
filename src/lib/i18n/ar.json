@@ -230,6 +230,7 @@
   "settings.presetManager.labels.created": "تم الإنشاء:",
   "settings.importExport.chatsSectionTitle": "الدردشات",
   "settings.importExport.exportBtnLabel": "تصدير",
+  "settings.importExport.exportMarkdownBtnLabel": "تصدير بصيغة Markdown",
   "settings.importExport.importBtnLabel": "استيراد",
   "settings.importExport.deleteAllBtnLabel": "حذف جميع المحادثات",
   "settings.importExport.deleteAllConfirm": "حذف جميع المحادثات ({count})؟ لا يمكن التراجع عن هذا. صدّرها أولاً إذا أردت الاحتفاظ بنسخة.",

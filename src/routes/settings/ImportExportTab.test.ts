@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => ({
   downloadAsFile: vi.fn(),
   showConfirm: vi.fn().mockResolvedValue(true),
   getAllConversations: vi.fn().mockResolvedValue([]),
+  getMessages: vi.fn().mockResolvedValue([]),
+  filterByLeafNodeId: vi.fn((msgs) => msgs),
   deleteAllConversations: vi.fn().mockResolvedValue(0),
   forgetDatabase: vi.fn().mockResolvedValue(undefined),
   forgetEverything: vi.fn(),
@@ -26,6 +28,8 @@ vi.mock('$lib/state/modal.svelte', () => ({
 vi.mock('$lib/database/indexedDB', () => ({
   default: {
     getAllConversations: mocks.getAllConversations,
+    getMessages: mocks.getMessages,
+    filterByLeafNodeId: mocks.filterByLeafNodeId,
     deleteAllConversations: mocks.deleteAllConversations,
     forgetEverything: mocks.forgetDatabase,
   },
@@ -52,11 +56,16 @@ beforeEach(() => {
   // answers; left over, whichever test ran last decides instead.
   mocks.showConfirm.mockReset().mockResolvedValue(true);
   mocks.getAllConversations.mockReset().mockResolvedValue([]);
+  mocks.getMessages.mockReset().mockResolvedValue([]);
+  mocks.filterByLeafNodeId.mockReset().mockImplementation((msgs) => msgs);
   mocks.deleteAllConversations.mockReset().mockResolvedValue(0);
   mocks.forgetDatabase.mockReset().mockResolvedValue(undefined);
   mocks.forgetEverything.mockReset();
   mocks.success.mockClear();
   mocks.error.mockClear();
+  // Left over, a later test reads whichever download an earlier one made.
+  mocks.downloadAsFile.mockClear();
+  mocks.exportDB.mockClear();
 });
 
 function renderTab() {
@@ -112,6 +121,11 @@ describe('ImportExportTab import control', () => {
 
     await user.tab();
     expect(screen.getByRole('button', { name: 'Export' })).toHaveFocus();
+
+    await user.tab();
+    expect(
+      screen.getByRole('button', { name: 'Export as Markdown' })
+    ).toHaveFocus();
 
     await user.tab();
     expect(screen.getByRole('button', { name: 'Import' })).toHaveFocus();
@@ -176,7 +190,8 @@ describe('what the exported database is called', () => {
     mocks.downloadAsFile.mockClear();
     renderTab();
 
-    await user.click(screen.getByRole('button', { name: /Export/i }));
+    // Named exactly: there is more than one way to export now.
+    await user.click(screen.getByRole('button', { name: 'Export' }));
 
     // A fixed name leaves the browser to tell two backups apart by appending
     // (1) to the second.
@@ -319,5 +334,79 @@ describe('handing the machine on', () => {
     );
     // Reloading would look like it had worked.
     expect(onreload).not.toHaveBeenCalled();
+  });
+});
+
+describe('writing the whole history out as something readable', () => {
+  const turn = (role: 'user' | 'assistant', content: string) => ({
+    id: 1,
+    convId: 'c',
+    type: 'text',
+    timestamp: 1,
+    role,
+    content,
+    parent: -1,
+    children: [],
+  });
+
+  async function pressExportMarkdown() {
+    const user = userEvent.setup();
+    render(ImportExportTab, { props: { onclose: () => {} } });
+    await user.click(
+      screen.getByRole('button', { name: 'Export as Markdown' })
+    );
+  }
+
+  it('writes every conversation into one document', async () => {
+    mocks.getAllConversations.mockResolvedValue([
+      { id: 'a', name: 'Bread recipe', currNode: -1 },
+      { id: 'b', name: 'Holiday planning', currNode: -1 },
+    ]);
+    mocks.getMessages.mockResolvedValue([turn('user', 'how much yeast')]);
+
+    await pressExportMarkdown();
+
+    await vi.waitFor(() => expect(mocks.downloadAsFile).toHaveBeenCalled());
+    const [parts, name, type] = mocks.downloadAsFile.mock.calls[0];
+    // The JSON export goes back into the app; this is for keeping.
+    expect(String(parts[0])).toContain('# Bread recipe');
+    expect(String(parts[0])).toContain('# Holiday planning');
+    expect(name).toMatch(/^llama-ui-conversations-\d{4}-\d{2}-\d{2}\.md$/);
+    expect(type).toBe('text/markdown');
+  });
+
+  it('writes only the branch that is on screen', async () => {
+    mocks.getAllConversations.mockResolvedValue([
+      { id: 'a', name: 'Bread recipe', currNode: 7 },
+    ]);
+    mocks.getMessages.mockResolvedValue([turn('user', 'how much yeast')]);
+
+    await pressExportMarkdown();
+
+    await vi.waitFor(() =>
+      expect(mocks.filterByLeafNodeId).toHaveBeenCalledWith(
+        expect.anything(),
+        7,
+        false
+      )
+    );
+  });
+
+  it('writes nothing when there is nothing said anywhere', async () => {
+    mocks.getAllConversations.mockResolvedValue([]);
+
+    await pressExportMarkdown();
+
+    // A file holding one blank line is not worth handing over.
+    expect(mocks.downloadAsFile).not.toHaveBeenCalled();
+  });
+
+  it('says so when the history cannot be read', async () => {
+    mocks.getAllConversations.mockRejectedValue(new Error('storage gone'));
+
+    await pressExportMarkdown();
+
+    await vi.waitFor(() => expect(mocks.error).toHaveBeenCalled());
+    expect(mocks.downloadAsFile).not.toHaveBeenCalled();
   });
 });

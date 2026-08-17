@@ -230,6 +230,7 @@
   "settings.presetManager.labels.created": "创建时间:",
   "settings.importExport.chatsSectionTitle": "聊天",
   "settings.importExport.exportBtnLabel": "导出",
+  "settings.importExport.exportMarkdownBtnLabel": "导出为 Markdown",
   "settings.importExport.importBtnLabel": "导入",
   "settings.importExport.deleteAllBtnLabel": "删除所有对话",
   "settings.importExport.deleteAllConfirm": "删除全部 {count} 个对话？此操作无法撤销。如需保留副本，请先导出。",

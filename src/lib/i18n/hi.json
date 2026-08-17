@@ -230,6 +230,7 @@
   "settings.presetManager.labels.created": "बनाया गया:",
   "settings.importExport.chatsSectionTitle": "चैट",
   "settings.importExport.exportBtnLabel": "निर्यात करें",
+  "settings.importExport.exportMarkdownBtnLabel": "Markdown के रूप में निर्यात करें",
   "settings.importExport.importBtnLabel": "आयात करें",
   "settings.importExport.deleteAllBtnLabel": "सभी बातचीत हटाएं",
   "settings.importExport.deleteAllConfirm": "सभी {count} बातचीत हटाएं? इसे पूर्ववत नहीं किया जा सकता। प्रतिलिपि रखने के लिए पहले निर्यात करें।",

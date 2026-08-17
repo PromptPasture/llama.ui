@@ -6,6 +6,7 @@
   import IndexedDB from '$lib/database/indexedDB';
   import LocalStorage from '$lib/database/localStorage';
   import { downloadAsFile } from '$lib/utils/downloadAsFile';
+  import { historyToMarkdown } from '$lib/utils/history-markdown';
   import Button from '$lib/components/Button.svelte';
 
   interface Props {
@@ -31,6 +32,42 @@
       [JSON.stringify(data, null, 2)],
       `llama-ui-database-${today}.json`
     );
+  }
+
+  /**
+   * Writes the whole history out as one readable document.
+   *
+   * The JSON above goes back into the app; this is for keeping, for searching
+   * in something else, or for leaving with.
+   */
+  async function handleExportMarkdown() {
+    try {
+      const conversations = await IndexedDB.getAllConversations();
+      const transcripts = [];
+      for (const conv of conversations) {
+        const all = await IndexedDB.getMessages(conv.id);
+        // The branch on screen, as copying and downloading one already do.
+        transcripts.push({
+          conv,
+          messages: IndexedDB.filterByLeafNodeId(all, conv.currNode, false),
+        });
+      }
+      const markdown = historyToMarkdown(transcripts, {
+        user: $_('chatScreen.labels.user'),
+        assistant: $_('chatScreen.labels.assistant'),
+      });
+      if (!markdown) return;
+      const today = new Date().toISOString().slice(0, 10);
+      downloadAsFile(
+        [markdown],
+        `llama-ui-conversations-${today}.md`,
+        'text/markdown'
+      );
+      toast.success($_('state.database.export.completed'));
+    } catch (error) {
+      console.error('Writing the history out failed:', error);
+      toast.error($_('state.database.export.failed'));
+    }
   }
 
   async function handleImport(e: Event) {
@@ -131,6 +168,10 @@
   <div class="import-export__actions">
     <Button onclick={handleExport}
       >{$_('settings.importExport.exportBtnLabel')}</Button
+    >
+
+    <Button onclick={handleExportMarkdown}
+      >{$_('settings.importExport.exportMarkdownBtnLabel')}</Button
     >
 
     <Button onclick={() => fileInput.click()}

@@ -230,6 +230,7 @@
   "settings.presetManager.labels.created": "作成日:",
   "settings.importExport.chatsSectionTitle": "チャット",
   "settings.importExport.exportBtnLabel": "エクスポート",
+  "settings.importExport.exportMarkdownBtnLabel": "Markdown としてエクスポート",
   "settings.importExport.importBtnLabel": "インポート",
   "settings.importExport.deleteAllBtnLabel": "すべての会話を削除",
   "settings.importExport.deleteAllConfirm": "{count} 件の会話をすべて削除しますか？この操作は取り消せません。コピーを残す場合は先にエクスポートしてください。",

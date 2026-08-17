@@ -230,6 +230,7 @@
   "settings.presetManager.labels.created": "Créé le :",
   "settings.importExport.chatsSectionTitle": "Discussions",
   "settings.importExport.exportBtnLabel": "Exporter",
+  "settings.importExport.exportMarkdownBtnLabel": "Exporter en Markdown",
   "settings.importExport.importBtnLabel": "Importer",
   "settings.importExport.deleteAllBtnLabel": "Supprimer toutes les conversations",
   "settings.importExport.deleteAllConfirm": "Supprimer les {count} conversations ? Cette action est irréversible. Exportez-les d’abord si vous souhaitez en garder une copie.",

@@ -230,6 +230,7 @@
   "settings.presetManager.labels.created": "Создано:",
   "settings.importExport.chatsSectionTitle": "Чаты",
   "settings.importExport.exportBtnLabel": "Экспортировать",
+  "settings.importExport.exportMarkdownBtnLabel": "Экспорт в Markdown",
   "settings.importExport.importBtnLabel": "Импортировать",
   "settings.importExport.deleteAllBtnLabel": "Удалить все разговоры",
   "settings.importExport.deleteAllConfirm": "Удалить все разговоры ({count})? Это действие необратимо. Сначала экспортируйте их, если хотите сохранить копию.",
