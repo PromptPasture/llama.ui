@@ -89,6 +89,7 @@
   "dropdown.noOptions": "Совпадений не найдено",
   "fileUpload.errors.fileTooLarge": "Файл слишком велик. Максимальный размер — {size}.",
   "fileUpload.errors.fileIsBinary": "Файл является двоичным. Пожалуйста, загрузите текстовый файл.",
+  "fileUpload.errors.modelCannotSeeImages": "{model} не может читать изображения.",
   "fileUpload.errors.failedToReadFile": "Не удалось прочитать файл.",
   "settings.tabs.general": "Общие",
   "settings.tabs.ui": "Интерфейс",

@@ -89,6 +89,7 @@
   "dropdown.noOptions": "कोई विकल्प नहीं मिला",
   "fileUpload.errors.fileTooLarge": "फ़ाइल बहुत बड़ी है। अधिकतम आकार {size} है।",
   "fileUpload.errors.fileIsBinary": "फ़ाइल बाइनरी है। कृपया एक टेक्स्ट फ़ाइल अपलोड करें।",
+  "fileUpload.errors.modelCannotSeeImages": "{model} छवियाँ नहीं पढ़ सकता।",
   "fileUpload.errors.failedToReadFile": "फ़ाइल पढ़ने में विफल।",
   "settings.tabs.general": "सामान्य",
   "settings.tabs.ui": "यूआई",

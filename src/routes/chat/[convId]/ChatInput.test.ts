@@ -21,6 +21,7 @@ vi.mock('$lib/state/chat.svelte', () => ({ chat: mocks }));
 const { default: ChatInput } = await import('./ChatInput.svelte');
 const { app } = await import('$lib/state/app.svelte');
 const { toast } = await import('$lib/components/toast');
+const { inference } = await import('$lib/state/inference.svelte');
 const { forgetAllAttachments } = await import('$lib/utils/attachments');
 
 // Set the locale explicitly rather than through initI18n(), which picks its
@@ -821,5 +822,83 @@ describe('how much an attachment amounts to', () => {
     await user.paste('x'.repeat(4096));
 
     expect(screen.getByText('4KB')).toBeInTheDocument();
+  });
+});
+
+describe('attaching a picture to a model that cannot read one', () => {
+  const png = () =>
+    new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0])], 'shot.png', {
+      type: 'image/png',
+    });
+
+  /** What the picker holds, as the three providers that report it describe. */
+  function selected(modalities?: string[]) {
+    return vi.spyOn(inference, 'selectedModel', 'get').mockReturnValue({
+      id: 'a-model',
+      name: 'A model',
+      ...(modalities ? { modalities } : {}),
+    } as never);
+  }
+
+  it('says so rather than sending it', async () => {
+    const user = userEvent.setup();
+    const chosen = selected(['text']);
+    const failed = vi.spyOn(toast, 'error');
+    const { filePicker } = renderInput();
+
+    await user.upload(filePicker, png());
+
+    // The provider's own refusal arrives after the picture has been uploaded
+    // and reads as a request failure.
+    await vi.waitFor(() =>
+      expect(failed).toHaveBeenCalledWith('A model cannot read images.')
+    );
+    expect(screen.queryByText('shot.png')).not.toBeInTheDocument();
+    chosen.mockRestore();
+    failed.mockRestore();
+  });
+
+  it('takes it when the model says it reads them', async () => {
+    const user = userEvent.setup();
+    const chosen = selected(['text', 'image']);
+    const { filePicker } = renderInput();
+
+    await user.upload(filePicker, png());
+
+    await vi.waitFor(() =>
+      expect(screen.getByText('shot.png')).toBeInTheDocument()
+    );
+    chosen.mockRestore();
+  });
+
+  it('takes it when the model says nothing either way', async () => {
+    const user = userEvent.setup();
+    const chosen = selected();
+    const { filePicker } = renderInput();
+
+    await user.upload(filePicker, png());
+
+    // Most providers report nothing; refusing on silence would refuse every
+    // picture on all but three of them.
+    await vi.waitFor(() =>
+      expect(screen.getByText('shot.png')).toBeInTheDocument()
+    );
+    chosen.mockRestore();
+  });
+
+  it('still takes a text file for a model that cannot see', async () => {
+    const user = userEvent.setup();
+    const chosen = selected(['text']);
+    const { filePicker } = renderInput();
+
+    await user.upload(
+      filePicker,
+      new File(['the contents'], 'notes.txt', { type: 'text/plain' })
+    );
+
+    await vi.waitFor(() =>
+      expect(screen.getByText('notes.txt')).toBeInTheDocument()
+    );
+    chosen.mockRestore();
   });
 });

@@ -8,6 +8,7 @@
   import PaperclipIcon from 'lucide-svelte/icons/paperclip';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
+  import { inference } from '$lib/state/inference.svelte';
   import { toast } from '$lib/components/toast';
   import { readDraft, writeDraft } from '$lib/utils/drafts';
   import { isLongPaste } from '$lib/utils/long-paste';
@@ -18,6 +19,7 @@
   } from '$lib/utils/text-file';
   import { isImageType, readAsDataUrl } from '$lib/utils/image-file';
   import { attachmentSize } from '$lib/utils/attachment-size';
+  import { acceptsImages } from '$lib/utils/model-capabilities';
   import {
     readAttachments,
     writeAttachments,
@@ -190,6 +192,16 @@
       }
       try {
         if (isImageType(file.type)) {
+          // Said before it is sent: the provider's own refusal arrives after
+          // the picture has been uploaded and reads as a request failure.
+          if (!acceptsImages(inference.selectedModel)) {
+            toast.error(
+              $_('fileUpload.errors.modelCannotSeeImages', {
+                values: { model: inference.selectedModel?.name ?? '' },
+              })
+            );
+            continue;
+          }
           attach({
             type: 'imageFile',
             name: file.name,

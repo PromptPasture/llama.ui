@@ -89,6 +89,7 @@
   "dropdown.noOptions": "オプションが見つかりません",
   "fileUpload.errors.fileTooLarge": "ファイルが大きすぎます。最大サイズは{size}です。",
   "fileUpload.errors.fileIsBinary": "ファイルはバイナリです。テキストファイルをアップロードしてください。",
+  "fileUpload.errors.modelCannotSeeImages": "{model} は画像を読み取れません。",
   "fileUpload.errors.failedToReadFile": "ファイルの読み込みに失敗しました。",
   "settings.tabs.general": "一般",
   "settings.tabs.ui": "UI",

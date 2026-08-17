@@ -89,6 +89,7 @@
   "dropdown.noOptions": "옵션을 찾을 수 없음",
   "fileUpload.errors.fileTooLarge": "파일이 너무 큽니다. 최대 크기는 {size}입니다.",
   "fileUpload.errors.fileIsBinary": "이 파일은 바이너리 파일입니다. 텍스트 파일을 업로드해 주세요.",
+  "fileUpload.errors.modelCannotSeeImages": "{model}은(는) 이미지를 읽을 수 없습니다.",
   "fileUpload.errors.failedToReadFile": "파일을 읽는 데 실패했습니다.",
   "settings.tabs.general": "일반",
   "settings.tabs.ui": "UI",

@@ -89,6 +89,7 @@
   "dropdown.noOptions": "Nenhuma opção encontrada",
   "fileUpload.errors.fileTooLarge": "O arquivo é muito grande. O tamanho máximo é de {size}.",
   "fileUpload.errors.fileIsBinary": "O arquivo é binário. Por favor, carregue um arquivo de texto.",
+  "fileUpload.errors.modelCannotSeeImages": "{model} não consegue ler imagens.",
   "fileUpload.errors.failedToReadFile": "Falha ao ler o arquivo.",
   "settings.tabs.general": "Geral",
   "settings.tabs.ui": "UI",

@@ -89,6 +89,7 @@
   "dropdown.noOptions": "لم يتم العثور على خيارات",
   "fileUpload.errors.fileTooLarge": "الملف كبير جداً. الحجم الأقصى هو {size}.",
   "fileUpload.errors.fileIsBinary": "الملف ثنائي. يرجى تحميل ملف نصي.",
+  "fileUpload.errors.modelCannotSeeImages": "{model} لا يمكنه قراءة الصور.",
   "fileUpload.errors.failedToReadFile": "فشل في قراءة الملف.",
   "settings.tabs.general": "عام",
   "settings.tabs.ui": "واجهة المستخدم",

@@ -89,6 +89,7 @@
   "dropdown.noOptions": "未找到选项",
   "fileUpload.errors.fileTooLarge": "文件太大。最大大小为{size}。",
   "fileUpload.errors.fileIsBinary": "文件为二进制。请上传文本文件。",
+  "fileUpload.errors.modelCannotSeeImages": "{model} 无法读取图像。",
   "fileUpload.errors.failedToReadFile": "读取文件失败。",
   "settings.tabs.general": "通用",
   "settings.tabs.ui": "用户界面",
