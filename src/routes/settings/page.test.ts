@@ -383,6 +383,9 @@ describe('while the models are being fetched', () => {
     expect(button).toHaveAttribute('aria-busy', 'true');
     // Being disabled is what actually stops a second fetch starting.
     expect(button).toBeDisabled();
+    // And a mark for the eye, since the spinner does not turn for a reader
+    // who has asked for less movement.
+    expect(button.textContent).toContain('…');
     hanging.finish();
     hanging.spy.mockRestore();
   });

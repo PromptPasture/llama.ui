@@ -84,7 +84,10 @@
     aria-busy={fetchingModels}
   >
     <RefreshCwIcon size={14} class={fetchingModels ? 'animate-spin' : ''} />
-    {$_('settings.actionButtons.fetchModels')}
+    {$_(
+      'settings.actionButtons.fetchModels'
+    )}<!--
+    -->{#if fetchingModels}<span aria-hidden="true">…</span>{/if}
   </Button>
 
   <div class="spacer"></div>

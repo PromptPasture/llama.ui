@@ -232,7 +232,9 @@
           size={14}
           class="animate-spin"
         />{/if}
-      {$_('settings.importExport.exportBtnLabel')}
+      {$_(
+        'settings.importExport.exportBtnLabel'
+      )}{#if running === 'export'}<span aria-hidden="true">…</span>{/if}
     </Button>
 
     <Button
@@ -244,7 +246,9 @@
           size={14}
           class="animate-spin"
         />{/if}
-      {$_('settings.importExport.exportMarkdownBtnLabel')}
+      {$_(
+        'settings.importExport.exportMarkdownBtnLabel'
+      )}{#if running === 'markdown'}<span aria-hidden="true">…</span>{/if}
     </Button>
 
     <Button
@@ -256,7 +260,9 @@
           size={14}
           class="animate-spin"
         />{/if}
-      {$_('settings.importExport.importBtnLabel')}
+      {$_(
+        'settings.importExport.importBtnLabel'
+      )}{#if running === 'import'}<span aria-hidden="true">…</span>{/if}
     </Button>
     <input
       bind:this={fileInput}
@@ -276,7 +282,9 @@
           size={14}
           class="animate-spin"
         />{/if}
-      {$_('settings.importExport.deleteAllBtnLabel')}
+      {$_(
+        'settings.importExport.deleteAllBtnLabel'
+      )}{#if running === 'delete'}<span aria-hidden="true">…</span>{/if}
     </Button>
 
     <Button
@@ -289,7 +297,9 @@
           size={14}
           class="animate-spin"
         />{/if}
-      {$_('settings.importExport.forgetAllBtnLabel')}
+      {$_(
+        'settings.importExport.forgetAllBtnLabel'
+      )}{#if running === 'forget'}<span aria-hidden="true">…</span>{/if}
     </Button>
   </div>
 </section>

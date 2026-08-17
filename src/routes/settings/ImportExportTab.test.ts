@@ -436,6 +436,14 @@ describe('while one of these is working', () => {
     expect(button).toHaveAttribute('aria-busy', 'true');
     // Said in a second way, because disabled and broken look alike otherwise.
     expect(button.querySelector('.animate-spin')).not.toBeNull();
+    // And in a third, without motion: the spinner does not turn for a reader
+    // who has asked for less of it, and a still spinner says nothing.
+    expect(button.textContent).toContain('…');
+    // The name is unchanged, so the mark is for the eye only — a screen
+    // reader has aria-busy and does not need the word read differently.
+    expect(screen.getByRole('button', { name: 'Export as Markdown' })).toBe(
+      button
+    );
     finish();
   });
 
@@ -474,6 +482,7 @@ describe('while one of these is working', () => {
     expect(button).not.toBeDisabled();
     expect(button).toHaveAttribute('aria-busy', 'false');
     expect(button.querySelector('.animate-spin')).toBeNull();
+    expect(button.textContent).not.toContain('…');
   });
 
   it('is ready again after a failure', async () => {
