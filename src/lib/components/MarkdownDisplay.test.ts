@@ -177,3 +177,67 @@ describe('a code copy the clipboard refuses', () => {
     failed.mockRestore();
   });
 });
+
+describe('a reply that is still arriving', () => {
+  it('does not re-read the whole of it on every chunk', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container, rerender } = render(MarkdownDisplay, {
+        props: { content: 'one', streaming: true },
+      });
+
+      await rerender({ content: 'one two', streaming: true });
+
+      // Parsing is over the whole reply each time, so the cost of a chunk
+      // grows with everything before it: measured, one parse of a 64 KB
+      // answer takes about 70ms, and doing that per token blocks the page.
+      expect(container.textContent).toContain('one');
+      expect(container.textContent).not.toContain('two');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('catches up a few times a second', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container, rerender } = render(MarkdownDisplay, {
+        props: { content: 'one', streaming: true },
+      });
+      await rerender({ content: 'one two', streaming: true });
+
+      await vi.advanceTimersByTimeAsync(200);
+
+      expect(container.textContent).toContain('one two');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows all of it the moment it has finished', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container, rerender } = render(MarkdownDisplay, {
+        props: { content: 'one', streaming: true },
+      });
+      await rerender({ content: 'one two three', streaming: true });
+
+      // No waiting: the reply is complete, and the last sample was not.
+      await rerender({ content: 'one two three', streaming: false });
+
+      expect(container.textContent).toContain('one two three');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads a reply that was never streaming at once', async () => {
+    const { container, rerender } = render(MarkdownDisplay, {
+      props: { content: 'one' },
+    });
+
+    await rerender({ content: 'one two' });
+
+    expect(container.textContent).toContain('one two');
+  });
+});

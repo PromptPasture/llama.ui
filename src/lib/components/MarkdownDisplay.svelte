@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import 'katex/dist/katex.min.css';
   import { _ } from 'svelte-i18n';
   import { copyStr } from '$lib/utils/dom-helpers';
@@ -12,11 +13,45 @@
 
   let { content, streaming = false }: Props = $props();
 
+  /**
+   * How often to re-read a reply that is still arriving.
+   *
+   * Parsing is over the whole reply each time, so the cost of a chunk grows
+   * with everything before it: measured, one parse of a 64 KB answer takes
+   * about 70ms, and doing that per token blocks the page for the length of the
+   * reply — nothing scrolls, and the stop button answers late. Eight times a
+   * second still reads as arriving.
+   */
+  const WHILE_STREAMING_MS = 120;
+
+  /** The text last parsed, which trails the reply while it is arriving. The
+   * first value is the reply as it stands; the effect below keeps up. */
+  let parsed = $state(untrack(() => content));
+  let waiting: ReturnType<typeof setTimeout> | undefined;
+
+  $effect(() => {
+    const latest = content;
+    if (!streaming) {
+      // Finished: whatever came last has to be shown, not the last sample.
+      clearTimeout(waiting);
+      waiting = undefined;
+      parsed = latest;
+      return;
+    }
+    if (waiting) return;
+    waiting = setTimeout(() => {
+      waiting = undefined;
+      parsed = content;
+    }, WHILE_STREAMING_MS);
+  });
+
+  $effect(() => () => clearTimeout(waiting));
+
   // Depends on the locale as well as the content, so the button is relabelled
   // when the language changes rather than keeping the wording it was rendered
   // with.
   const html = $derived(
-    renderMarkdown(content, { copy: $_('chatScreen.titles.copy') })
+    renderMarkdown(parsed, { copy: $_('chatScreen.titles.copy') })
   );
 
   async function handleClick(e: MouseEvent) {
