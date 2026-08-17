@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { copyStr, isAtBottom } from './dom-helpers';
+import { copyStr, isAtBottom, scrollToEnd } from './dom-helpers';
 
 const textareas = () => document.querySelectorAll('textarea');
 
@@ -152,5 +152,57 @@ describe('a copy the clipboard refuses', () => {
     });
 
     await expect(copyStr('some text')).resolves.toBe(true);
+  });
+});
+
+describe('scrolling to the end of something', () => {
+  function scroller() {
+    const el = document.createElement('div');
+    Object.defineProperty(el, 'scrollHeight', { value: 2000 });
+    el.scrollTo = vi.fn();
+    return el;
+  }
+
+  function asksForLessMovement(reduce: boolean) {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: reduce && query.includes('reduce'),
+      media: query,
+    }));
+  }
+
+  it('glides there by default', () => {
+    asksForLessMovement(false);
+    const el = scroller();
+
+    scrollToEnd(el);
+
+    expect(el.scrollTo).toHaveBeenCalledWith({
+      top: 2000,
+      behavior: 'smooth',
+    });
+  });
+
+  it('goes straight there when the reader has asked for less movement', () => {
+    asksForLessMovement(true);
+    const el = scroller();
+
+    scrollToEnd(el);
+
+    // The stylesheet answers this for animations; a scroll asked for in code
+    // obeys whatever it is handed, and a long conversation sliding past is
+    // the movement the setting exists to prevent.
+    expect(el.scrollTo).toHaveBeenCalledWith({ top: 2000, behavior: 'auto' });
+  });
+
+  it('glides when the browser has no opinion to offer', () => {
+    vi.stubGlobal('matchMedia', undefined);
+    const el = scroller();
+
+    scrollToEnd(el);
+
+    expect(el.scrollTo).toHaveBeenCalledWith({
+      top: 2000,
+      behavior: 'smooth',
+    });
   });
 });

@@ -75,3 +75,30 @@ export const copyStr = async (textToCopy: string): Promise<boolean> => {
     textArea.remove();
   }
 };
+
+/**
+ * Whether the reader has asked for less movement.
+ *
+ * The stylesheet answers this for animations and transitions. Scrolling asked
+ * for in code is not either of those: the browser obeys the `behavior` it is
+ * given, and a long conversation sliding past is the kind of movement the
+ * setting exists to prevent.
+ *
+ * @returns Whether to move things without animating the move
+ */
+export function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Scrolls something to its end, gliding there unless that is unwelcome.
+ *
+ * @param el - The element to scroll
+ */
+export function scrollToEnd(el: HTMLElement): void {
+  el.scrollTo({
+    top: el.scrollHeight,
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+  });
+}

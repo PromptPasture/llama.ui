@@ -101,6 +101,28 @@ async function pressJump() {
   await userEvent.click(button!);
 }
 
+describe('opening a conversation', () => {
+  it('shows the end of it, where the conversation was left', async () => {
+    const { container } = render(ChatPage, {
+      props: { data: {}, params: { convId: 'c1' } },
+    });
+    const scroller = container.querySelector('.chat-page__scroll');
+    if (!scroller) throw new Error('the message list has no scrolling element');
+    Object.defineProperty(scroller, 'scrollHeight', {
+      value: 2000,
+      configurable: true,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // Opened at the top, a long conversation starts with a greeting from
+    // weeks ago rather than the answer that was being read.
+    expect(scroller.scrollTo).toHaveBeenCalledWith(
+      expect.objectContaining({ top: 2000 })
+    );
+  });
+});
+
 describe('getting back to the latest message', () => {
   it('offers no way back while the reader is already there', async () => {
     await renderChat();

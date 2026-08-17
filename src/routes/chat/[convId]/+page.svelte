@@ -10,7 +10,7 @@
   import { toast } from '$lib/components/toast.js';
   import { t } from '$lib/i18n/translate';
   import { offerToConfigure } from '$lib/first-run';
-  import { isAtBottom } from '$lib/utils/dom-helpers';
+  import { isAtBottom, scrollToEnd } from '$lib/utils/dom-helpers';
   import { getListMessageDisplay } from '$lib/utils/message-hierarchy';
   import type { Message, MessageExtra } from '$lib/types';
   import type { PageProps } from './$types';
@@ -37,7 +37,7 @@
 
   function jumpToLatest() {
     following = true;
-    msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
+    if (msgListEl) scrollToEnd(msgListEl);
   }
 
   /**
@@ -77,7 +77,7 @@
       .catch(reportUnreadable);
     following = true;
     requestAnimationFrame(() => {
-      msgListEl?.scrollTo({ top: msgListEl.scrollHeight, behavior: 'smooth' });
+      if (msgListEl) scrollToEnd(msgListEl);
     });
     return () => {
       chat.unloadConversation();
