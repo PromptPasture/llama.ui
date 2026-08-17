@@ -447,3 +447,52 @@ describe('deleting everything', () => {
     expect(told).toHaveLength(1);
   });
 });
+
+describe('what an export gives away', () => {
+  beforeEach(async () => {
+    for (const conv of await IndexedDB.getAllConversations()) {
+      await IndexedDB.deleteConversation(conv.id);
+    }
+    for (const preset of await IndexedDB.getPresets()) {
+      await IndexedDB.removePreset(preset.name);
+    }
+  });
+
+  const presetWithKey = () =>
+    IndexedDB.savePreset('Work', {
+      apiKey: 'sk-super-secret-12345',
+      baseUrl: 'https://api.example.com',
+      temperature: 0.5,
+    } as never);
+
+  it('leaves the api key out of it', async () => {
+    await presetWithKey();
+
+    const exported = JSON.stringify(await IndexedDB.exportDB());
+
+    // Sent to whoever asked for a bug report, an export used to carry the
+    // reader's credentials in plain text.
+    expect(exported).not.toContain('sk-super-secret-12345');
+  });
+
+  it('brings the rest of the preset across', async () => {
+    await presetWithKey();
+
+    const exported = JSON.stringify(await IndexedDB.exportDB());
+
+    // Only the credential goes; a preset that lost its address or its
+    // sampling would be worth nothing on the other side.
+    expect(exported).toContain('https://api.example.com');
+    expect(exported).toContain('0.5');
+  });
+
+  it('still exports a preset that never had a key', async () => {
+    await IndexedDB.savePreset('Local', {
+      baseUrl: 'http://localhost:8080',
+    } as never);
+
+    const exported = JSON.stringify(await IndexedDB.exportDB());
+
+    expect(exported).toContain('http://localhost:8080');
+  });
+});

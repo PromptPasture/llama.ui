@@ -93,6 +93,23 @@ db.version(1).stores({
 /**
  * Utility functions for interacting with application data (conversations, messages, config).
  */
+/**
+ * A preset with its credential taken out.
+ *
+ * A copy rather than an edit in place. Dexie hands back rows read out of the
+ * store rather than the stored objects themselves, so this could not reach
+ * what is saved either way — but exporting has no business writing, and the
+ * shape of the code should say so.
+ *
+ * @param row - A row from the presets table
+ * @returns The same row, with any stored api key emptied
+ */
+function withoutApiKey(row: unknown): unknown {
+  const preset = row as { config?: { apiKey?: string } } | undefined;
+  if (!preset?.config || typeof preset.config.apiKey !== 'string') return row;
+  return { ...preset, config: { ...preset.config, apiKey: '' } };
+}
+
 export default class IndexedDB {
   /**
    * Retrieves all conversations, sorted by last modified date (descending).
@@ -504,6 +521,12 @@ export default class IndexedDB {
 
   /**
    * Exports all from the database.
+   *
+   * Presets hold a whole configuration, api key included, so an export of the
+   * history carried the reader's credentials in plain text — to whoever they
+   * sent it to along with a bug report. The key is left out; everything else
+   * about the preset comes across, and it is entered again on the other side.
+   *
    * @returns A promise resolving to a database records.
    */
   static async exportDB(convId?: string): Promise<ExportJsonStructure> {
@@ -526,7 +549,13 @@ export default class IndexedDB {
           console.debug(
             `Export - Fetched ${rows.length} rows from table '${table.name}'.`
           );
-        data.push({ table: table.name, rows: rows });
+        data.push({
+          table: table.name,
+          rows:
+            table.name === db.userConfigurations.name
+              ? rows.map((row) => withoutApiKey(row))
+              : rows,
+        });
       }
       return data;
     });

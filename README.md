@@ -34,16 +34,23 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
    - Responsive design for mobile and desktop
    - Keyboard shortcuts for a new conversation, search and settings — named on the buttons themselves
 
-5. **Advanced Features**:
+5. **Your data stays yours**:
+   - Export and import the whole history as JSON, or save one conversation as
+     Markdown
+   - Clear the lot in one go when handing the machine on
+   - An export leaves your API key out of it, so a history you send to someone
+     carries no credentials
+
+6. **Advanced Features**:
    - PWA support with offline capabilities
    - Streaming responses with Server-Sent Events
    - Customizable generation parameters
    - Performance metrics display
    - Replies read aloud, using the browser's own speech synthesis
 
-6. **Privacy Focused**: All data is stored locally in your browser - no cloud required!
+7. **Privacy Focused**: All data is stored locally in your browser - no cloud required!
 
-7. **Localized Interface**: Twelve languages ship with the app, and you can switch at any time.
+8. **Localized Interface**: Twelve languages ship with the app, and you can switch at any time.
 
 ## 🚀 Getting Started in 60 Seconds!
 
