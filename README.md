@@ -21,22 +21,29 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
    - Branching conversation support (edit messages while preserving history)
    - Search by title or by anything said inside a conversation
    - Import/export functionality
+   - Half-written messages stay with the conversation they were typed in
 
-3. **Rich UI Components**:
+3. **Attachments** 📎:
+   - Attach text files and images — pick them, drop them on the message box, or paste a screenshot
+   - Paste a long log and it becomes an attachment instead of burying the box
+   - Says up front when the chosen model cannot read images, where the provider tells us
+
+4. **Rich UI Components**:
    - Markdown rendering with KaTeX math support
    - Theme customization: light, dark, or follow the system
    - Responsive design for mobile and desktop
+   - Keyboard shortcuts for a new conversation, search and settings — named on the buttons themselves
 
-4. **Advanced Features**:
+5. **Advanced Features**:
    - PWA support with offline capabilities
    - Streaming responses with Server-Sent Events
    - Customizable generation parameters
    - Performance metrics display
    - Replies read aloud, using the browser's own speech synthesis
 
-5. **Privacy Focused**: All data is stored locally in your browser - no cloud required!
+6. **Privacy Focused**: All data is stored locally in your browser - no cloud required!
 
-6. **Localized Interface**: Most popular language packs are included in the app, and you can choose the language at any time.
+7. **Localized Interface**: Twelve languages ship with the app, and you can switch at any time.
 
 ## 🚀 Getting Started in 60 Seconds!
 
@@ -178,18 +185,19 @@ so model metadata is fetched without requiring manual input.
 
 #### Key Modules
 
-| Path | Responsibility |
-|---|---|
-| `src/lib/state/app.svelte.ts` | Config, presets, theme |
-| `src/lib/state/chat.svelte.ts` | Conversation, streaming, branching |
-| `src/lib/state/inference.svelte.ts` | Provider, model list |
-| `src/lib/state/modal.svelte.ts` | Confirm / prompt / alert dialogs |
-| `src/lib/state/tts.svelte.ts` | Reading a reply aloud |
-| `src/lib/api/` | Provider implementations, and the factory that picks one |
-| `src/lib/services/` | Turning a chat completion stream into message updates |
-| `src/lib/database/` | IndexedDB (Dexie) + localStorage |
-| `src/lib/components/` | Shared UI component library |
-| `src/routes/` | SvelteKit pages and layouts |
+| Path                                | Responsibility                                           |
+| ----------------------------------- | -------------------------------------------------------- |
+| `src/lib/state/app.svelte.ts`       | Config, presets, theme                                   |
+| `src/lib/state/chat.svelte.ts`      | Conversation, streaming, branching                       |
+| `src/lib/state/inference.svelte.ts` | Provider, model list                                     |
+| `src/lib/state/modal.svelte.ts`     | Confirm / prompt / alert dialogs                         |
+| `src/lib/state/tts.svelte.ts`       | Reading a reply aloud                                    |
+| `src/lib/api/`                      | Provider implementations, and the factory that picks one |
+| `src/lib/services/`                 | Turning a chat completion stream into message updates    |
+| `src/lib/database/`                 | IndexedDB (Dexie) + localStorage                         |
+| `src/lib/components/`               | Shared UI component library                              |
+| `src/lib/utils/`                    | The small decisions, kept testable on their own          |
+| `src/routes/`                       | SvelteKit pages and layouts                              |
 
 ## 📜 License - Freedom First!
 
