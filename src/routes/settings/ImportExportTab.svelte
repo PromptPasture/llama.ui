@@ -20,7 +20,43 @@
 
   let fileInput: HTMLInputElement;
 
-  async function handleExport() {
+  /**
+   * Which of these is under way, if any.
+   *
+   * They all read or write the same store — reading every conversation out
+   * takes as long as the history is — and none of them should start while
+   * another is running. Pressed with nothing to show for it, a button looks
+   * like one that did nothing.
+   */
+  let running = $state<
+    'export' | 'markdown' | 'import' | 'delete' | 'forget' | null
+  >(null);
+
+  /**
+   * Runs one of them, and says so while it is running.
+   *
+   * @param what - Which action, so its own button can say it is working
+   * @param action - The work to do
+   */
+  async function run(
+    what: NonNullable<typeof running>,
+    action: () => Promise<void>
+  ): Promise<void> {
+    running = what;
+    try {
+      await action();
+    } catch (error) {
+      // Each of these reports its own failure to the reader already. Letting
+      // it out of here would only be an unhandled rejection from an onclick.
+      console.error(`${what} failed:`, error);
+    } finally {
+      // Whatever happened, the section has to become usable again: a history
+      // that cannot be read would otherwise lock all of it.
+      running = null;
+    }
+  }
+
+  async function handleExportNow() {
     const data = await app.exportDB(undefined, {
       success: toast.success,
       error: toast.error,
@@ -40,7 +76,7 @@
    * The JSON above goes back into the app; this is for keeping, for searching
    * in something else, or for leaving with.
    */
-  async function handleExportMarkdown() {
+  async function handleExportMarkdownNow() {
     try {
       const conversations = await IndexedDB.getAllConversations();
       const transcripts = [];
@@ -70,7 +106,7 @@
     }
   }
 
-  async function handleImport(e: Event) {
+  async function handleImportNow(e: Event) {
     const input = e.target as HTMLInputElement;
     try {
       const files = input.files;
@@ -96,7 +132,7 @@
    * way to hand the machine on, or to start again, without deleting several
    * hundred conversations by hand.
    */
-  async function handleDeleteAll() {
+  async function handleDeleteAllNow() {
     let conversations;
     try {
       conversations = await IndexedDB.getAllConversations();
@@ -140,7 +176,7 @@
    * The page is reloaded rather than the state being rebuilt: what is in
    * memory is the configuration that has just been forgotten.
    */
-  async function handleForgetEverything() {
+  async function handleForgetEverythingNow() {
     const sure = await modal.showConfirm(
       $_('settings.importExport.forgetAllConfirm')
     );
@@ -158,6 +194,12 @@
     }
     onreload();
   }
+
+  const handleImport = (e: Event) => run('import', () => handleImportNow(e));
+  const handleExport = () => run('export', handleExportNow);
+  const handleExportMarkdown = () => run('markdown', handleExportMarkdownNow);
+  const handleDeleteAll = () => run('delete', handleDeleteAllNow);
+  const handleForgetEverything = () => run('forget', handleForgetEverythingNow);
 </script>
 
 <section>
@@ -166,15 +208,26 @@
   </h4>
 
   <div class="import-export__actions">
-    <Button onclick={handleExport}
+    <!-- All of these read or write the same store, so while one is working
+         none of the others can start, and the one working says so. -->
+    <Button
+      onclick={handleExport}
+      disabled={running !== null}
+      aria-busy={running === 'export'}
       >{$_('settings.importExport.exportBtnLabel')}</Button
     >
 
-    <Button onclick={handleExportMarkdown}
+    <Button
+      onclick={handleExportMarkdown}
+      disabled={running !== null}
+      aria-busy={running === 'markdown'}
       >{$_('settings.importExport.exportMarkdownBtnLabel')}</Button
     >
 
-    <Button onclick={() => fileInput.click()}
+    <Button
+      onclick={() => fileInput.click()}
+      disabled={running !== null}
+      aria-busy={running === 'import'}
       >{$_('settings.importExport.importBtnLabel')}</Button
     >
     <input
@@ -185,11 +238,19 @@
       onchange={handleImport}
     />
 
-    <Button variant="danger" onclick={handleDeleteAll}
+    <Button
+      variant="danger"
+      onclick={handleDeleteAll}
+      disabled={running !== null}
+      aria-busy={running === 'delete'}
       >{$_('settings.importExport.deleteAllBtnLabel')}</Button
     >
 
-    <Button variant="danger" onclick={handleForgetEverything}
+    <Button
+      variant="danger"
+      onclick={handleForgetEverything}
+      disabled={running !== null}
+      aria-busy={running === 'forget'}
       >{$_('settings.importExport.forgetAllBtnLabel')}</Button
     >
   </div>

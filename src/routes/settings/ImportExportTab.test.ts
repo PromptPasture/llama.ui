@@ -410,3 +410,89 @@ describe('writing the whole history out as something readable', () => {
     expect(mocks.downloadAsFile).not.toHaveBeenCalled();
   });
 });
+
+describe('while one of these is working', () => {
+  /** A read that has not answered yet: what a long history looks like. */
+  function readThatHangs() {
+    let finish: () => void = () => {};
+    const waiting = new Promise<never[]>((resolve) => {
+      finish = () => resolve([]);
+    });
+    mocks.getAllConversations.mockReturnValue(waiting);
+    return finish;
+  }
+
+  it('says the button pressed is working', async () => {
+    const finish = readThatHangs();
+    const user = userEvent.setup();
+    render(ImportExportTab, { props: { onclose: () => {} } });
+    const button = screen.getByRole('button', { name: 'Export as Markdown' });
+
+    await user.click(button);
+
+    // Reading every conversation out takes as long as the history is, and
+    // pressed with nothing to show for it a button looks like it did nothing.
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    finish();
+  });
+
+  it('stops the others starting at the same time', async () => {
+    const finish = readThatHangs();
+    const user = userEvent.setup();
+    render(ImportExportTab, { props: { onclose: () => {} } });
+
+    await user.click(
+      screen.getByRole('button', { name: 'Export as Markdown' })
+    );
+
+    // They all read or write the same store; forgetting everything halfway
+    // through writing it out is not a thing to allow.
+    expect(screen.getByRole('button', { name: 'Export' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Forget everything' })
+    ).toBeDisabled();
+    finish();
+  });
+
+  it('is ready again once it has finished', async () => {
+    const user = userEvent.setup();
+    mocks.getAllConversations.mockResolvedValue([]);
+    render(ImportExportTab, { props: { onclose: () => {} } });
+    const button = screen.getByRole('button', { name: 'Export as Markdown' });
+
+    await user.click(button);
+
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-busy', 'false');
+  });
+
+  it('is ready again after a failure', async () => {
+    const user = userEvent.setup();
+    mocks.getAllConversations.mockRejectedValue(new Error('storage gone'));
+    render(ImportExportTab, { props: { onclose: () => {} } });
+    const button = screen.getByRole('button', { name: 'Export as Markdown' });
+
+    await user.click(button);
+
+    // Otherwise a history that cannot be read locks the whole section.
+    await vi.waitFor(() => expect(button).not.toBeDisabled());
+  });
+});
+
+describe('an action that fails outright', () => {
+  it('leaves the section usable', async () => {
+    // The JSON export reports its failure and then rethrows, unlike the
+    // others, which swallow their own.
+    mocks.exportDB.mockRejectedValue(new Error('storage gone'));
+    const user = userEvent.setup();
+    render(ImportExportTab, { props: { onclose: () => {} } });
+    const button = screen.getByRole('button', { name: 'Export' });
+
+    await user.click(button);
+
+    await vi.waitFor(() => expect(button).not.toBeDisabled());
+    expect(
+      screen.getByRole('button', { name: 'Forget everything' })
+    ).not.toBeDisabled();
+  });
+});
