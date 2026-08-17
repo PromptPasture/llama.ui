@@ -48,8 +48,22 @@ export const generateChatStream = async ({
       console.warn('Invalid chunk format received:', chunk);
       continue;
     }
+    // A chunk with no choices is how OpenAI-compatible servers deliver the
+    // token counts, once they have been asked for: choices is empty and the
+    // usage is the whole point of it. Skipped for having nothing to say, the
+    // performance metrics stayed blank on every server but llama.cpp, whose
+    // own timings arrive alongside a choice.
     if (chunk.choices.length === 0) {
-      console.warn('Empty choices array in chunk:', chunk);
+      if (chunk.usage) {
+        onUpdate({
+          timings: {
+            prompt_n: chunk.usage.prompt_tokens,
+            predicted_n: chunk.usage.completion_tokens,
+          },
+        });
+      } else {
+        console.warn('Empty choices array in chunk:', chunk);
+      }
       continue;
     }
 

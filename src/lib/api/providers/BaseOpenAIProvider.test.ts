@@ -274,3 +274,27 @@ describe('asking again for the list of models', () => {
     expect(fetched).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('what is asked of the server on a chat request', () => {
+  it('asks for the token counts, which are not sent otherwise', async () => {
+    const fetched = respondWith({ choices: [] });
+    vi.stubGlobal('fetch', fetched);
+
+    await provider().postChatCompletions('m', [], new AbortController().signal);
+
+    // Verified against a real server: without this no usage chunk arrives at
+    // all, and the performance metrics stay blank.
+    const body = JSON.parse(fetched.mock.calls[0][1].body as string);
+    expect(body.stream_options).toEqual({ include_usage: true });
+  });
+
+  it('still asks for the reply to be streamed', async () => {
+    const fetched = respondWith({ choices: [] });
+    vi.stubGlobal('fetch', fetched);
+
+    await provider().postChatCompletions('m', [], new AbortController().signal);
+
+    const body = JSON.parse(fetched.mock.calls[0][1].body as string);
+    expect(body.stream).toBe(true);
+  });
+});

@@ -123,3 +123,42 @@ describe('a reply that arrived whole rather than in pieces', () => {
     expect(last.reasoning_content).toBe('thinking');
   });
 });
+
+describe('the chunk that carries how many tokens were used', () => {
+  /** What an OpenAI-compatible server sends last when usage was asked for:
+   * no choices at all, only the count. Verified against LM Studio. */
+  const usageChunk = {
+    choices: [],
+    usage: { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 },
+  };
+
+  it('is read rather than thrown away for having no choices', async () => {
+    const { last } = await run([
+      { choices: [{ delta: { content: 'hello' } }] },
+      usageChunk,
+    ]);
+
+    // Performance metrics showed nothing on every server but llama.cpp,
+    // whose own timings arrive alongside a choice.
+    expect(last.timings).toEqual({ prompt_n: 11, predicted_n: 7 });
+  });
+
+  it('keeps the reply that came before it', async () => {
+    const { last } = await run([
+      { choices: [{ delta: { content: 'hello' } }] },
+      usageChunk,
+    ]);
+
+    expect(last.content).toBe('hello');
+  });
+
+  it('still ignores an empty chunk that says nothing at all', async () => {
+    const { last } = await run([
+      { choices: [{ delta: { content: 'hello' } }] },
+      { choices: [] },
+    ]);
+
+    expect(last.timings).toBeUndefined();
+    expect(last.content).toBe('hello');
+  });
+});

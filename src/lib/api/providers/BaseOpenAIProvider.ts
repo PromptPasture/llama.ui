@@ -387,7 +387,10 @@ export class BaseOpenAIProvider
   }
 
   protected getDefaultChatParams(): Record<string, unknown> {
-    return { stream: true };
+    // Token counts are not sent unless they are asked for. llama.cpp reports
+    // its own timings regardless; everything else answered the performance
+    // metrics with nothing at all.
+    return { stream: true, stream_options: { include_usage: true } };
   }
 
   /**
