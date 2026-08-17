@@ -4,14 +4,18 @@
   import { toast } from '$lib/components/toast.js';
   import { modal } from '$lib/state/modal.svelte';
   import IndexedDB from '$lib/database/indexedDB';
+  import LocalStorage from '$lib/database/localStorage';
   import { downloadAsFile } from '$lib/utils/downloadAsFile';
   import Button from '$lib/components/Button.svelte';
 
   interface Props {
     onclose: () => void;
+    /** Starts the app again once everything has been forgotten. Injected so a
+     * test does not have to reload the page it is running in. */
+    onreload?: () => void;
   }
 
-  let { onclose }: Props = $props();
+  let { onclose, onreload = () => window.location.reload() }: Props = $props();
 
   let fileInput: HTMLInputElement;
 
@@ -87,6 +91,37 @@
       toast.error($_('settings.importExport.deleteAllFailed'));
     }
   }
+
+  /**
+   * Leaves nothing behind: the conversations, the presets, and the
+   * configuration with the api key in it.
+   *
+   * Deleting the conversations is not enough for handing the machine on — the
+   * credential is the part that matters, and it lives in the settings and in
+   * every preset that was saved from them.
+   *
+   * The page is reloaded rather than the state being rebuilt: what is in
+   * memory is the configuration that has just been forgotten.
+   */
+  async function handleForgetEverything() {
+    const sure = await modal.showConfirm(
+      $_('settings.importExport.forgetAllConfirm')
+    );
+    if (!sure) return;
+
+    try {
+      await IndexedDB.deleteAllConversations();
+      await IndexedDB.deleteAllPresets();
+      LocalStorage.forgetEverything();
+    } catch (error) {
+      // Some of it may have gone; saying nothing would leave the reader
+      // believing the key went with it.
+      console.error('Forgetting everything failed:', error);
+      toast.error($_('settings.importExport.forgetAllFailed'));
+      return;
+    }
+    onreload();
+  }
 </script>
 
 <section>
@@ -112,6 +147,10 @@
 
     <Button variant="danger" onclick={handleDeleteAll}
       >{$_('settings.importExport.deleteAllBtnLabel')}</Button
+    >
+
+    <Button variant="danger" onclick={handleForgetEverything}
+      >{$_('settings.importExport.forgetAllBtnLabel')}</Button
     >
   </div>
 </section>

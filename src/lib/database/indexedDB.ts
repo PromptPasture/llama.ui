@@ -473,6 +473,20 @@ export default class IndexedDB {
   }
 
   /**
+   * Deletes every saved preset.
+   *
+   * Presets hold whole configurations, api keys included, so a reset that
+   * left them behind would leave the credentials behind with them.
+   *
+   * @returns How many were deleted
+   */
+  static async deleteAllPresets(): Promise<number> {
+    const all = await IndexedDB.getPresets();
+    await db.userConfigurations.clear();
+    return all.length;
+  }
+
+  /**
    * Finds conversations matching a search term.
    *
    * Matches the name or anything said inside, because a name is only the

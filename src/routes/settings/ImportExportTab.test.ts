@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => ({
   showConfirm: vi.fn().mockResolvedValue(true),
   getAllConversations: vi.fn().mockResolvedValue([]),
   deleteAllConversations: vi.fn().mockResolvedValue(0),
+  deleteAllPresets: vi.fn().mockResolvedValue(0),
+  forgetEverything: vi.fn(),
   success: vi.fn(),
   error: vi.fn(),
 }));
@@ -25,7 +27,11 @@ vi.mock('$lib/database/indexedDB', () => ({
   default: {
     getAllConversations: mocks.getAllConversations,
     deleteAllConversations: mocks.deleteAllConversations,
+    deleteAllPresets: mocks.deleteAllPresets,
   },
+}));
+vi.mock('$lib/database/localStorage', () => ({
+  default: { forgetEverything: mocks.forgetEverything },
 }));
 vi.mock('$lib/components/toast.js', () => ({
   toast: { success: mocks.success, error: mocks.error },
@@ -47,6 +53,8 @@ beforeEach(() => {
   mocks.showConfirm.mockReset().mockResolvedValue(true);
   mocks.getAllConversations.mockReset().mockResolvedValue([]);
   mocks.deleteAllConversations.mockReset().mockResolvedValue(0);
+  mocks.deleteAllPresets.mockReset().mockResolvedValue(0);
+  mocks.forgetEverything.mockReset();
   mocks.success.mockClear();
   mocks.error.mockClear();
 });
@@ -255,5 +263,62 @@ describe('clearing the history', () => {
         'Could not delete the conversations.'
       )
     );
+  });
+});
+
+describe('handing the machine on', () => {
+  async function pressForgetEverything(onreload = vi.fn()) {
+    const user = userEvent.setup();
+    render(ImportExportTab, { props: { onclose: () => {}, onreload } });
+    await user.click(screen.getByRole('button', { name: 'Forget everything' }));
+    return onreload;
+  }
+
+  it('asks first, naming what goes', async () => {
+    await pressForgetEverything();
+
+    const asked = mocks.showConfirm.mock.calls[0][0] as string;
+    expect(asked).toMatch(/api key/i);
+    expect(asked).toMatch(/cannot be undone/i);
+  });
+
+  it('forgets the conversations, the presets and the key', async () => {
+    await pressForgetEverything();
+
+    // Deleting the conversations alone leaves the credential behind, which is
+    // the part that matters when the machine changes hands.
+    await vi.waitFor(() => {
+      expect(mocks.deleteAllConversations).toHaveBeenCalled();
+      expect(mocks.deleteAllPresets).toHaveBeenCalled();
+      expect(mocks.forgetEverything).toHaveBeenCalled();
+    });
+  });
+
+  it('starts the app again, so nothing forgotten is still in memory', async () => {
+    const onreload = await pressForgetEverything();
+
+    await vi.waitFor(() => expect(onreload).toHaveBeenCalled());
+  });
+
+  it('forgets nothing when the answer is no', async () => {
+    mocks.showConfirm.mockResolvedValue(false);
+
+    const onreload = await pressForgetEverything();
+
+    expect(mocks.deleteAllConversations).not.toHaveBeenCalled();
+    expect(mocks.forgetEverything).not.toHaveBeenCalled();
+    expect(onreload).not.toHaveBeenCalled();
+  });
+
+  it('says so, and stays put, when it could not', async () => {
+    mocks.deleteAllPresets.mockRejectedValue(new Error('storage gone'));
+
+    const onreload = await pressForgetEverything();
+
+    await vi.waitFor(() =>
+      expect(mocks.error).toHaveBeenCalledWith('Could not forget everything.')
+    );
+    // Reloading would look like it had worked.
+    expect(onreload).not.toHaveBeenCalled();
   });
 });

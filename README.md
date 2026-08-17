@@ -37,7 +37,8 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
 5. **Your data stays yours**:
    - Export and import the whole history as JSON, or save one conversation as
      Markdown
-   - Clear the lot in one go when handing the machine on
+   - Clear the conversations in one go, or forget everything — presets and the
+     API key included — when handing the machine on
    - An export leaves your API key out of it, so a history you send to someone
      carries no credentials
 

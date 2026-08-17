@@ -87,6 +87,31 @@ export default class LocalStorage {
   }
 
   /**
+   * Everything this app keeps outside the database.
+   *
+   * Named rather than cleared wholesale: the origin may hold something this
+   * app did not put there, and a list says what a reset covers.
+   */
+  static readonly KEYS = [
+    'config',
+    'theme',
+    'language',
+    'drafts',
+    'migratedToIDB',
+  ] as const;
+
+  /**
+   * Forgets all of it — the configuration and the api key in it, the chosen
+   * theme and language, and any half-written message.
+   *
+   * For handing the machine on. Deleting the conversations leaves the
+   * credentials behind, which is the part that matters most.
+   */
+  static forgetEverything(): void {
+    for (const key of LocalStorage.KEYS) localStorage.removeItem(key);
+  }
+
+  /**
    * Retrieves the language chosen in the settings.
    * @returns The stored language tag, or null to follow the browser.
    */
