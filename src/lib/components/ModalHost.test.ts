@@ -65,3 +65,33 @@ describe('the buttons of a confirmation', () => {
     expect(await answer).toBe(true);
   });
 });
+
+describe('how a confirmation looks', () => {
+  it('warns by default, because most of these destroy something', async () => {
+    const answered = modal.showConfirm('Delete everything?');
+    render(ModalHost);
+
+    // Delete a conversation, forget everything, discard the settings: the
+    // common case here is losing something.
+    expect(screen.getByRole('button', { name: 'Confirm' }).className).toContain(
+      'btn--danger'
+    );
+    modal.respond(false);
+    await answered;
+  });
+
+  it('does not warn when nothing is being destroyed', async () => {
+    const answered = modal.showConfirm('Update available', {
+      confirm: 'Update',
+      danger: false,
+    });
+    render(ModalHost);
+
+    // An offer to update, or to open the settings on a first visit, is not a
+    // warning and should not be dressed as one.
+    const button = screen.getByRole('button', { name: 'Update' });
+    expect(button.className).not.toContain('btn--danger');
+    modal.respond(false);
+    await answered;
+  });
+});

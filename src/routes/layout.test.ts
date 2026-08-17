@@ -181,7 +181,7 @@ describe('when a new version of the app is waiting', () => {
     // catalogue.
     expect(mocks.showConfirm).toHaveBeenCalledWith(
       'Update for the latest features & fixes.',
-      { confirm: 'Update', cancel: 'Later' }
+      { confirm: 'Update', cancel: 'Later', danger: false }
     );
   });
 });

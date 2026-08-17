@@ -25,7 +25,9 @@
       <Button variant="ghost" onclick={() => modal.respond(false)}
         >{modal.current.labels?.cancel ?? $_('modals.cancelBtnLabel')}</Button
       >
-      <Button variant="danger" onclick={() => modal.respond(true)}
+      <Button
+        variant={modal.current.labels?.danger === false ? 'default' : 'danger'}
+        onclick={() => modal.respond(true)}
         >{modal.current.labels?.confirm ?? $_('modals.confirmBtnLabel')}</Button
       >
     {/snippet}

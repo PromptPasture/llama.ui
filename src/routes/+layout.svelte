@@ -42,6 +42,8 @@
       modal.showConfirm(t('toast.newVersion.description'), {
         confirm: t('toast.newVersion.submitBtnLabel'),
         cancel: t('toast.newVersion.cancelBtnLabel'),
+        // An update is an offer, not a warning.
+        danger: false,
       })
     );
 

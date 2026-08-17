@@ -55,6 +55,9 @@ export async function offerToConfigure(baseUrl: string): Promise<boolean> {
   const open = await modal.showConfirm(t(`toast.${section}.description`), {
     confirm: t(`toast.${section}.submitBtnLabel`),
     cancel: t(`toast.${section}.cancelBtnLabel`),
+    // The first dialog a new visitor sees, offering to help. Nothing is being
+    // destroyed and it should not be dressed as though something were.
+    danger: false,
   });
   if (open) await goto(resolve('/settings'));
   return open;

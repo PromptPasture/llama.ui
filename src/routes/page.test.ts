@@ -94,7 +94,10 @@ describe('sending the first message with nothing configured', () => {
     // twelve catalogues since before anything showed them.
     const [message, labels] = mocks.showConfirm.mock.calls[0];
     expect(message).toContain('Settings');
-    expect(labels).toEqual({ confirm: 'Open Settings', cancel: 'Skip' });
+    expect(labels).toMatchObject({
+      confirm: 'Open Settings',
+      cancel: 'Skip',
+    });
   });
 
   it('takes them there when they accept', async () => {

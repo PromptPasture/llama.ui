@@ -43,7 +43,7 @@ describe('which wording to greet someone with', () => {
 
     expect(mocks.showConfirm).toHaveBeenCalledWith(
       expect.stringContaining("don't have the models set up yet. Let's go"),
-      { confirm: 'Open Settings', cancel: 'Skip' }
+      { confirm: 'Open Settings', cancel: 'Skip', danger: false }
     );
   });
 

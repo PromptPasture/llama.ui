@@ -12,6 +12,16 @@ interface ModalEntry {
 export interface ModalLabels {
   confirm?: string;
   cancel?: string;
+  /**
+   * Whether saying yes destroys something.
+   *
+   * True unless said otherwise: most of what is asked here deletes a
+   * conversation or overwrites the settings, and warning where there is no
+   * danger is the lesser of the two mistakes. An offer to update, or to open
+   * the settings on a first visit, is not a warning and should not look like
+   * one.
+   */
+  danger?: boolean;
 }
 
 /**
