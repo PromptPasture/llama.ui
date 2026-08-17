@@ -149,3 +149,97 @@ describe('taking a toast away before its time', () => {
     expect(left).toContain(second);
   });
 });
+
+describe('a message being read when its time is up', () => {
+  /** A message of its own per test, as above. */
+  let seq = 100;
+  const distinct = () => `Something else went wrong (${++seq}).`;
+
+  /**
+   * Puts a message up with the clock already under this test's control.
+   *
+   * Installed first, and not after: a countdown started on the real clock is
+   * never reached by advancing a fake one, and a test that stops it would pass
+   * whether it stopped anything or not.
+   */
+  async function messageUp() {
+    vi.useFakeTimers();
+    render(Toast);
+    const message = distinct();
+    toast.error(message);
+    await vi.advanceTimersByTimeAsync(0);
+    return {
+      message,
+      control: screen.getByRole('button', { name: message }),
+      shown: () =>
+        get(toastStore)
+          .map((t) => t.message)
+          .includes(message),
+    };
+  }
+
+  const pointerOver = (el: Element) =>
+    el.dispatchEvent(new MouseEvent('mouseenter'));
+  const pointerAway = (el: Element) =>
+    el.dispatchEvent(new MouseEvent('mouseleave'));
+
+  it('goes on its own when nothing is reading it', async () => {
+    const { shown } = await messageUp();
+
+    await vi.advanceTimersByTimeAsync(20000);
+
+    // The other way round from the rest: this is what the holding suspends.
+    expect(shown()).toBe(false);
+  });
+
+  it('stays while it has the keyboard', async () => {
+    const { control, shown } = await messageUp();
+
+    control.focus();
+    await vi.advanceTimersByTimeAsync(20000);
+
+    // Vanishing from under the keyboard takes the reader's place with it.
+    expect(shown()).toBe(true);
+  });
+
+  it('goes once the keyboard has moved on', async () => {
+    const { control, shown } = await messageUp();
+    control.focus();
+    await vi.advanceTimersByTimeAsync(20000);
+
+    control.blur();
+    await vi.advanceTimersByTimeAsync(20000);
+
+    expect(shown()).toBe(false);
+  });
+
+  it('stays while the pointer rests on it', async () => {
+    const { control, shown } = await messageUp();
+
+    pointerOver(control);
+    await vi.advanceTimersByTimeAsync(20000);
+
+    // A long failure read at a normal pace outlasts the ten seconds it gets.
+    expect(shown()).toBe(true);
+  });
+
+  it('goes once the pointer has left', async () => {
+    const { control, shown } = await messageUp();
+    pointerOver(control);
+    await vi.advanceTimersByTimeAsync(20000);
+
+    pointerAway(control);
+    await vi.advanceTimersByTimeAsync(20000);
+
+    expect(shown()).toBe(false);
+  });
+
+  it('can still be pressed away while it is held', async () => {
+    const { control, shown } = await messageUp();
+    pointerOver(control);
+
+    control.click();
+
+    expect(shown()).toBe(false);
+  });
+});

@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export type ToastLevel = 'info' | 'success' | 'error';
 
@@ -6,6 +6,8 @@ export interface ToastItem {
   id: number;
   message: string;
   level: ToastLevel;
+  /** How long it was given, so a paused one can be given it again. */
+  durationMs: number;
 }
 
 const _store = writable<ToastItem[]>([]);
@@ -27,17 +29,33 @@ export function readingTimeMs(message: string): number {
   return Math.min(Math.max(1000 + words * 300, 3500), 10000);
 }
 
+/** The countdown for each toast on screen, so it can be stopped and started. */
+const _timers = new Map<number, ReturnType<typeof setTimeout>>();
+
+function forget(id: number): void {
+  const timer = _timers.get(id);
+  if (timer !== undefined) clearTimeout(timer);
+  _timers.delete(id);
+  _store.update((list) => list.filter((t) => t.id !== id));
+}
+
+function countDown(id: number, durationMs: number): void {
+  const existing = _timers.get(id);
+  if (existing !== undefined) clearTimeout(existing);
+  _timers.set(
+    id,
+    setTimeout(() => forget(id), durationMs)
+  );
+}
+
 function add(
   message: string,
   level: ToastLevel,
   durationMs = readingTimeMs(message)
 ): void {
   const id = ++_seq;
-  _store.update((list) => [...list, { id, message, level }]);
-  setTimeout(
-    () => _store.update((list) => list.filter((t) => t.id !== id)),
-    durationMs
-  );
+  _store.update((list) => [...list, { id, message, level, durationMs }]);
+  countDown(id, durationMs);
 }
 
 export const toast = {
@@ -54,6 +72,35 @@ export const toast = {
    * @param id - Which one
    */
   dismiss(id: number): void {
-    _store.update((list) => list.filter((t) => t.id !== id));
+    forget(id);
+  },
+
+  /**
+   * Stops the countdown while the message is being read.
+   *
+   * It is focusable, so it can be tabbed to — and vanishing from under the
+   * keyboard takes the reader's place with it. The same holds for a pointer
+   * resting on a long failure.
+   *
+   * @param id - Which one
+   */
+  hold(id: number): void {
+    const timer = _timers.get(id);
+    if (timer !== undefined) clearTimeout(timer);
+    _timers.delete(id);
+  },
+
+  /**
+   * Starts the countdown again, from the beginning.
+   *
+   * Whatever was left of it when the reader arrived is not worth keeping
+   * track of: they have just stopped reading, and a fresh moment to notice it
+   * going is kinder than the remainder of a moment.
+   *
+   * @param id - Which one
+   */
+  release(id: number): void {
+    const item = get(_store).find((t) => t.id === id);
+    if (item) countDown(id, item.durationMs);
   },
 };

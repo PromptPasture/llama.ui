@@ -20,6 +20,10 @@
     class:toast--error={item.level === 'error'}
     title={$_('toast.dismiss')}
     onclick={() => toast.dismiss(item.id)}
+    onfocus={() => toast.hold(item.id)}
+    onblur={() => toast.release(item.id)}
+    onmouseenter={() => toast.hold(item.id)}
+    onmouseleave={() => toast.release(item.id)}
   >
     {item.message}
   </button>
