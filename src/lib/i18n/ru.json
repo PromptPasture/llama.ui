@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "Закрыть боковую панель",
   "sidebar.buttons.rename": "Переименовать",
   "sidebar.buttons.download": "Скачать",
+  "sidebar.buttons.downloadMarkdown": "Скачать как Markdown",
   "sidebar.buttons.delete": "Удалить",
   "sidebar.ariaLabels.dropdown": "Дополнительные параметры",
   "sidebar.ariaLabels.select": "Выбрать беседу: {name}",

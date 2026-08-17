@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "Fechar barra lateral",
   "sidebar.buttons.rename": "Renomear",
   "sidebar.buttons.download": "Baixar",
+  "sidebar.buttons.downloadMarkdown": "Baixar como Markdown",
   "sidebar.buttons.delete": "Excluir",
   "sidebar.ariaLabels.dropdown": "Mais opções",
   "sidebar.ariaLabels.select": "Selecionar conversa: {name}",

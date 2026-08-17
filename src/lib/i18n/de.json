@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "Seitenleiste schließen",
   "sidebar.buttons.rename": "Umbenennen",
   "sidebar.buttons.download": "Herunterladen",
+  "sidebar.buttons.downloadMarkdown": "Als Markdown herunterladen",
   "sidebar.buttons.delete": "Löschen",
   "sidebar.ariaLabels.dropdown": "Weitere Optionen",
   "sidebar.ariaLabels.select": "Unterhaltung auswählen: {name}",

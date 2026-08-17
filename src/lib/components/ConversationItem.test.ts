@@ -184,7 +184,7 @@ describe('downloading a conversation', () => {
     });
 
     await user.click(screen.getByRole('button', { name: 'Show more options' }));
-    await user.click(screen.getByRole('button', { name: /Download/ }));
+    await user.click(screen.getByRole('button', { name: 'Download' }));
   }
 
   it('writes out the exported conversation', async () => {
@@ -257,7 +257,7 @@ describe('how a conversation is presented to a screen reader', () => {
 
     // Tabbing between buttons is what this offers, so buttons is what they
     // are: an ARIA menu would promise arrow keys that do nothing here.
-    for (const name of [/Rename/, /Download/, /Delete/]) {
+    for (const name of ['Rename', 'Download', 'Delete']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
   });
@@ -400,6 +400,57 @@ describe('copying a conversation', () => {
     await vi.waitFor(() =>
       expect(mocks.error).toHaveBeenCalledWith(
         'Could not copy to the clipboard'
+      )
+    );
+  });
+
+  async function downloadMarkdown() {
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv, currentConvId: 'conv-1' } });
+    await user.click(screen.getByRole('button', { name: 'Show more options' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Download as Markdown' })
+    );
+  }
+
+  it('saves the conversation the way it reads', async () => {
+    const shown = [
+      turn('user', 'How do I centre a div?'),
+      turn('assistant', 'Use flexbox.'),
+    ];
+    mocks.getMessages.mockResolvedValue(shown);
+    mocks.filterByLeafNodeId.mockReturnValue(shown);
+
+    await downloadMarkdown();
+
+    // The JSON download is for putting back into the app; this is for
+    // keeping, sending on, or dropping into notes.
+    await vi.waitFor(() =>
+      expect(mocks.downloadAsFile).toHaveBeenCalledWith(
+        ['## You\n\nHow do I centre a div?\n\n## Assistant\n\nUse flexbox.'],
+        expect.stringMatching(/\.md$/),
+        'text/markdown'
+      )
+    );
+  });
+
+  it('saves only the branch on screen', async () => {
+    mocks.getMessages.mockResolvedValue([turn('user', 'hi')]);
+    mocks.filterByLeafNodeId.mockReturnValue([turn('user', 'hi')]);
+
+    await downloadMarkdown();
+
+    await vi.waitFor(() => expect(mocks.filterByLeafNodeId).toHaveBeenCalled());
+  });
+
+  it('says so when the conversation cannot be read', async () => {
+    mocks.getMessages.mockRejectedValue(new Error('storage blocked'));
+
+    await downloadMarkdown();
+
+    await vi.waitFor(() =>
+      expect(mocks.error).toHaveBeenCalledWith(
+        'Failed to download conversation.'
       )
     );
   });

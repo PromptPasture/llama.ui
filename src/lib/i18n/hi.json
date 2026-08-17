@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "साइडबार बंद करें",
   "sidebar.buttons.rename": "नाम बदलें",
   "sidebar.buttons.download": "डाउनलोड करें",
+  "sidebar.buttons.downloadMarkdown": "Markdown के रूप में डाउनलोड करें",
   "sidebar.buttons.delete": "हटाएं",
   "sidebar.ariaLabels.dropdown": "अधिक विकल्प",
   "sidebar.ariaLabels.select": "बातचीत चुनें: {name}",

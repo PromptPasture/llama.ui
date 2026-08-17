@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "إغلاق الشريط الجانبي",
   "sidebar.buttons.rename": "إعادة تسمية",
   "sidebar.buttons.download": "تنزيل",
+  "sidebar.buttons.downloadMarkdown": "تنزيل بصيغة Markdown",
   "sidebar.buttons.delete": "حذف",
   "sidebar.ariaLabels.dropdown": "المزيد من الخيارات",
   "sidebar.ariaLabels.select": "حدد المحادثة: {name}",

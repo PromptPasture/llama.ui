@@ -2,6 +2,7 @@
   import { _ } from 'svelte-i18n';
   import CopyIcon from 'lucide-svelte/icons/copy';
   import DownloadIcon from 'lucide-svelte/icons/download';
+  import FileTextIcon from 'lucide-svelte/icons/file-text';
   import EllipsisVerticalIcon from 'lucide-svelte/icons/ellipsis-vertical';
   import PencilIcon from 'lucide-svelte/icons/pencil';
   import TrashIcon from 'lucide-svelte/icons/trash';
@@ -144,6 +145,38 @@
     }
   }
 
+  /**
+   * Saves the conversation the way it reads, rather than the way it is stored.
+   *
+   * The JSON above is for putting back into the app; this is for keeping,
+   * sending to someone, or dropping into notes.
+   */
+  async function handleDownloadMarkdown() {
+    menuOpen = false;
+    if (isPending) {
+      toast.error($_('sidebar.errors.downloadOnGenerate'));
+      return;
+    }
+    try {
+      const all = await IndexedDB.getMessages(conv.id);
+      // The branch on screen, rather than every version ever written.
+      const shown = IndexedDB.filterByLeafNodeId(all, conv.currNode, false);
+      downloadAsFile(
+        [
+          toMarkdown(shown, {
+            user: $_('chatScreen.labels.user'),
+            assistant: $_('chatScreen.labels.assistant'),
+          }),
+        ],
+        `${toFileName(conv.name, conv.id)}.md`,
+        'text/markdown'
+      );
+    } catch (error) {
+      console.error('Conversation download failed:', error);
+      toast.error($_('sidebar.errors.downloadFailed'));
+    }
+  }
+
   async function handleDelete() {
     menuOpen = false;
     if (isPending) {
@@ -240,6 +273,16 @@
         <li>
           <Button variant="menu-item" size="small" onclick={handleDownload}
             ><DownloadIcon size={14} />{$_('sidebar.buttons.download')}</Button
+          >
+        </li>
+        <li>
+          <Button
+            variant="menu-item"
+            size="small"
+            onclick={handleDownloadMarkdown}
+            ><FileTextIcon size={14} />{$_(
+              'sidebar.buttons.downloadMarkdown'
+            )}</Button
           >
         </li>
         <li>

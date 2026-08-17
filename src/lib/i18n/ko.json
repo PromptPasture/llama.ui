@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "사이드바 닫기",
   "sidebar.buttons.rename": "이름 변경",
   "sidebar.buttons.download": "다운로드",
+  "sidebar.buttons.downloadMarkdown": "Markdown으로 다운로드",
   "sidebar.buttons.delete": "삭제",
   "sidebar.ariaLabels.dropdown": "더 많은 옵션",
   "sidebar.ariaLabels.select": "대화 선택: {name}",

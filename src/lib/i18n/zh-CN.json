@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "关闭侧边栏",
   "sidebar.buttons.rename": "重命名",
   "sidebar.buttons.download": "下载",
+  "sidebar.buttons.downloadMarkdown": "下载为 Markdown",
   "sidebar.buttons.delete": "删除",
   "sidebar.ariaLabels.dropdown": "更多选项",
   "sidebar.ariaLabels.select": "选择对话: {name}",

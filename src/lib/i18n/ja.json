@@ -16,6 +16,7 @@
   "sidebar.buttons.closeSideBar": "サイドバーを閉じる",
   "sidebar.buttons.rename": "名前変更",
   "sidebar.buttons.download": "ダウンロード",
+  "sidebar.buttons.downloadMarkdown": "Markdown としてダウンロード",
   "sidebar.buttons.delete": "削除",
   "sidebar.ariaLabels.dropdown": "その他のオプション",
   "sidebar.ariaLabels.select": "会話を選択: {name}",
