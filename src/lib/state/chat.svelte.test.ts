@@ -509,3 +509,66 @@ describe('a conversation that changes underneath the reader', () => {
     expect(mocks.getMessages).not.toHaveBeenCalled();
   });
 });
+
+describe('a reply that fails partway', () => {
+  function failAfterStreaming(text: string) {
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ content: text });
+        throw new Error('the server went away');
+      }
+    );
+  }
+
+  it('keeps the text that did arrive', async () => {
+    mocks.appendMsg.mockClear();
+    failAfterStreaming('half an answer');
+
+    await expect(
+      chat._generate(
+        { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+        deps({ provider: {} }) as never
+      )
+    ).rejects.toThrow();
+
+    // Stopping deliberately already keeps what was produced. A server that
+    // goes away mid-sentence is the same loss to the reader, and throwing it
+    // out leaves them with a toast that fades and nothing else.
+    expect(mocks.appendMsg).toHaveBeenCalledTimes(1);
+    expect(mocks.appendMsg.mock.calls[0][0]).toMatchObject({
+      content: 'half an answer',
+      role: 'assistant',
+    });
+  });
+
+  it('still says what went wrong', async () => {
+    const toast = vi.fn();
+    failAfterStreaming('half an answer');
+
+    await expect(
+      chat._generate(
+        { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+        deps({ provider: {}, toast }) as never
+      )
+    ).rejects.toThrow();
+
+    expect(toast).toHaveBeenCalledWith('the server went away');
+  });
+
+  it('saves nothing when it failed before any text arrived', async () => {
+    mocks.appendMsg.mockClear();
+    stream.generateChatStream.mockImplementationOnce(async () => {
+      throw new Error('the server went away');
+    });
+
+    await expect(
+      chat._generate(
+        { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+        deps({ provider: {} }) as never
+      )
+    ).rejects.toThrow();
+
+    // An empty reply in the conversation says a turn happened when none did.
+    expect(mocks.appendMsg).not.toHaveBeenCalled();
+  });
+});

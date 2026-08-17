@@ -321,6 +321,12 @@ export const chat = {
         return;
       }
       console.error('Error during message generation:', err);
+      // Kept for the same reason stopping keeps it: a server that goes away
+      // mid-sentence is the same loss to the reader as pressing stop, and
+      // throwing the words out leaves them a toast that fades and nothing
+      // else. The reply is there to read, copy, or ask again from.
+      const partial = await storeReply(pendingMsg, leafNodeId, deps.toast);
+      if (partial) onChunk(partial.id);
       deps.toast(
         (err as Error)?.message ??
           t('state.chat.errors.unknownErrorDuringGeneration')
