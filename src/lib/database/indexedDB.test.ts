@@ -396,3 +396,54 @@ describe('naming a branch', () => {
     expect(branch.name).toBe('パン のレシピ - 分岐');
   });
 });
+
+describe('deleting everything', () => {
+  beforeEach(async () => {
+    for (const conv of await IndexedDB.getAllConversations()) {
+      await IndexedDB.deleteConversation(conv.id);
+    }
+  });
+
+  it('leaves no conversations behind', async () => {
+    await chat('Bread recipe', ['hello']);
+    await chat('Holiday planning', ['hello']);
+
+    await IndexedDB.deleteAllConversations();
+
+    expect(await IndexedDB.getAllConversations()).toEqual([]);
+  });
+
+  it('leaves nothing that was said behind either', async () => {
+    const { conv } = await chat('Bread recipe', ['the sourdough starter']);
+
+    await IndexedDB.deleteAllConversations();
+
+    // Messages outliving their conversation are unreachable and still
+    // searchable, which is the worst of both.
+    expect(await IndexedDB.getMessages(conv.id)).toEqual([]);
+  });
+
+  it('says how many there were', async () => {
+    await chat('Bread recipe', ['hello']);
+    await chat('Holiday planning', ['hello']);
+
+    expect(await IndexedDB.deleteAllConversations()).toBe(2);
+  });
+
+  it('has nothing to do when there is nothing stored', async () => {
+    expect(await IndexedDB.deleteAllConversations()).toBe(0);
+  });
+
+  it('tells the rest of the app each one has gone', async () => {
+    await chat('Bread recipe', ['hello']);
+    const told: string[] = [];
+    const listener = (id: string) => told.push(id);
+    IndexedDB.onConversationChanged(listener);
+
+    await IndexedDB.deleteAllConversations();
+    IndexedDB.offConversationChanged(listener);
+
+    // A tab reading one of these is looking at something that has gone.
+    expect(told).toHaveLength(1);
+  });
+});

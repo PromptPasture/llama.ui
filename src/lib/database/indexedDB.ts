@@ -438,6 +438,24 @@ export default class IndexedDB {
   }
 
   /**
+   * Deletes every conversation and everything said in them.
+   *
+   * One at a time rather than emptying the tables: a conversation open in
+   * another tab is told it has gone, which is what the per-conversation
+   * delete already arranges, and what stops that tab writing a reply into
+   * something that no longer exists.
+   *
+   * @returns How many were deleted
+   */
+  static async deleteAllConversations(): Promise<number> {
+    const all = await IndexedDB.getAllConversations();
+    for (const conv of all) {
+      await IndexedDB.deleteConversation(conv.id);
+    }
+    return all.length;
+  }
+
+  /**
    * Finds conversations matching a search term.
    *
    * Matches the name or anything said inside, because a name is only the
