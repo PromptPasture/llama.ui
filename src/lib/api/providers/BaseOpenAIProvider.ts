@@ -121,7 +121,13 @@ export class BaseOpenAIProvider
   }
 
   /**
-   * Factory method to create a new BaseOpenAIProvider instance.
+   * Factory method to create a new provider instance.
+   *
+   * Every subclass declares its own, because this one names its own class:
+   * inheriting it hands back a base provider instead of the subclass, with
+   * the wrong expiry and none of the sampling options a self-hosted server
+   * understands. It cannot build `this` instead — the factory passes this
+   * method around as a bare function, which leaves `this` behind.
    *
    * @param baseUrl - The base URL of the API endpoint
    * @param apiKey - Optional API key for authentication

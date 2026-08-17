@@ -13,6 +13,20 @@ import { BaseOpenAIProvider } from './BaseOpenAIProvider';
  */
 export class CloudOpenAIProvider extends BaseOpenAIProvider {
   /**
+   * Builds one of these rather than the base provider.
+   *
+   * Without it the inherited factory names its own class, so this one's
+   * expiry and its answer about sampling options are both silently the base's.
+   *
+   * @param baseUrl - The base URL of the API endpoint
+   * @param apiKey - Optional API key for authentication
+   * @returns A new instance of CloudOpenAIProvider
+   */
+  static new(baseUrl?: string, apiKey: string = ''): CloudOpenAIProvider {
+    return new CloudOpenAIProvider(baseUrl, apiKey);
+  }
+
+  /**
    * Determines whether the current API token has expired based on the last update time.
    *
    * For cloud providers, the token is considered expired if more than
