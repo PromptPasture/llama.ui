@@ -303,10 +303,11 @@ describe('searching the conversations', () => {
 
   it('is not upset by an imported message with no text in it', async () => {
     await chat('Bread recipe', ['how much yeast']);
-    // Import checks a message's id and convId and nothing else, so a file can
-    // put anything at all in content. This pins the outcome — the search still
-    // answers — rather than the type check that guards it, which cannot be
-    // shown to be load-bearing here: removing it does not fail this test.
+    // Import checks the fields a conversation is walked along, and says
+    // nothing about content, so a file can still put anything there. This
+    // pins the outcome — the search still answers — rather than the type
+    // check that guards it, which cannot be shown to be load-bearing here:
+    // removing it does not fail this test.
     await IndexedDB.importDB([
       {
         table: 'conversations',
@@ -314,7 +315,15 @@ describe('searching the conversations', () => {
       },
       {
         table: 'messages',
-        rows: [{ id: ++nextId, convId: 'imported', content: null }],
+        rows: [
+          {
+            id: ++nextId,
+            convId: 'imported',
+            content: null,
+            parent: -1,
+            children: [],
+          },
+        ],
       },
     ] as unknown as ExportJsonStructure);
 
@@ -585,5 +594,57 @@ describe('a path that loops back on itself', () => {
     const ids = IndexedDB.filterByLeafNodeId(looping, 2, true).map((m) => m.id);
 
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('a file whose messages are not shaped like messages', () => {
+  const withMessage = (row: Record<string, unknown>) =>
+    [
+      {
+        table: 'conversations',
+        rows: [{ id: 'c', name: 'From a file', lastModified: 1 }],
+      },
+      { table: 'messages', rows: [row] },
+    ] as unknown as ExportJsonStructure;
+
+  const sound = { id: 900001, convId: 'c', parent: -1, children: [] };
+
+  it('is taken when every message can be walked', async () => {
+    await expect(
+      IndexedDB.importDB(withMessage(sound))
+    ).resolves.toBeUndefined();
+  });
+
+  it('is refused when a message has no parent', async () => {
+    // parent and children are what a conversation is walked along. Accepted,
+    // such a message threw while the conversation was being drawn — after the
+    // file had been stored, so it threw again on every load.
+    await expect(
+      IndexedDB.importDB(withMessage({ ...sound, parent: undefined }))
+    ).rejects.toThrow(/malformed message/i);
+  });
+
+  it('is refused when children is not a list', async () => {
+    await expect(
+      IndexedDB.importDB(withMessage({ ...sound, children: 'nope' }))
+    ).rejects.toThrow(/malformed message/i);
+  });
+
+  it('is refused when a message has no conversation', async () => {
+    await expect(
+      IndexedDB.importDB(withMessage({ ...sound, convId: undefined }))
+    ).rejects.toThrow(/malformed message/i);
+  });
+
+  it('stores nothing at all when one message is wrong', async () => {
+    const before = (await IndexedDB.getAllConversations()).length;
+
+    await IndexedDB.importDB(withMessage({ ...sound, children: null })).catch(
+      () => {}
+    );
+
+    // Half a file is worse than none: the conversation would be there with
+    // nothing readable in it.
+    expect((await IndexedDB.getAllConversations()).length).toBe(before);
   });
 });

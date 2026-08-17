@@ -219,3 +219,65 @@ describe('a message graph that loops back on itself', () => {
     ]);
   });
 });
+
+describe('a message stored without the fields the walk needs', () => {
+  /**
+   * Import now refuses these, but a file taken before it did could have
+   * stored one — and that conversation should still open.
+   */
+  const missingChildren = [
+    {
+      id: 0,
+      convId: 'c',
+      type: 'root',
+      timestamp: 0,
+      role: 'system',
+      content: '',
+      parent: -1,
+      children: [1],
+    },
+    {
+      id: 1,
+      convId: 'c',
+      type: 'text',
+      timestamp: 1,
+      role: 'user',
+      content: 'a',
+      parent: 0,
+    },
+  ] as unknown as Message[];
+
+  it('is shown rather than throwing while it is drawn', () => {
+    expect(
+      getListMessageDisplay(missingChildren, 1).map((d) => d.msg.id)
+    ).toEqual([1]);
+  });
+
+  it('is shown when it is the parent whose children are missing', () => {
+    const parentMissing = [
+      {
+        id: 0,
+        convId: 'c',
+        type: 'root',
+        timestamp: 0,
+        role: 'system',
+        content: '',
+        parent: -1,
+      },
+      {
+        id: 1,
+        convId: 'c',
+        type: 'text',
+        timestamp: 1,
+        role: 'user',
+        content: 'a',
+        parent: 0,
+        children: [],
+      },
+    ] as unknown as Message[];
+
+    expect(
+      getListMessageDisplay(parentMissing, 1).map((d) => d.msg.id)
+    ).toEqual([1]);
+  });
+});

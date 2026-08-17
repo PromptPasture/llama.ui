@@ -638,9 +638,15 @@ export default class IndexedDB {
         ) {
           throw new Error('Import file has a malformed conversation.');
         }
+        // parent and children are what the conversation is walked along, so a
+        // message without them is not a message this app can open: accepted,
+        // it threw while drawing the conversation instead.
         if (
           record.table === db.messages.name &&
-          (typeof row.id !== 'number' || typeof row.convId !== 'string')
+          (typeof row.id !== 'number' ||
+            typeof row.convId !== 'string' ||
+            typeof row.parent !== 'number' ||
+            !Array.isArray(row.children))
         ) {
           throw new Error('Import file has a malformed message.');
         }

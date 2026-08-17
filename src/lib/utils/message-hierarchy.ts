@@ -20,8 +20,12 @@ export function getListMessageDisplay(
     const seen = new Set<Message['id']>();
     while (currNode && !seen.has(currNode.id)) {
       seen.add(currNode.id);
-      if (currNode.children.length === 0) break;
-      const next = nodeMap.get(currNode.children.at(-1) ?? -1);
+      // Tolerated rather than trusted: an import made before this was checked
+      // may already have stored a message without them, and that conversation
+      // should still open.
+      const children = currNode.children ?? [];
+      if (children.length === 0) break;
+      const next = nodeMap.get(children.at(-1) ?? -1);
       if (!next) break;
       currNode = next;
     }
@@ -31,7 +35,7 @@ export function getListMessageDisplay(
   for (const msg of currNodes) {
     const parentNode = nodeMap.get(msg.parent ?? -1);
     if (!parentNode) continue;
-    const siblings = parentNode.children;
+    const siblings = parentNode.children ?? [];
     if (msg.type !== 'root') {
       res.push({
         msg,
