@@ -10,7 +10,7 @@ This repository is a fork of [llama.cpp](https://github.com/ggml-org/llama.cpp) 
 - Extra functionality ⚙️
 - Smoother experience ✨
 
-![welcome-screen](public/screenshots/desktop.png)
+![welcome-screen](static/screenshots/desktop.png)
 
 ## 🌟 Key Features
 
@@ -117,11 +117,11 @@ services:
 **Linux/MacOS:**
 
 ```bash
-./server --host 0.0.0.0 \
-         --port 8080 \
-         --path "/path/to/llama.ui" \
-         -m models/llama-2-7b.Q4_0.gguf \
-         --ctx-size 4096
+./llama-server --host 0.0.0.0 \
+               --port 8080 \
+               --path "/path/to/llama.ui" \
+               -m models/llama-2-7b.Q4_0.gguf \
+               --ctx-size 4096
 ```
 
 **Windows:**
