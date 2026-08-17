@@ -151,10 +151,13 @@ export class BaseOpenAIProvider
    * @see {@link getBaseUrl}
    * @see {@link jsonToModels}
    */
-  async getModels(): Promise<InferenceApiModel[]> {
+  async getModels(options?: { force?: boolean }): Promise<InferenceApiModel[]> {
     if (isDev) console.debug('v1Models', this.models);
 
-    if (this.models.length > 0 && !this.isExpired()) {
+    // Asked outright — the Fetch Models button — the answer has to come from
+    // the server. Someone who has just loaded a different model is asking
+    // whether it is there, and the list held here says it is not.
+    if (!options?.force && this.models.length > 0 && !this.isExpired()) {
       return this.models;
     }
 

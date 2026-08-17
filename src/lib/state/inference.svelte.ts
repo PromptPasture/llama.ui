@@ -50,11 +50,13 @@ export const inference = {
       config.apiKey
     );
     try {
-      return await provider.getModels();
+      // Silent means asked for in the background, where the list already held
+      // is good enough. Asked for outright, the point is to find out what the
+      // server has now.
+      return await provider.getModels({ force: !options.silent });
     } catch (err) {
-      // Silent means asked for in the background — while a base url is being
-      // typed, say — where a failure at every keystroke is noise. Asked for
-      // outright, the reason is the whole point of asking.
+      // A failure at every keystroke is noise; asked for outright, the reason
+      // is the whole point of asking.
       if (options.silent) return [];
       throw err;
     }

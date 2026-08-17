@@ -3,12 +3,15 @@ import { BaseOpenAIProvider } from './BaseOpenAIProvider';
 
 const provider = () => BaseOpenAIProvider.new('http://localhost:8080', 'key');
 
+/** A fresh Response per call: a body can only be read once, so a shared one
+ * fails the moment a test fetches twice. */
 function respondWith(body: unknown, status = 200) {
-  return vi.fn().mockResolvedValue(
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { 'Content-Type': 'application/json' },
-    })
+  return vi.fn().mockImplementation(
+    () =>
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      })
   );
 }
 
@@ -20,6 +23,7 @@ function rejectWith(name: string, message = 'boom') {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 describe('listing models', () => {
@@ -203,5 +207,70 @@ describe('caching the model list', () => {
     await p.getModels();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('asking again for the list of models', () => {
+  it('answers from what it already has', async () => {
+    const fetched = respondWith({ data: [{ id: 'llama3' }] });
+    vi.stubGlobal('fetch', fetched);
+    const p = provider();
+    await p.getModels();
+
+    await p.getModels();
+
+    // Every keystroke in the base url asks for these; going to the server
+    // each time would be a request per character.
+    expect(fetched).toHaveBeenCalledTimes(1);
+  });
+
+  it('goes and looks again when asked outright', async () => {
+    const fetched = respondWith({ data: [{ id: 'llama3' }] });
+    vi.stubGlobal('fetch', fetched);
+    const p = provider();
+    await p.getModels();
+
+    await p.getModels({ force: true });
+
+    // Someone who has just loaded a different model and pressed Fetch Models
+    // is asking the server, not the cache.
+    expect(fetched).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports what the second look found', async () => {
+    const fetched = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ data: [{ id: 'the-old-model' }] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ data: [{ id: 'the-new-model' }] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+    vi.stubGlobal('fetch', fetched);
+    const p = provider();
+    await p.getModels();
+
+    const models = await p.getModels({ force: true });
+
+    expect(models).toEqual([{ id: 'the-new-model', name: 'the-new-model' }]);
+  });
+
+  it('goes back once what it has is old enough', async () => {
+    const fetched = respondWith({ data: [{ id: 'llama3' }] });
+    vi.stubGlobal('fetch', fetched);
+    const p = provider();
+    await p.getModels();
+
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 10 * 60 * 1000);
+    await p.getModels();
+
+    expect(fetched).toHaveBeenCalledTimes(2);
   });
 });

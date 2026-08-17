@@ -176,3 +176,21 @@ describe('asking a provider for its models', () => {
     ).resolves.toEqual([]);
   });
 });
+
+describe('how hard the models are asked for', () => {
+  it('goes to the server when asked outright', async () => {
+    await inference.fetchModels(ready());
+
+    // Fetch Models is pressed by someone who has just changed something on
+    // the server and wants to know whether it took.
+    expect(mocks.getModels).toHaveBeenCalledWith({ force: true });
+  });
+
+  it('takes what is already known in the background', async () => {
+    await inference.fetchModels(ready(), { silent: true });
+
+    // Asked once a second while a base url is being typed; a request per
+    // keystroke is not what that is for.
+    expect(mocks.getModels).toHaveBeenCalledWith({ force: false });
+  });
+});

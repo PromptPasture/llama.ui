@@ -161,7 +161,7 @@ export interface ModelProvider {
    * Retrieves the list of available models from the provider.
    * @returns {Promise<InferenceApiModel[]>} A promise that resolves to an array of model definitions.
    */
-  getModels(): Promise<InferenceApiModel[]>;
+  getModels(options?: { force?: boolean }): Promise<InferenceApiModel[]>;
 }
 
 /**
