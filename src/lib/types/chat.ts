@@ -111,6 +111,10 @@ export interface ConversationMatch {
   conv: Conversation;
   /** The text around the match, absent when the name is what matched. */
   excerpt?: string;
+  /** The message the excerpt came from, so opening the result can land on it
+   * rather than at the end of a conversation the reader must then search
+   * through by eye. */
+  messageId?: Message['id'];
 }
 
 export interface MessageDisplay {

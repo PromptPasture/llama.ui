@@ -461,7 +461,7 @@ export default class IndexedDB {
     // One pass over the messages rather than a query per conversation: the
     // content is not indexed, so either way every message is read, and this
     // reads them once.
-    const spokenIn = new Map<string, string>();
+    const spokenIn = new Map<string, { excerpt: string; messageId: number }>();
     await db.messages.each((message) => {
       if (
         spokenIn.has(message.convId) ||
@@ -472,12 +472,14 @@ export default class IndexedDB {
         return;
       }
       const excerpt = excerptAround(message.content, needle);
-      if (excerpt) spokenIn.set(message.convId, excerpt);
+      if (excerpt) {
+        spokenIn.set(message.convId, { excerpt, messageId: message.id });
+      }
     });
 
     return all
       .filter((c) => named.has(c.id) || spokenIn.has(c.id))
-      .map((conv) => ({ conv, excerpt: spokenIn.get(conv.id) }));
+      .map((conv) => ({ conv, ...spokenIn.get(conv.id) }));
   }
 
   // --- Export / Import Functions ---

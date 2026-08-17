@@ -190,6 +190,7 @@
 </script>
 
 <div
+  id={`msg-${msg.id}`}
   class="msg mb-4"
   class:msg--user={isUser}
   role="group"

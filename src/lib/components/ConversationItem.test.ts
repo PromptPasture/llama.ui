@@ -455,3 +455,32 @@ describe('copying a conversation', () => {
     );
   });
 });
+
+describe('opening a search result', () => {
+  it('goes to the message the words were found in', async () => {
+    const user = userEvent.setup();
+    render(ConversationItem, {
+      props: { conv, excerpt: '…sourdough starter…', messageId: 42 },
+    });
+
+    await user.click(
+      screen.getByRole('button', { name: /Select conversation/ })
+    );
+
+    // Landing at the end of a long conversation leaves the reader to find by
+    // eye what they had just searched for.
+    expect(mocks.goto).toHaveBeenCalledWith(expect.stringContaining('m=42'));
+  });
+
+  it('goes to the conversation itself when nothing inside it matched', async () => {
+    const user = userEvent.setup();
+    render(ConversationItem, { props: { conv } });
+
+    await user.click(
+      screen.getByRole('button', { name: /Select conversation/ })
+    );
+
+    // The name matched, so there is no particular message to land on.
+    expect(mocks.goto).toHaveBeenCalledWith(expect.not.stringContaining('?m='));
+  });
+});

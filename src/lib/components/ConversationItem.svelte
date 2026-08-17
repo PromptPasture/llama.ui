@@ -25,6 +25,8 @@
     currentConvId?: string;
     /** Why this conversation came up in a search, when it was not the name. */
     excerpt?: string;
+    /** The message the excerpt came from, so opening this lands on it. */
+    messageId?: number;
     /** What was searched for, so it can be marked within the excerpt. */
     searchTerm?: string;
     onselect?: () => void;
@@ -34,6 +36,7 @@
     conv,
     currentConvId,
     excerpt,
+    messageId,
     searchTerm = '',
     onselect,
   }: Props = $props();
@@ -75,7 +78,13 @@
 
   function handleSelect() {
     onselect?.();
-    void goto(resolve('/chat/[convId]', { convId: conv.id }));
+    const path = resolve('/chat/[convId]', { convId: conv.id });
+    // Opened from a search result, the conversation is long and the words
+    // that matched are somewhere in the middle of it.
+    // The path came from resolve(); a query string is not part of a route and
+    // has nothing to resolve.
+    // eslint-disable-next-line svelte/no-navigation-without-resolve
+    void goto(messageId === undefined ? path : `${path}?m=${messageId}`);
   }
 
   async function handleRename() {

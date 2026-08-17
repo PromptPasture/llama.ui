@@ -337,6 +337,29 @@ describe('what a search result says about the match', () => {
     expect(match.excerpt).toContain('sourdough starter rest');
   });
 
+  it('says which message the words were found in', async () => {
+    await chat('Bread recipe', [
+      'first message',
+      'Let the sourdough starter rest overnight.',
+    ]);
+
+    const [match] = await IndexedDB.searchConversations('starter');
+
+    // Without it, opening a result lands at the end of a long conversation
+    // the reader must then search through by eye.
+    const messages = await IndexedDB.getMessages(match.conv.id);
+    const found = messages.find((m) => m.id === match.messageId);
+    expect(found?.content).toContain('sourdough starter');
+  });
+
+  it('carries no message when the name is what matched', async () => {
+    await chat('Bread recipe', ['more bread please']);
+
+    const [match] = await IndexedDB.searchConversations('bread');
+
+    expect(match.messageId).toBeUndefined();
+  });
+
   it('carries nothing when the name is what matched', async () => {
     // The messages mention it too, so finding no excerpt is a decision rather
     // than an absence of anything to quote.

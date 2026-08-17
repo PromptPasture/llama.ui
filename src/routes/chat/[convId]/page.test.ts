@@ -12,10 +12,18 @@ const mocks = vi.hoisted(() => ({
   sendMessage: vi.fn(),
   replaceMessage: vi.fn(),
   viewingChat: null as { messages: unknown[] } | null,
+  search: '',
 }));
 
 vi.mock('$app/navigation', () => ({ goto: mocks.goto }));
 vi.mock('$app/paths', () => ({ resolve: (p: string) => p }));
+vi.mock('$app/state', () => ({
+  page: {
+    get url() {
+      return new URL(`http://localhost/chat/c1${mocks.search}`);
+    },
+  },
+}));
 vi.mock('$lib/state/chat.svelte', () => ({
   chat: {
     loadConversation: mocks.loadConversation,
@@ -51,6 +59,7 @@ beforeEach(() => {
   localStorage.clear();
   forgetAllAttachments();
   mocks.viewingChat = null;
+  mocks.search = '';
   vi.clearAllMocks();
 });
 
@@ -405,5 +414,85 @@ describe('editing a message that is already in the conversation', () => {
       expect.objectContaining({ newContent: 'because of a race' }),
       expect.anything()
     );
+  });
+});
+
+describe('opening a conversation at a message that was searched for', () => {
+  const root = {
+    id: 0,
+    convId: 'c1',
+    type: 'root',
+    timestamp: 0,
+    role: 'system',
+    content: '',
+    parent: -1,
+    children: [5],
+  };
+  const early = {
+    id: 5,
+    convId: 'c1',
+    type: 'text',
+    timestamp: 5,
+    role: 'user',
+    content: 'the sourdough starter question',
+    parent: 0,
+    children: [6],
+  };
+  const later = {
+    id: 6,
+    convId: 'c1',
+    type: 'assistant',
+    timestamp: 6,
+    role: 'assistant',
+    content: 'the answer',
+    parent: 5,
+    children: [],
+  };
+
+  it('brings that message into view', async () => {
+    const brought: unknown[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      brought.push(this.id);
+    };
+    mocks.viewingChat = { messages: [root, early, later] };
+    mocks.search = '?m=5';
+
+    await renderChat('c1');
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // Landing at the end leaves the reader to find by eye what they had just
+    // searched for.
+    expect(brought).toContain('msg-5');
+  });
+
+  it('leaves the conversation alone when nothing was asked for', async () => {
+    const brought: unknown[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      brought.push(this.id);
+    };
+    mocks.viewingChat = { messages: [root, early, later] };
+
+    await renderChat('c1');
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(brought).toEqual([]);
+  });
+
+  it('ignores a message that is not in this conversation', async () => {
+    const brought: unknown[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      brought.push(this.id);
+    };
+    mocks.viewingChat = { messages: [root, early, later] };
+    mocks.search = '?m=999';
+
+    await renderChat('c1');
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // A stale link, or one for another conversation entirely.
+    expect(brought).toEqual([]);
+    // And the conversation is still the one it was: pointing the view at a
+    // message that is not there leaves nothing to show at all.
+    expect(screen.getByText('the sourdough starter question')).toBeVisible();
   });
 });

@@ -2,6 +2,7 @@
   import { _ } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
+  import { page } from '$app/state';
   import { app } from '$lib/state/app.svelte';
   import { chat } from '$lib/state/chat.svelte';
   import { inference } from '$lib/state/inference.svelte';
@@ -90,6 +91,28 @@
   );
 
   const lastMsgNodeId = $derived(displayMessages.at(-1)?.msg.id ?? -1);
+
+  /**
+   * Opens on the message a search result pointed at.
+   *
+   * The branch through it is selected first — the words that matched may be
+   * on a version of the conversation that is not the one showing — and then
+   * it is brought into view, which is the whole point of having searched.
+   *
+   * A message that is not here, from a stale link, needs no guarding against:
+   * filterByLeafNodeId falls back to the latest one, and there is no element
+   * to bring into view.
+   */
+  $effect(() => {
+    const asked = Number(page.url.searchParams.get('m'));
+    if (!asked) return;
+    currNodeId = asked;
+    requestAnimationFrame(() => {
+      document
+        .getElementById(`msg-${asked}`)
+        ?.scrollIntoView({ block: 'center' });
+    });
+  });
 
   const pendingMsg = $derived.by(() => {
     const p = chat.pendingMessages[convId];

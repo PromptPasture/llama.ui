@@ -247,6 +247,7 @@
           <ConversationItem
             conv={match.conv}
             excerpt={match.excerpt}
+            messageId={match.messageId}
             searchTerm={searchInputs.term}
             {currentConvId}
             onselect={handleItemSelect}
