@@ -14,9 +14,16 @@ export function getListMessageDisplay(
   // find leaf node from a message node
   const findLeafNode = (msgId: Message['id']): Message['id'] => {
     let currNode: Message | undefined = nodeMap.get(msgId);
-    while (currNode) {
+    // A message cannot be its own descendant. An import checks ids and
+    // conversation ids and nothing else, so a damaged file can say otherwise —
+    // and this walk would then spin for ever, freezing the tab with no error.
+    const seen = new Set<Message['id']>();
+    while (currNode && !seen.has(currNode.id)) {
+      seen.add(currNode.id);
       if (currNode.children.length === 0) break;
-      currNode = nodeMap.get(currNode.children.at(-1) ?? -1);
+      const next = nodeMap.get(currNode.children.at(-1) ?? -1);
+      if (!next) break;
+      currNode = next;
     }
     return currNode?.id ?? -1;
   };

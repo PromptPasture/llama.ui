@@ -175,7 +175,13 @@ export default class IndexedDB {
 
     // Traverse the path from the start node (found leaf or latest) up to the root
     let currNode: Message | undefined = startNode;
-    while (currNode) {
+    // A message cannot appear twice on a path to the root. An import checks
+    // ids and conversation ids and nothing else, so a damaged file can name a
+    // message its own ancestor — and this walk would then never end, freezing
+    // the tab with no error, on this load and every load after it.
+    const seen = new Set<Message['id']>();
+    while (currNode && !seen.has(currNode.id)) {
+      seen.add(currNode.id);
       // Add node to result if it's not the root, or if it is the root and we want to include it
       if (
         currNode.type !== 'root' ||

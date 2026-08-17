@@ -548,3 +548,42 @@ describe('emptying the database', () => {
     await expect(IndexedDB.forgetEverything()).resolves.toBeUndefined();
   });
 });
+
+describe('a path that loops back on itself', () => {
+  const looping = [
+    {
+      id: 1,
+      convId: 'c',
+      type: 'text',
+      timestamp: 1,
+      role: 'user',
+      content: 'a',
+      parent: 2,
+      children: [2],
+    },
+    {
+      id: 2,
+      convId: 'c',
+      type: 'text',
+      timestamp: 2,
+      role: 'assistant',
+      content: 'b',
+      parent: 1,
+      children: [1],
+    },
+  ] as Message[];
+
+  it('is walked to an end rather than for ever', () => {
+    const path = IndexedDB.filterByLeafNodeId(looping, 2, true);
+
+    // An import checks ids and conversation ids and nothing else, so a damaged
+    // file can name a message its own ancestor.
+    expect(path.length).toBeLessThanOrEqual(looping.length);
+  });
+
+  it('reports each message once', () => {
+    const ids = IndexedDB.filterByLeafNodeId(looping, 2, true).map((m) => m.id);
+
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});

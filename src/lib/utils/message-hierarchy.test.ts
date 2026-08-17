@@ -137,3 +137,85 @@ describe('getListMessageDisplay', () => {
     ]);
   });
 });
+
+describe('a message graph that loops back on itself', () => {
+  /**
+   * Two messages each claiming the other as parent and as child. An import
+   * checks ids and conversation ids and nothing else, so a damaged or hostile
+   * file can say this — and a walk with no end freezes the tab silently, on
+   * that load and every load after it, since the file is now stored.
+   */
+  const looping = [
+    {
+      id: 1,
+      convId: 'c',
+      type: 'text',
+      timestamp: 1,
+      role: 'user',
+      content: 'a',
+      parent: 2,
+      children: [2],
+    },
+    {
+      id: 2,
+      convId: 'c',
+      type: 'text',
+      timestamp: 2,
+      role: 'assistant',
+      content: 'b',
+      parent: 1,
+      children: [1],
+    },
+  ] as Message[];
+
+  it('is walked to an end rather than for ever', () => {
+    const shown = getListMessageDisplay(looping, 2);
+
+    expect(Array.isArray(shown)).toBe(true);
+  });
+
+  it('shows each message at most once', () => {
+    const ids = getListMessageDisplay(looping, 2).map((d) => d.msg.id);
+
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('still shows a sound conversation in full', () => {
+    const sound = [
+      {
+        id: 0,
+        convId: 'c',
+        type: 'root',
+        timestamp: 0,
+        role: 'system',
+        content: '',
+        parent: -1,
+        children: [1],
+      },
+      {
+        id: 1,
+        convId: 'c',
+        type: 'text',
+        timestamp: 1,
+        role: 'user',
+        content: 'a',
+        parent: 0,
+        children: [2],
+      },
+      {
+        id: 2,
+        convId: 'c',
+        type: 'text',
+        timestamp: 2,
+        role: 'assistant',
+        content: 'b',
+        parent: 1,
+        children: [],
+      },
+    ] as Message[];
+
+    expect(getListMessageDisplay(sound, 2).map((d) => d.msg.id)).toEqual([
+      1, 2,
+    ]);
+  });
+});
