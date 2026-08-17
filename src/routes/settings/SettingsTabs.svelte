@@ -79,12 +79,12 @@
     .settings__tabs {
       @apply flex-col overflow-x-hidden p-4 px-2;
       border-bottom: none;
-      border-right: 1px solid var(--color-border);
+      border-inline-end: 1px solid var(--color-border);
     }
   }
 
   .settings__tab {
-    @apply px-3 py-1.5 text-sm text-left whitespace-nowrap shrink-0 cursor-pointer transition-[background] duration-150;
+    @apply px-3 py-1.5 text-sm text-start whitespace-nowrap shrink-0 cursor-pointer transition-[background] duration-150;
     background: transparent;
     border: none;
     color: var(--color-text);

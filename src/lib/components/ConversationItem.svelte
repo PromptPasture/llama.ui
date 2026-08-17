@@ -340,7 +340,7 @@
   }
 
   .conv-item__btn {
-    @apply flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm p-0;
+    @apply flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-start text-sm p-0;
     background: none;
     border: none;
     cursor: pointer;

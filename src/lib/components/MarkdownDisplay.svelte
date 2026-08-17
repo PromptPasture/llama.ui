@@ -135,14 +135,14 @@
     font-weight: 600;
   }
   .markdown :global(blockquote) {
-    border-left: 3px solid var(--color-accent);
+    border-inline-start: 3px solid var(--color-accent);
     margin: 0.5rem 0;
     padding: 0.25rem 0.875rem;
     color: var(--color-text-muted);
   }
   .markdown :global(ul),
   .markdown :global(ol) {
-    padding-left: 1.5rem;
+    padding-inline-start: 1.5rem;
     margin: 0.5rem 0;
   }
   .markdown :global(.code-block) {

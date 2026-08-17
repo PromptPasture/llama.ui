@@ -548,7 +548,7 @@
 
   .msg__reasoning-body {
     @apply ps-4 mb-3 text-sm;
-    border-left: 2px solid var(--color-border);
+    border-inline-start: 2px solid var(--color-border);
     color: var(--color-text-muted);
   }
 
