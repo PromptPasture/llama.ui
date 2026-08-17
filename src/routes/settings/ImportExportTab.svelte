@@ -112,7 +112,19 @@
     try {
       const files = input.files;
       if (!files || files.length !== 1) return;
-      const text = await files[0].text();
+
+      let text: string;
+      try {
+        text = await files[0].text();
+      } catch (error) {
+        // Read separately from the import: a file that cannot be read never
+        // reaches importDB, so nothing else would have said anything, and
+        // choosing a file and being told nothing is the worst of it.
+        console.error('Reading the file failed:', error);
+        toast.error($_('fileUpload.errors.failedToReadFile'));
+        return;
+      }
+
       await app.importDB(text, { success: toast.success, error: toast.error });
       onclose();
     } catch {

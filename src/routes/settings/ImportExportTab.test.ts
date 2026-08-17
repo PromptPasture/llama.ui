@@ -65,6 +65,7 @@ beforeEach(() => {
   mocks.error.mockClear();
   // Left over, a later test reads whichever download an earlier one made.
   mocks.downloadAsFile.mockClear();
+  mocks.importDB.mockClear().mockResolvedValue(undefined);
   mocks.exportDB.mockClear();
 });
 
@@ -503,5 +504,55 @@ describe('an action that fails outright', () => {
     expect(
       screen.getByRole('button', { name: 'Forget everything' })
     ).not.toBeDisabled();
+  });
+});
+
+describe('a file that cannot be read', () => {
+  it('says so, rather than nothing at all', async () => {
+    const user = userEvent.setup();
+    const { fileInput } = renderTab();
+    const unreadable = new File(['{}'], 'backup.json', {
+      type: 'application/json',
+    });
+    // What a file removed between choosing and reading does.
+    Object.defineProperty(unreadable, 'text', {
+      value: () => Promise.reject(new Error('gone from disk')),
+    });
+
+    await user.upload(fileInput, unreadable);
+
+    // It never reaches importDB, so nothing else would have said a word, and
+    // choosing a file to be told nothing is the worst of it.
+    await vi.waitFor(() =>
+      expect(mocks.error).toHaveBeenCalledWith('Failed to read file.')
+    );
+  });
+
+  it('does not try to import what it could not read', async () => {
+    const user = userEvent.setup();
+    const { fileInput } = renderTab();
+    const unreadable = new File(['{}'], 'backup.json');
+    Object.defineProperty(unreadable, 'text', {
+      value: () => Promise.reject(new Error('gone from disk')),
+    });
+
+    await user.upload(fileInput, unreadable);
+
+    await vi.waitFor(() => expect(mocks.error).toHaveBeenCalled());
+    expect(mocks.importDB).not.toHaveBeenCalled();
+  });
+
+  it('still lets the same file be chosen again', async () => {
+    const user = userEvent.setup();
+    const { fileInput } = renderTab();
+    const unreadable = new File(['{}'], 'backup.json');
+    Object.defineProperty(unreadable, 'text', {
+      value: () => Promise.reject(new Error('gone from disk')),
+    });
+
+    await user.upload(fileInput, unreadable);
+
+    await vi.waitFor(() => expect(mocks.error).toHaveBeenCalled());
+    expect(fileInput.value).toBe('');
   });
 });
