@@ -115,6 +115,7 @@
   "fileUpload.errors.audioNotSupported": "يتم دعم ملفات الصوت بصيغة mp3 و wav فقط.",
   "fileUpload.errors.pdfMultimodalNotSupported": "النموذج متعدد الوسائط غير مدعوم، سيتم تحويل ملف PDF إلى نص بدلاً من صورة.",
   "fileUpload.errors.fileIsBinary": "الملف ثنائي. يرجى تحميل ملف نصي.",
+  "fileUpload.errors.pdfHasNoText": "لا يحتوي ملف PDF هذا على نص لقراءته.",
   "fileUpload.errors.failedToReadFile": "فشل في قراءة الملف.",
   "fileUpload.errors.failedToGetCanvasContext": "فشل في الحصول على سياق لوحة الرسم ثنائية الأبعاد.",
   "fileUpload.errors.failedToLoadSvg": "فشل في تحميل صورة SVG. تأكد من أن بيانات SVG صالحة.",

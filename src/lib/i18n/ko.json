@@ -115,6 +115,7 @@
   "fileUpload.errors.audioNotSupported": "mp3 및 wav 오디오 파일만 지원됩니다.",
   "fileUpload.errors.pdfMultimodalNotSupported": "멀티모달이 지원되지 않습니다. PDF가 이미지 대신 텍스트로 변환됩니다.",
   "fileUpload.errors.fileIsBinary": "이 파일은 바이너리 파일입니다. 텍스트 파일을 업로드해 주세요.",
+  "fileUpload.errors.pdfHasNoText": "이 PDF에는 읽을 텍스트가 없습니다.",
   "fileUpload.errors.failedToReadFile": "파일을 읽는 데 실패했습니다.",
   "fileUpload.errors.failedToGetCanvasContext": "2D 캔버스 컨텍스트를 가져오는 데 실패했습니다.",
   "fileUpload.errors.failedToLoadSvg": "SVG 이미지 로드에 실패했습니다. SVG 데이터가 유효한지 확인하세요.",

@@ -115,6 +115,7 @@
   "fileUpload.errors.audioNotSupported": "mp3およびwav形式のオーディオファイルのみサポートされています。",
   "fileUpload.errors.pdfMultimodalNotSupported": "マルチモーダルはサポートされていません。PDFは画像ではなくテキストに変換されます。",
   "fileUpload.errors.fileIsBinary": "ファイルはバイナリです。テキストファイルをアップロードしてください。",
+  "fileUpload.errors.pdfHasNoText": "このPDFには読み取れるテキストがありません。",
   "fileUpload.errors.failedToReadFile": "ファイルの読み込みに失敗しました。",
   "fileUpload.errors.failedToGetCanvasContext": "2Dキャンバスコンテキストの取得に失敗しました。",
   "fileUpload.errors.failedToLoadSvg": "SVG画像の読み込みに失敗しました。SVGデータが有効であることを確認してください。",

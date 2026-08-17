@@ -115,6 +115,7 @@
   "fileUpload.errors.audioNotSupported": "केवल mp3 और wav ऑडियो फ़ाइलें समर्थित हैं।",
   "fileUpload.errors.pdfMultimodalNotSupported": "मल्टीमॉडल समर्थित नहीं है, पीडीएफ को छवि के बजाय टेक्स्ट में बदल दिया जाएगा।",
   "fileUpload.errors.fileIsBinary": "फ़ाइल बाइनरी है। कृपया एक टेक्स्ट फ़ाइल अपलोड करें।",
+  "fileUpload.errors.pdfHasNoText": "इस PDF में पढ़ने योग्य कोई टेक्स्ट नहीं है।",
   "fileUpload.errors.failedToReadFile": "फ़ाइल पढ़ने में विफल।",
   "fileUpload.errors.failedToGetCanvasContext": "2D कैनवास संदर्भ प्राप्त करने में विफल।",
   "fileUpload.errors.failedToLoadSvg": "SVG छवि लोड करने में विफल। सुनिश्चित करें कि SVG डेटा वैध है।",
