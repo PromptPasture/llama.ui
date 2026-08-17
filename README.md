@@ -94,10 +94,14 @@ services:
 
 > ⚠️ **Certificate Tango Time!**
 >
-> 1. Visit http://localhost:8443
-> 2. Click "Trust this certificate" 🤝
-> 3. Restart 🦙 llama.ui page 🔄
-> 4. Profit! 💸
+> 1. Visit **https**://localhost:8443 — over plain HTTP no certificate is
+>    offered, so there is nothing to accept
+> 2. Accept the warning about mitmproxy's own certificate 🤝
+> 3. Back in 🦙 llama.ui, set **Base URL** to `https://localhost:8443` — the
+>    proxy is what the browser is allowed to call, and pointing at port 8080
+>    leaves you exactly where you started
+> 4. Reload the page 🔄
+> 5. Profit! 💸
 
 **Voilà!** You've hacked the HTTPS barrier! 🎩✨
 
