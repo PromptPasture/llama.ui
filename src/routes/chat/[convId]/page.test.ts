@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   unloadConversation: vi.fn(),
   ttsStop: vi.fn(),
   sendMessage: vi.fn(),
+  replaceMessage: vi.fn(),
   viewingChat: null as { messages: unknown[] } | null,
 }));
 
@@ -20,6 +21,7 @@ vi.mock('$lib/state/chat.svelte', () => ({
     loadConversation: mocks.loadConversation,
     unloadConversation: mocks.unloadConversation,
     sendMessage: mocks.sendMessage,
+    replaceMessage: mocks.replaceMessage,
     // A getter, so a test can put a conversation on screen before rendering.
     get viewingChat() {
       return mocks.viewingChat;
@@ -319,5 +321,89 @@ describe('a conversation that cannot be read', () => {
       expect(failed).toHaveBeenCalledWith('Could not read this conversation.')
     );
     failed.mockRestore();
+  });
+});
+
+describe('editing a message that is already in the conversation', () => {
+  const root = {
+    id: 0,
+    convId: 'c1',
+    type: 'root',
+    timestamp: 0,
+    role: 'system',
+    content: '',
+    parent: -1,
+    children: [5],
+  };
+  const asked = {
+    id: 5,
+    convId: 'c1',
+    type: 'text',
+    timestamp: 5,
+    role: 'user',
+    content: 'why does this crash?',
+    parent: 0,
+    children: [6],
+  };
+  const answered = {
+    id: 6,
+    convId: 'c1',
+    type: 'text',
+    timestamp: 6,
+    role: 'assistant',
+    content: 'because of a null pointer',
+    parent: 5,
+    children: [],
+  };
+
+  async function openConversation() {
+    mocks.viewingChat = { messages: [root, asked, answered] };
+    return renderChat('c1');
+  }
+
+  async function editThrough(role: 'user' | 'assistant', text: string) {
+    const user = userEvent.setup();
+    const message = screen.getByRole('group', { name: `Message from ${role}` });
+    await user.click(
+      within(message).getByRole('button', { name: 'Edit message' })
+    );
+    const box = within(message).getByRole('textbox');
+    await user.clear(box);
+    await user.type(box, text);
+    await user.click(
+      within(message).getByRole('button', {
+        name: role === 'user' ? 'Send' : 'Save',
+      })
+    );
+  }
+
+  it('asks the question again from where it was asked', async () => {
+    await openConversation();
+
+    await editThrough('user', 'why does this hang?');
+
+    // Sent from the edited message rather than from itself, the rewritten
+    // question becomes a reply to the original instead of a version of it.
+    expect(mocks.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parent: 0,
+        content: 'why does this hang?',
+        role: 'user',
+      }),
+      expect.anything()
+    );
+  });
+
+  it('does not ask again when the reply itself is rewritten', async () => {
+    await openConversation();
+
+    await editThrough('assistant', 'because of a race');
+
+    // Correcting a reply is not a request for another one.
+    expect(mocks.sendMessage).not.toHaveBeenCalled();
+    expect(mocks.replaceMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ newContent: 'because of a race' }),
+      expect.anything()
+    );
   });
 });
