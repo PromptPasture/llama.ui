@@ -43,6 +43,7 @@
   "chatScreen.labels.send": "送信",
   "chatScreen.labels.save": "保存",
   "chatScreen.labels.thinking": "思考中",
+  "chatScreen.labels.interrupted": "中断されました",
   "chatScreen.labels.reasoning": "推論",
   "chatScreen.actions.delete.confirm": "このメッセージを削除してもよろしいですか？",
   "chatScreen.titles.previous": "前へ",

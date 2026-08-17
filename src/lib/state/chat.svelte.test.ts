@@ -572,3 +572,63 @@ describe('a reply that fails partway', () => {
     expect(mocks.appendMsg).not.toHaveBeenCalled();
   });
 });
+
+describe('marking a reply that did not finish', () => {
+  it('marks one the reader stopped', async () => {
+    mocks.appendMsg.mockClear();
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ content: 'half an answer' });
+        const err = new Error('aborted');
+        err.name = 'AbortError';
+        throw err;
+      }
+    );
+
+    await chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      deps({ provider: {} }) as never
+    );
+
+    expect(mocks.appendMsg.mock.calls[0][0]).toMatchObject({
+      interrupted: true,
+    });
+  });
+
+  it('marks one the server cut short', async () => {
+    mocks.appendMsg.mockClear();
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ content: 'half an answer' });
+        throw new Error('the server went away');
+      }
+    );
+
+    await expect(
+      chat._generate(
+        { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+        deps({ provider: {} }) as never
+      )
+    ).rejects.toThrow();
+
+    expect(mocks.appendMsg.mock.calls[0][0]).toMatchObject({
+      interrupted: true,
+    });
+  });
+
+  it('leaves a reply that ran to its end unmarked', async () => {
+    mocks.appendMsg.mockClear();
+    stream.generateChatStream.mockImplementationOnce(
+      async ({ onUpdate }: { onUpdate: (u: unknown) => void }) => {
+        onUpdate({ content: 'a whole answer' });
+      }
+    );
+
+    await chat._generate(
+      { convId: 'conv-1', leafNodeId: 1, onChunk: () => {} },
+      deps({ provider: {} }) as never
+    );
+
+    expect(mocks.appendMsg.mock.calls[0][0]).not.toHaveProperty('interrupted');
+  });
+});

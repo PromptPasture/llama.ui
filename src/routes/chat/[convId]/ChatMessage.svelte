@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CircleAlertIcon from 'lucide-svelte/icons/circle-alert';
   import { attachmentSize } from '$lib/utils/attachment-size';
   import { describeSize } from '$lib/utils/text-file';
   import { _, locale } from 'svelte-i18n';
@@ -322,6 +323,15 @@
             <div class="msg__raw">{content}</div>
           {/if}
         {/if}
+
+        {#if msg.interrupted && !isPending}
+          <!-- Read back later, a reply cut off mid-sentence looks exactly
+               like one that finished. -->
+          <p class="msg__interrupted">
+            <CircleAlertIcon size={14} />
+            {$_('chatScreen.labels.interrupted')}
+          </p>
+        {/if}
       </div>
     {:else if isPending}
       <!-- Nothing has arrived yet. A local server loading a model into memory
@@ -570,6 +580,11 @@
     @apply px-2 pb-2 m-0 overflow-x-auto whitespace-pre-wrap break-words;
     max-height: 20rem;
     overflow-y: auto;
+  }
+
+  .msg__interrupted {
+    @apply flex items-center gap-1.5 mt-2 mb-0 text-xs;
+    color: var(--color-text-muted);
   }
 
   .msg__raw {

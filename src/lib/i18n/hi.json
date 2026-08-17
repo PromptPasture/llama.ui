@@ -43,6 +43,7 @@
   "chatScreen.labels.send": "भेजें",
   "chatScreen.labels.save": "सहेजें",
   "chatScreen.labels.thinking": "सोच रहा है",
+  "chatScreen.labels.interrupted": "बाधित",
   "chatScreen.labels.reasoning": "तर्क",
   "chatScreen.actions.delete.confirm": "क्या आप वाकई इस संदेश को हटाना चाहते हैं?",
   "chatScreen.titles.previous": "पिछला",

@@ -78,10 +78,15 @@ function replyWorthKeeping(pending: PendingMessage): Message | null {
 async function storeReply(
   pending: PendingMessage,
   leafNodeId: Message['id'],
-  toast: ToastFn
+  toast: ToastFn,
+  interrupted = false
 ): Promise<Message | null> {
-  const reply = replyWorthKeeping(pending);
-  if (!reply) return null;
+  const kept = replyWorthKeeping(pending);
+  if (!kept) return null;
+  // Recorded rather than inferred: once it is in the conversation, a reply cut
+  // off mid-sentence reads exactly like one that finished, and it is sent back
+  // to the model as though it had.
+  const reply = interrupted ? { ...kept, interrupted: true } : kept;
 
   if (!(await IndexedDB.getOneConversation(pending.convId))) {
     toast(t('state.chat.errors.conversationNotFound'));
@@ -315,7 +320,12 @@ export const chat = {
         if (isDev) console.debug('Generation aborted by user.');
         // Stopping is not discarding. Keep what was streamed before the user
         // pressed stop, the same way a completed reply is kept.
-        const stopped = await storeReply(pendingMsg, leafNodeId, deps.toast);
+        const stopped = await storeReply(
+          pendingMsg,
+          leafNodeId,
+          deps.toast,
+          true
+        );
         if (stopped) onChunk(stopped.id);
         delete state.aborts[convId];
         return;
@@ -325,7 +335,12 @@ export const chat = {
       // mid-sentence is the same loss to the reader as pressing stop, and
       // throwing the words out leaves them a toast that fades and nothing
       // else. The reply is there to read, copy, or ask again from.
-      const partial = await storeReply(pendingMsg, leafNodeId, deps.toast);
+      const partial = await storeReply(
+        pendingMsg,
+        leafNodeId,
+        deps.toast,
+        true
+      );
       if (partial) onChunk(partial.id);
       deps.toast(
         (err as Error)?.message ??

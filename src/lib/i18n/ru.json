@@ -43,6 +43,7 @@
   "chatScreen.labels.send": "Отправить",
   "chatScreen.labels.save": "Сохранить",
   "chatScreen.labels.thinking": "Думаю",
+  "chatScreen.labels.interrupted": "Прервано",
   "chatScreen.labels.reasoning": "Рассуждения",
   "chatScreen.actions.delete.confirm": "Вы уверены, что хотите удалить это сообщение?",
   "chatScreen.titles.previous": "Предыдущее",

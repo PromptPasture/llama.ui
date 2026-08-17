@@ -43,6 +43,7 @@
   "chatScreen.labels.send": "Senden",
   "chatScreen.labels.save": "Speichern",
   "chatScreen.labels.thinking": "Denkt nach",
+  "chatScreen.labels.interrupted": "Unterbrochen",
   "chatScreen.labels.reasoning": "Argumentation",
   "chatScreen.actions.delete.confirm": "Sind Sie sicher, dass Sie diese Nachricht löschen möchten?",
   "chatScreen.titles.previous": "Zurück",

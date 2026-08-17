@@ -901,3 +901,54 @@ describe('how much a sent attachment amounted to', () => {
     expect(screen.getByText('3KB')).toBeInTheDocument();
   });
 });
+
+describe('a reply that was cut off', () => {
+  it('says so', () => {
+    renderMessage(
+      display({
+        msg: message({
+          role: 'assistant',
+          content: 'half an',
+          interrupted: true,
+        }),
+      })
+    );
+
+    // Read back later it looks exactly like one that finished, and it is sent
+    // to the model on the next turn as though it had.
+    expect(screen.getByText('Interrupted')).toBeInTheDocument();
+  });
+
+  it('still shows what did arrive', () => {
+    renderMessage(
+      display({
+        msg: message({
+          role: 'assistant',
+          content: 'half an',
+          interrupted: true,
+        }),
+      })
+    );
+
+    expect(screen.getByText('half an')).toBeInTheDocument();
+  });
+
+  it('says nothing on a reply that ran to its end', () => {
+    renderMessage();
+
+    expect(screen.queryByText('Interrupted')).toBeNull();
+  });
+
+  it('waits until the reply has stopped arriving', () => {
+    renderMessage(
+      display({
+        msg: pending({ content: 'half an', interrupted: true }),
+        isPending: true,
+      })
+    );
+
+    // Marked while it is still streaming, every reply would carry it until
+    // the moment it finished.
+    expect(screen.queryByText('Interrupted')).toBeNull();
+  });
+});

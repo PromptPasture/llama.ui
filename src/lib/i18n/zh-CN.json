@@ -43,6 +43,7 @@
   "chatScreen.labels.send": "发送",
   "chatScreen.labels.save": "保存",
   "chatScreen.labels.thinking": "思考中",
+  "chatScreen.labels.interrupted": "已中断",
   "chatScreen.labels.reasoning": "推理;推理",
   "chatScreen.actions.delete.confirm": "您确定要删除此消息吗？",
   "chatScreen.titles.previous": "上一条",

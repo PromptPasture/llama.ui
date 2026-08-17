@@ -43,6 +43,7 @@
   "chatScreen.labels.send": "إرسال",
   "chatScreen.labels.save": "حفظ",
   "chatScreen.labels.thinking": "جاري التفكير",
+  "chatScreen.labels.interrupted": "تمت المقاطعة",
   "chatScreen.labels.reasoning": "المنطق",
   "chatScreen.actions.delete.confirm": "هل أنت متأكد من حذف هذه الرسالة؟",
   "chatScreen.titles.previous": "السابق",

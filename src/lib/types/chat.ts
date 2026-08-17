@@ -45,6 +45,10 @@ export interface Message {
   reasoning_content?: string;
   timings?: TimingReport;
   extra?: MessageExtra[];
+  /** Set when the reply stopped before the model had finished — the reader
+   * pressed stop, or the server went away. Absent on a reply that ran to its
+   * end, and on every message written before this was recorded. */
+  interrupted?: boolean;
   // node based system for branching
   parent: Message['id'];
   children: Message['id'][];
