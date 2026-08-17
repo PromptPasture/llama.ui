@@ -56,6 +56,9 @@
 
   let currNodeId = $state(-1);
 
+  /** The message a search result opened on, until it has been noticed. */
+  let landedOn = $state<number | null>(null);
+
   $effect(() => {
     const id = convId;
     if (!id) return;
@@ -107,11 +110,16 @@
     const asked = Number(page.url.searchParams.get('m'));
     if (!asked) return;
     currNodeId = asked;
+    landedOn = asked;
     requestAnimationFrame(() => {
       document
         .getElementById(`msg-${asked}`)
         ?.scrollIntoView({ block: 'center' });
     });
+    // Long enough to catch the eye, then out of the way: left marked, it
+    // reads as a state the message is in rather than where the reader arrived.
+    const fade = setTimeout(() => (landedOn = null), 2000);
+    return () => clearTimeout(fade);
   });
 
   const pendingMsg = $derived.by(() => {
@@ -239,6 +247,7 @@
       {#each displayMessages as message (message.msg.id)}
         <ChatMessage
           {message}
+          landedOn={message.msg.id === landedOn}
           onregeneratefn={handleRegenerate}
           onedituserfn={handleEditUser}
           oneditassistantfn={handleEditAssistant}

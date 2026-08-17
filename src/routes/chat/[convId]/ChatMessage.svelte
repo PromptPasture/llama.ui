@@ -43,9 +43,13 @@
     ) => void;
     oneditassistantfn: (msg: Message, content: string) => void;
     onchangesibling: (nodeId: Message['id']) => void;
+    /** Marks the message a search result opened on, for as long as it takes
+     * to notice which one it is. */
+    landedOn?: boolean;
   }
 
   let {
+    landedOn = false,
     message,
     onregeneratefn,
     onedituserfn,
@@ -192,6 +196,7 @@
 <div
   id={`msg-${msg.id}`}
   class="msg mb-4"
+  class:msg--landed={landedOn}
   class:msg--user={isUser}
   role="group"
   aria-label={isUser
@@ -581,6 +586,22 @@
     @apply px-2 pb-2 m-0 overflow-x-auto whitespace-pre-wrap break-words;
     max-height: 20rem;
     overflow-y: auto;
+  }
+
+  /* Scrolled to and then left to be found by eye is most of the way to not
+     having been found. */
+  .msg--landed {
+    animation: msg-landed 2s ease-out;
+    border-radius: var(--radius-lg);
+  }
+
+  @keyframes msg-landed {
+    from {
+      background: var(--color-accent-soft);
+    }
+    to {
+      background: transparent;
+    }
   }
 
   .msg__interrupted {

@@ -465,6 +465,49 @@ describe('opening a conversation at a message that was searched for', () => {
     expect(brought).toContain('msg-5');
   });
 
+  it('marks it, so it can be picked out from what surrounds it', async () => {
+    mocks.viewingChat = { messages: [root, early, later] };
+    mocks.search = '?m=5';
+
+    const { container } = await renderChat('c1');
+
+    // Scrolled to and then left to be found by eye is most of the way to not
+    // having been found.
+    expect(container.querySelector('#msg-5')?.className).toContain(
+      'msg--landed'
+    );
+  });
+
+  it('stops marking it once it has been noticed', async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.viewingChat = { messages: [root, early, later] };
+      mocks.search = '?m=5';
+      const { container } = render(ChatPage, {
+        props: { data: {}, params: { convId: 'c1' } },
+      });
+      await vi.advanceTimersByTimeAsync(50);
+
+      await vi.advanceTimersByTimeAsync(3000);
+
+      // Left marked, it reads as a state the message is in rather than
+      // where the reader arrived.
+      expect(container.querySelector('#msg-5')?.className).not.toContain(
+        'msg--landed'
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('marks nothing when nothing was asked for', async () => {
+    mocks.viewingChat = { messages: [root, early, later] };
+
+    const { container } = await renderChat('c1');
+
+    expect(container.querySelector('.msg--landed')).toBeNull();
+  });
+
   it('leaves the conversation alone when nothing was asked for', async () => {
     const brought: unknown[] = [];
     Element.prototype.scrollIntoView = function (this: Element) {
