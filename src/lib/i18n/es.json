@@ -115,7 +115,6 @@
   "fileUpload.errors.audioNotSupported": "Solo se admiten archivos de audio mp3 y wav.",
   "fileUpload.errors.pdfMultimodalNotSupported": "La multimodalidad no es compatible, el PDF se convertirá en texto en lugar de imagen.",
   "fileUpload.errors.fileIsBinary": "El archivo es binario. Por favor, sube un archivo de texto.",
-  "fileUpload.errors.pdfHasNoText": "Este PDF no contiene texto que leer.",
   "fileUpload.errors.failedToReadFile": "No se pudo leer el archivo.",
   "fileUpload.errors.failedToGetCanvasContext": "No se pudo obtener el contexto 2D del lienzo.",
   "fileUpload.errors.failedToLoadSvg": "No se pudo cargar la imagen SVG. Asegúrate de que los datos SVG sean válidos.",

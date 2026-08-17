@@ -115,7 +115,6 @@
   "fileUpload.errors.audioNotSupported": "Поддерживаются только аудио-файлы форматов mp3 и wav.",
   "fileUpload.errors.pdfMultimodalNotSupported": "Мультимодальность не поддерживается, PDF будет преобразован в текст, а не в изображение.",
   "fileUpload.errors.fileIsBinary": "Файл является двоичным. Пожалуйста, загрузите текстовый файл.",
-  "fileUpload.errors.pdfHasNoText": "В этом PDF нет текста для чтения.",
   "fileUpload.errors.failedToReadFile": "Не удалось прочитать файл.",
   "fileUpload.errors.failedToGetCanvasContext": "Не удалось получить контекст 2D-холста.",
   "fileUpload.errors.failedToLoadSvg": "Не удалось загрузить SVG-изображение. Убедитесь, что данные SVG корректны.",

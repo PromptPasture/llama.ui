@@ -115,7 +115,6 @@
   "fileUpload.errors.audioNotSupported": "Seuls les fichiers audio mp3 et wav sont pris en charge.",
   "fileUpload.errors.pdfMultimodalNotSupported": "La multimodalité n'est pas prise en charge, le PDF sera converti en texte au lieu d'une image.",
   "fileUpload.errors.fileIsBinary": "Le fichier est binaire. Veuillez téléverser un fichier texte.",
-  "fileUpload.errors.pdfHasNoText": "Ce PDF ne contient aucun texte à lire.",
   "fileUpload.errors.failedToReadFile": "Échec de la lecture du fichier.",
   "fileUpload.errors.failedToGetCanvasContext": "Échec de l'obtention du contexte de canevas 2D.",
   "fileUpload.errors.failedToLoadSvg": "Échec du chargement de l'image SVG. Assurez-vous que les données SVG sont valides.",

@@ -14,11 +14,9 @@ import {
 const mocks = vi.hoisted(() => ({
   isGenerating: vi.fn(() => false),
   stopGenerating: vi.fn(),
-  extractPdfText: vi.fn(),
 }));
 
 vi.mock('$lib/state/chat.svelte', () => ({ chat: mocks }));
-vi.mock('$lib/utils/pdf', () => ({ extractPdfText: mocks.extractPdfText }));
 
 const { default: ChatInput } = await import('./ChatInput.svelte');
 const { app } = await import('$lib/state/app.svelte');
@@ -796,60 +794,6 @@ describe('attachments outliving the page', () => {
     // Ids carry on from what was already there; restarting at one would give
     // two attachments the same key and crash the render.
     expect(screen.getAllByText('notes.txt')).toHaveLength(2);
-  });
-});
-
-describe('attaching a PDF', () => {
-  const pdf = (name = 'paper.pdf') =>
-    new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0])], name, {
-      type: 'application/pdf',
-    });
-
-  it('reads the text out of it rather than refusing it as binary', async () => {
-    const user = userEvent.setup();
-    mocks.extractPdfText.mockResolvedValue('The paper says this.');
-    const { onsend, textarea, filePicker } = renderInput();
-
-    await user.upload(filePicker, pdf());
-    await vi.waitFor(() =>
-      expect(screen.getByText('paper.pdf')).toBeInTheDocument()
-    );
-    await user.type(textarea, 'what does it argue?{Enter}');
-
-    expect(onsend).toHaveBeenCalledWith('what does it argue?', [
-      { type: 'textFile', name: 'paper.pdf', content: 'The paper says this.' },
-    ]);
-  });
-
-  it('says so when there is no text in it', async () => {
-    const user = userEvent.setup();
-    mocks.extractPdfText.mockResolvedValue('');
-    const failed = vi.spyOn(toast, 'error');
-    const { filePicker } = renderInput();
-
-    await user.upload(filePicker, pdf());
-
-    // A scan is pages of pictures; attaching an empty file would say the
-    // model had been given something to read.
-    await vi.waitFor(() =>
-      expect(failed).toHaveBeenCalledWith('This PDF has no text in it to read.')
-    );
-    expect(screen.queryByText('paper.pdf')).not.toBeInTheDocument();
-    failed.mockRestore();
-  });
-
-  it('says so when it cannot be read at all', async () => {
-    const user = userEvent.setup();
-    mocks.extractPdfText.mockRejectedValue(new Error('damaged'));
-    const failed = vi.spyOn(toast, 'error');
-    const { filePicker } = renderInput();
-
-    await user.upload(filePicker, pdf());
-
-    await vi.waitFor(() =>
-      expect(failed).toHaveBeenCalledWith('Failed to read file.')
-    );
-    failed.mockRestore();
   });
 });
 

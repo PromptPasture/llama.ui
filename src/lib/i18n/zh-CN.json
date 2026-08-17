@@ -115,7 +115,6 @@
   "fileUpload.errors.audioNotSupported": "仅支持 mp3 和 wav 音频文件。",
   "fileUpload.errors.pdfMultimodalNotSupported": "不支持多模态，PDF 将转换为文本而不是图像。",
   "fileUpload.errors.fileIsBinary": "文件为二进制。请上传文本文件。",
-  "fileUpload.errors.pdfHasNoText": "此 PDF 中没有可读取的文本。",
   "fileUpload.errors.failedToReadFile": "读取文件失败。",
   "fileUpload.errors.failedToGetCanvasContext": "获取 2D 画布上下文失败。",
   "fileUpload.errors.failedToLoadSvg": "加载 SVG 图像失败。请确保 SVG 数据有效。",

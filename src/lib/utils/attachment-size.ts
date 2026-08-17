@@ -7,9 +7,9 @@ const BASE64_RATIO = 3 / 4;
  * How much an attachment amounts to.
  *
  * A file name says nothing about what is being sent. A pasted log and a
- * three-line note look alike in the box, and a PDF can turn into more text
- * than the model will take — the difference is worth seeing before pressing
- * send rather than after the reply is refused.
+ * three-line note look alike in the box, and one of them can be more than the
+ * model will take — the difference is worth seeing before pressing send
+ * rather than after the reply is refused.
  *
  * @param extra - The attachment to measure
  * @returns Its size in bytes

@@ -115,7 +115,6 @@
   "fileUpload.errors.audioNotSupported": "Es werden nur mp3- und wav-Audiodateien unterstützt.",
   "fileUpload.errors.pdfMultimodalNotSupported": "Multimodal wird nicht unterstützt, PDF wird in Text anstelle von Bild konvertiert.",
   "fileUpload.errors.fileIsBinary": "Datei ist binär. Bitte laden Sie eine Textdatei hoch.",
-  "fileUpload.errors.pdfHasNoText": "Dieses PDF enthält keinen lesbaren Text.",
   "fileUpload.errors.failedToReadFile": "Fehler beim Lesen der Datei.",
   "fileUpload.errors.failedToGetCanvasContext": "Fehler beim Abrufen des 2D-Canvas-Kontexts.",
   "fileUpload.errors.failedToLoadSvg": "Fehler beim Laden des SVG-Bildes. Stellen Sie sicher, dass die SVG-Daten gültig sind.",

@@ -189,17 +189,6 @@
         continue;
       }
       try {
-        if (file.type === 'application/pdf') {
-          const text = await (
-            await import('$lib/utils/pdf')
-          ).extractPdfText(file);
-          if (!text) {
-            toast.error($_('fileUpload.errors.pdfHasNoText'));
-            continue;
-          }
-          attach({ type: 'textFile', name: file.name, content: text });
-          continue;
-        }
         if (isImageType(file.type)) {
           attach({
             type: 'imageFile',
