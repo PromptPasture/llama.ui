@@ -30,9 +30,6 @@ docs/                          # Project-scoped documentation
 ## Before Writing
 
 - Before creating or materially changing documentation, you MUST identify the document's purpose, audience, scope, required inputs, and acceptance criteria.
-- If an ambiguity could materially change the document's content or scope, you MUST resolve it before writing.
-- You MUST read directly related documents needed to preserve terminology and avoid contradictions.
-- You MUST use the smallest set of documents needed for the requested outcome and MUST NOT create speculative documents or sections.
 
 ## Document Requirements
 
@@ -41,8 +38,6 @@ docs/                          # Project-scoped documentation
 - Requirements MUST use unambiguous normative language and define observable acceptance criteria.
 - Examples MUST be narrow, complete, and consistent with the repository's actual interfaces and conventions.
 - Documents MUST use YAML frontmatter for document metadata when metadata is needed.
-- You MUST preserve established document structure and terminology unless changing them is required by the request.
-- You MUST NOT add speculative features, requirements, abstractions, extension points, or configurability.
 
 ## Consistency
 

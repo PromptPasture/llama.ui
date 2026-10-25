@@ -103,8 +103,6 @@ rm -rf node_modules dist && npm ci && npm run build
 
 ## 🧠 Agent Guidance
 
-- Trust these instructions unless explicitly contradicted by updated repo content.
-- Only perform codebase search if information here is incomplete or fails during execution.
 - Prefer functional components and hooks.
 - Use Tailwind utility classes for styling.
 - Co-locate logic and group by feature.
